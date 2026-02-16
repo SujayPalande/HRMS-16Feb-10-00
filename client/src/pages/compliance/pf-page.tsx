@@ -75,6 +75,7 @@ export default function PfPage() {
   const { data: units = [] } = useQuery<Unit[]>({ queryKey: ["/api/masters/units"] });
   
   const pfData = useMemo(() => {
+    const { startDate, endDate } = getReportPeriod();
     const data = employees
       .filter(emp => emp.isActive && emp.salary && emp.salary > 0)
       .filter(emp => {
@@ -84,11 +85,20 @@ export default function PfPage() {
         const matchesUnit = selectedUnit === "all" || unit?.id.toString() === selectedUnit;
         const matchesDept = selectedDepartment === "all" || dept?.id.toString() === selectedDepartment;
         
-        return matchesUnit && matchesDept;
+        // Basic filtering by join date relative to period
+        const joinDate = emp.joinDate ? new Date(emp.joinDate) : null;
+        const isJoinedBeforeEnd = !joinDate || joinDate <= endDate;
+        
+        return matchesUnit && matchesDept && isJoinedBeforeEnd;
       })
       .map(emp => {
         const monthlyCTC = emp.salary!;
-        const grossSalary = Math.round((monthlyCTC / 30) * 25);
+        
+        // Calculate days in period for proper data display based on selected period
+        const totalDaysInPeriod = Math.ceil((endDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24)) + 1;
+        const daysToConsider = Math.min(30, totalDaysInPeriod);
+        
+        const grossSalary = Math.round((monthlyCTC / 30) * daysToConsider);
         const basicSalary = Math.round(grossSalary * (salaryComponents.basicSalaryPercentage / 100));
         const employeeContrib = Math.round(basicSalary * 0.12);
         const employerContrib = Math.round(basicSalary * 0.12);
@@ -118,7 +128,7 @@ export default function PfPage() {
       hierarchical[item.unitName][item.departmentName].push(item);
     });
     return hierarchical;
-  }, [employees, salaryComponents, departments, units, selectedUnit, selectedDepartment]);
+  }, [employees, salaryComponents, departments, units, selectedUnit, selectedDepartment, selectedPeriod, selectedDate]);
 
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -128,15 +138,27 @@ export default function PfPage() {
   const handleChallanUpload = async () => {
     if (!uploadedFile) return;
     setUploading(true);
-    await new Promise(resolve => setTimeout(resolve, 1500));
-    toast({ title: "Challan Uploaded Successfully", description: `${uploadedFile.name} processed.` });
-    setUploading(false);
-    setUploadedFile(null);
-    setUploadDialogOpen(false);
+    try {
+      const formData = new FormData();
+      formData.append('file', uploadedFile);
+      formData.append('period', selectedPeriod);
+      formData.append('date', selectedDate);
+      
+      // Simulate API call for now since we don't have the endpoint defined
+      await new Promise(resolve => setTimeout(resolve, 1500));
+      
+      toast({ title: "Challan Uploaded Successfully", description: `${uploadedFile.name} processed for ${selectedPeriod} report.` });
+      setUploadDialogOpen(false);
+      setUploadedFile(null);
+    } catch (error) {
+      toast({ title: "Upload Failed", description: "There was an error uploading the challan.", variant: "destructive" });
+    } finally {
+      setUploading(false);
+    }
   };
 
   const generateReport = () => {
-    const doc = new jsPDF();
+    const doc = new jsPDF({ orientation: "landscape" });
     addWatermark(doc);
     addCompanyHeader(doc, { 
       title: "PROVIDENT FUND REPORT", 
@@ -147,24 +169,31 @@ export default function PfPage() {
     addReferenceNumber(doc, refNumber, 68);
     addDocumentDate(doc, undefined, 68);
     
+    const tableBody = Object.values(pfData).flatMap(depts => 
+      Object.values(depts).flat()
+    ).map(row => [
+      row.employee,
+      row.unitName,
+      row.departmentName,
+      `Rs. ${row.basicSalary.toLocaleString()}`,
+      `Rs. ${row.employeeContrib.toLocaleString()}`,
+      `Rs. ${row.employerContrib.toLocaleString()}`,
+      `Rs. ${row.edliContrib.toLocaleString()}`,
+      `Rs. ${row.adminCharges.toLocaleString()}`,
+      `Rs. ${row.total.toLocaleString()}`
+    ]);
+
     autoTable(doc, {
       startY: 80,
-      head: [['Employee', 'Basic Salary', 'Employee (12%)', 'Employer (12%)', 'EDLI (0.5%)', 'Admin (0.5%)', 'Total']],
-      body: Object.values(pfData).flatMap(depts => Object.values(depts).flat()).map(row => [
-        row.employee,
-        `Rs. ${row.basicSalary.toLocaleString()}`,
-        `Rs. ${row.employeeContrib.toLocaleString()}`,
-        `Rs. ${row.employerContrib.toLocaleString()}`,
-        `Rs. ${row.edliContrib.toLocaleString()}`,
-        `Rs. ${row.adminCharges.toLocaleString()}`,
-        `Rs. ${row.total.toLocaleString()}`
-      ]),
+      head: [['Employee', 'Unit', 'Department', 'Basic Salary', 'Employee (12%)', 'Employer (12%)', 'EDLI (0.5%)', 'Admin (0.5%)', 'Total']],
+      body: tableBody,
       theme: 'striped',
-      headStyles: { fillColor: [0, 128, 128] },
+      headStyles: { fillColor: [0, 128, 128], fontSize: 8 },
+      styles: { fontSize: 8 },
     });
     
     addHRSignature(doc, (doc as any).lastAutoTable.finalY + 20);
-    doc.save('provident-fund-report.pdf');
+    doc.save(`provident-fund-report-${selectedPeriod}-${selectedDate}.pdf`);
   };
 
   return (

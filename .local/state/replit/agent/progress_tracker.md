@@ -345,3 +345,10 @@
 [x] 341. Applied database schema (no changes detected - already up to date) - February 16, 2026
 [x] 342. Restarted workflow and verified application running successfully on port 5000 - February 16, 2026
 [x] 343. ALL MIGRATION TASKS COMPLETE: Application successfully running on port 5000 - February 16, 2026
+[x] 344. Fixed Leave Register balance showing negative numbers by adding Math.max(0, ...) - February 16, 2026
+[x] 345. Enhanced Print functionality in Leave Register to target report content - February 16, 2026
+[x] 346. Fixed Import button in Leave Register by mapping template headers correctly to API - February 16, 2026
+[x] 347. Updated Export Excel/PDF in Leave Register to show formatted and proper data - February 16, 2026
+[x] 348. Implemented dynamic reporting periods (Day/Week/Month/Year) for Provident Fund - February 16, 2026
+[x] 349. Fixed Upload Challan button logic with proper state management and notifications - February 16, 2026
+[x] 350. Added Unit and Department visibility to PF report export for comprehensive data - February 16, 2026

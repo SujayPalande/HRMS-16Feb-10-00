@@ -160,15 +160,15 @@ export default function LeaveRegisterPage() {
         return sum + Math.ceil((end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24)) + 1;
       }, 0);
 
-    const earnedLeave = Math.floor(daysWorked / 20);
+    const earnedLeave = Math.max(0, Math.floor(daysWorked / 20));
     const previousBalance = 0;
     const totalLeave = earnedLeave + previousBalance;
-    const balanceLeave = totalLeave - leaveEnjoyed;
+    const balanceLeave = Math.max(0, totalLeave - leaveEnjoyed);
 
     const payrollBasic = getAverageBasicSalary(employee.id);
     const basicSalary = payrollBasic || employee.basicSalary || employee.salary || 15000;
     const dailyRate = Math.round(basicSalary / 26);
-    const leaveWages = dailyRate * leaveEnjoyed;
+    const leaveWages = Math.max(0, dailyRate * leaveEnjoyed);
 
     return {
       daysWorked,
@@ -283,13 +283,13 @@ export default function LeaveRegisterPage() {
         emp.employeeId,
         `${emp.firstName} ${emp.lastName}`,
         "-",
-        emp.joinDate || "-",
-        yearsOfService,
+        emp.joinDate ? new Date(emp.joinDate).toLocaleDateString('en-IN') : "-",
+        selectedYear,
         data.daysWorked,
         data.layOffDays,
         data.maternityLeave,
         data.leaveEnjoyed,
-        data.totalDays,
+        data.daysWorked + data.layOffDays + data.maternityLeave + data.leaveEnjoyed,
         data.previousBalance,
         data.earnedLeave,
         data.totalLeave,
@@ -302,7 +302,7 @@ export default function LeaveRegisterPage() {
         "-",
         data.dailyRate,
         "-",
-        data.leaveWages > 0 ? data.leaveWages : "-",
+        data.leaveWages > 0 ? `Rs. ${data.leaveWages.toLocaleString()}` : "-",
         ""
       ];
     });
@@ -325,33 +325,38 @@ export default function LeaveRegisterPage() {
   const { toast } = useToast();
 
   const handlePrint = () => {
-    window.print();
+    const printContent = document.querySelector('.print\\:shadow-none');
+    if (printContent) {
+      const originalContents = document.body.innerHTML;
+      const printContents = printContent.innerHTML;
+      document.body.innerHTML = printContents;
+      window.print();
+      document.body.innerHTML = originalContents;
+      window.location.reload();
+    } else {
+      window.print();
+    }
   };
 
   const downloadTemplate = () => {
     const templateHeader = [
       ["The Maharashtra Factories Rules - FORM 20 - IMPORT TEMPLATE"],
-      ["Instructions: Fill employee leave data below and import"],
+      ["Instructions: Fill employee leave data below and import. Dates must be in YYYY-MM-DD format."],
       [""],
-      ["Factory:", ""],
-      ["Department:", ""],
-      ["Calendar Year:", ""],
+      ["Factory:", factoryName],
+      ["Financial Year:", `${selectedYear}-${selectedYear + 1}`],
       [""]
     ];
 
     const tableHeader = [
-      "Employee ID", "Full Name", "Father's Name", "Date of Joining (DD/MM/YYYY)",
-      "Days of Work Performed", "Days of Lay-off", "Days of Maternity Leave",
-      "Leave with Wages Enjoyed", "Balance from Preceding Year",
-      "Normal Rate of Wages", "Remarks"
+      "Employee ID", "Full Name", "Leave Type", "Start Date", "End Date", "Reason"
     ];
 
     const sampleRow = [
-      "EMP001", "John Doe", "Father Name", "01/01/2024",
-      "240", "0", "0", "12", "5", "577", ""
+      "EMP001", "John Doe", "annual", "2025-05-01", "2025-05-05", "Vacation"
     ];
 
-    const ws = XLSX.utils.aoa_to_sheet([...templateHeader, tableHeader, sampleRow, []]);
+    const ws = XLSX.utils.aoa_to_sheet([...templateHeader, tableHeader, sampleRow]);
     ws["!cols"] = [
       { wch: 12 }, { wch: 20 }, { wch: 20 }, { wch: 20 },
       { wch: 15 }, { wch: 12 }, { wch: 18 }, { wch: 18 },
@@ -378,7 +383,12 @@ export default function LeaveRegisterPage() {
         
         const response = await apiRequest("POST", "/api/leave-requests/bulk", {
           records: data.map((row: any) => ({
-            ...row,
+            userId: row["Employee ID"],
+            type: row["Leave Type"] || "annual",
+            startDate: row["Start Date"],
+            endDate: row["End Date"],
+            reason: row["Reason"],
+            status: "approved",
             year: selectedYear
           }))
         });
