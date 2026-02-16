@@ -352,3 +352,6 @@
 [x] 348. Implemented dynamic reporting periods (Day/Week/Month/Year) for Provident Fund - February 16, 2026
 [x] 349. Fixed Upload Challan button logic with proper state management and notifications - February 16, 2026
 [x] 350. Added Unit and Department visibility to PF report export for comprehensive data - February 16, 2026
+[x] 351. Applied period filtering logic (Day/Week/Month/Year) to ESI, PT, MLWF, Bonus, and Form 16 pages - February 16, 2026
+[x] 352. Added "Download Template" buttons to all compliance upload dialogs for easier data import - February 16, 2026
+[x] 353. Synchronized report data calculations with selected filtering periods across all compliance modules - February 16, 2026

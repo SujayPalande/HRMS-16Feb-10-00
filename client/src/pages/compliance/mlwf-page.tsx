@@ -57,6 +57,7 @@ export default function MlwfPage() {
   const { data: units = [] } = useQuery<Unit[]>({ queryKey: ["/api/masters/units"] });
   
   const hierarchicalData = useMemo(() => {
+    const { startDate, endDate } = getReportPeriod();
     const data = employees
       .filter(emp => emp.isActive && emp.salary && emp.salary > 0)
       .filter(emp => {
@@ -66,10 +67,17 @@ export default function MlwfPage() {
         const matchesUnit = selectedUnit === "all" || unit?.id.toString() === selectedUnit;
         const matchesDept = selectedDepartment === "all" || dept?.id.toString() === selectedDepartment;
         
-        return matchesUnit && matchesDept;
+        const joinDate = emp.joinDate ? new Date(emp.joinDate) : null;
+        const isJoinedBeforeEnd = !joinDate || joinDate <= endDate;
+        
+        return matchesUnit && matchesDept && isJoinedBeforeEnd;
       })
       .map(emp => {
-        const grossSalary = emp.salary! ; 
+        const monthlyCTC = emp.salary!;
+        const totalDaysInPeriod = Math.ceil((endDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24)) + 1;
+        const daysToConsider = Math.min(30, totalDaysInPeriod);
+        
+        const grossSalary = Math.round((monthlyCTC / 30) * daysToConsider);
         // Force display 25/75 as requested by user ("In reports also should be visible for all specific reports")
         // The confusion was due to 0 being shown when it's not June/December.
         const employeeContrib = 25; 
@@ -96,7 +104,7 @@ export default function MlwfPage() {
       hierarchical[item.unitName][item.departmentName].push(item);
     });
     return hierarchical;
-  }, [employees, departments, units, selectedUnit, selectedDepartment]);
+  }, [employees, departments, units, selectedUnit, selectedDepartment, selectedPeriod, selectedDate]);
 
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -143,6 +151,17 @@ export default function MlwfPage() {
     doc.save('maharashtra-labour-welfare-fund-report.pdf');
   };
 
+  const downloadTemplate = () => {
+    const templateHeader = [
+      ["Employee ID", "Full Name", "Gross Salary", "Employee Contrib", "Employer Contrib"],
+      ["EMP001", "John Doe", "20000", "25", "75"]
+    ];
+    const ws = XLSX.utils.aoa_to_sheet(templateHeader);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, "MLWF Template");
+    XLSX.writeFile(wb, "MLWF_Import_Template.xlsx");
+  };
+
   return (
     <AppLayout>
       <div className="space-y-6">
@@ -152,6 +171,9 @@ export default function MlwfPage() {
             <p className="text-slate-500 mt-1">Manage Maharashtra Labour Welfare Fund contributions and reports</p>
           </div>
           <div className="flex gap-2 items-end flex-wrap">
+            <Button variant="outline" onClick={downloadTemplate} className="gap-2">
+              <Download className="h-4 w-4" /> Download Template
+            </Button>
             <div className="flex flex-col gap-1">
               <label className="text-[10px] font-black uppercase text-slate-400 ml-1 tracking-widest">Period</label>
               <Select value={selectedPeriod} onValueChange={setSelectedPeriod}>

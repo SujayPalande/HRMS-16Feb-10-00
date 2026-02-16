@@ -196,6 +196,17 @@ export default function PfPage() {
     doc.save(`provident-fund-report-${selectedPeriod}-${selectedDate}.pdf`);
   };
 
+  const downloadTemplate = () => {
+    const templateHeader = [
+      ["Employee ID", "Full Name", "Basic Salary", "Employee Contrib (12%)", "Employer Contrib (12%)", "EDLI (0.5%)", "Admin Charges (0.5%)"],
+      ["EMP001", "John Doe", "15000", "1800", "1800", "75", "75"]
+    ];
+    const ws = XLSX.utils.aoa_to_sheet(templateHeader);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, "PF Template");
+    XLSX.writeFile(wb, "PF_Import_Template.xlsx");
+  };
+
   return (
     <AppLayout>
       <div className="space-y-6">
@@ -205,6 +216,9 @@ export default function PfPage() {
             <p className="text-slate-500 mt-1">Manage Provident Fund contributions and reports</p>
           </div>
           <div className="flex gap-2 items-end flex-wrap">
+            <Button variant="outline" onClick={downloadTemplate} className="gap-2">
+              <Download className="h-4 w-4" /> Download Template
+            </Button>
             <div className="flex flex-col gap-1">
               <label className="text-[10px] font-black uppercase text-slate-400 ml-1 tracking-widest">Period</label>
               <Select value={selectedPeriod} onValueChange={setSelectedPeriod}>

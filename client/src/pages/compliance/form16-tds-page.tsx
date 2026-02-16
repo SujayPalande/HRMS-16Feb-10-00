@@ -70,13 +70,18 @@ export default function Form16TdsPage() {
   const { data: payrollRecords = [] } = useQuery<any[]>({ queryKey: ["/api/payroll"] });
 
   const employeeTds = useMemo(() => {
+    const { startDate, endDate } = getReportPeriod();
     return employees
       .filter(emp => emp.isActive)
       .filter(emp => {
         const dept = departments.find(d => d.id === emp.departmentId);
         const matchesUnit = selectedUnit === 'all' || (dept && dept.unitId === parseInt(selectedUnit));
         const matchesDept = selectedDept === 'all' || emp.departmentId === parseInt(selectedDept);
-        return matchesUnit && matchesDept;
+        
+        const joinDate = emp.joinDate ? new Date(emp.joinDate) : null;
+        const isJoinedBeforeEnd = !joinDate || joinDate <= endDate;
+        
+        return matchesUnit && matchesDept && isJoinedBeforeEnd;
       })
       .map(emp => {
         const records = payrollRecords.filter(r => r.userId === emp.id);
@@ -96,7 +101,7 @@ export default function Form16TdsPage() {
           unitName: unit?.name || "Unassigned"
         };
       });
-  }, [employees, departments, units, payrollRecords, selectedUnit, selectedDept, statusMap]);
+  }, [employees, departments, units, payrollRecords, selectedUnit, selectedDept, statusMap, selectedPeriod, selectedDate]);
 
   const [basicForm16Data, setBasicForm16Data] = useState({
     employeeName: "",

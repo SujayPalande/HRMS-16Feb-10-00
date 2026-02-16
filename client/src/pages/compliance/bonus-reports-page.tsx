@@ -60,12 +60,22 @@ export default function BonusReportsPage() {
   });
 
   const hierarchicalBonusData = useMemo(() => {
+    const { startDate, endDate } = getReportPeriod();
     const data = filteredEmployees
       .filter(emp => emp.isActive && emp.salary && emp.salary > 0)
+      .filter(emp => {
+        const joinDate = emp.joinDate ? new Date(emp.joinDate) : null;
+        return !joinDate || joinDate <= endDate;
+      })
       .map(emp => {
-        const basicSalary = Math.round((emp.salary! / 12) * 0.5);
+        const monthlyCTC = emp.salary!;
+        const totalDaysInPeriod = Math.ceil((endDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24)) + 1;
+        const daysToConsider = Math.min(30, totalDaysInPeriod);
+        
+        const grossSalary = Math.round((monthlyCTC / 30) * daysToConsider);
+        const basicSalary = Math.round(grossSalary * 0.5);
         const bonusEligibleSalary = Math.min(basicSalary, 7000);
-        const bonusAmount = Math.round((bonusEligibleSalary * 8.33 / 100) * 12);
+        const bonusAmount = Math.round((bonusEligibleSalary * 8.33 / 100));
         
         const dept = departments.find(d => d.id === emp.departmentId);
         const unit = units.find(u => u.id === dept?.unitId);
@@ -87,7 +97,7 @@ export default function BonusReportsPage() {
       hierarchical[item.unitName][item.departmentName].push(item);
     });
     return hierarchical;
-  }, [filteredEmployees, departments, units]);
+  }, [filteredEmployees, departments, units, selectedPeriod, selectedDate]);
 
   const totalBonus = Object.values(hierarchicalBonusData)
     .flatMap(depts => Object.values(depts).flat())
