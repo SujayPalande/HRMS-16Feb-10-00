@@ -1,0 +1,87 @@
+Enhance the UI of the existing "Recommended Training Courses" section.
+STRICT RULE: 
+- Do NOT change logic, links, routing, or data.
+- Do NOT remove existing cards.
+- ONLY improve UI and visuals.
+
+================================================
+GOAL
+================================================
+Make course cards look modern, professional, and engaging
+using images, better layout, and hover effects.
+
+================================================
+1️⃣ COURSE CARD VISUAL DESIGN
+================================================
+
+For each course card:
+- Add a top thumbnail image (16:9 aspect ratio)
+- Image can be:
+  - Stock illustration
+  - Training / learning themed
+  - Platform logo background (YouTube / Udemy / Coursera)
+
+Structure:
+--------------------------------
+| [ Course Image Thumbnail ]   |
+| Course Title                 |
+| Short Description            |
+| Platform Badge               |
+| [ View Course Button ]       |
+--------------------------------
+
+================================================
+2️⃣ IMAGE HANDLING
+================================================
+
+- Use lightweight images (SVG / optimized JPG / PNG)
+- If no image exists, use:
+  - Gradient background
+  - Icon-based placeholder (📘 🎓 💼 🧠)
+
+Each category should have:
+- Employee Essentials → blue/green theme
+- HR Essentials → purple/orange theme
+
+================================================
+3️⃣ UI POLISH & INTERACTION
+================================================
+
+Add:
+- Soft shadow
+- Rounded corners
+- Hover effect:
+  - Slight lift (translateY)
+  - Shadow increase
+  - Button highlight
+
+Button:
+- Primary styled
+- Opens course in new tab (existing behavior)
+
+================================================
+4️⃣ GRID & RESPONSIVENESS
+================================================
+
+- Desktop: 3 cards per row
+- Tablet: 2 cards per row
+- Mobile: 1 card per row
+
+Maintain current spacing and alignment with dashboard theme.
+
+================================================
+5️⃣ DESIGN CONSISTENCY
+================================================
+
+- Use existing font, colors, spacing system
+- Match current HRMS card style
+- Do NOT alter sidebar, headers, or other modules
+
+================================================
+EXPECTED RESULT
+================================================
+
+- Same courses
+- Same links
+- Same functionality
+- Visually rich, modern training cards with images

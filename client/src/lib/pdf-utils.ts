@@ -1,0 +1,206 @@
+import jsPDF from "jspdf";
+import "jspdf-autotable";
+import { ASN_LOGO_BASE64 } from "./logo-data";
+
+// Type definition for autoTable extension to jsPDF
+export interface jsPDFWithAutoTable extends jsPDF {
+  autoTable: (options: any) => jsPDF;
+  lastAutoTable: {
+    finalY: number;
+  };
+}
+
+export const COMPANY_NAME = "ASN HR Consultancy & Services";
+export const COMPANY_TAGLINE = "Your Trusted HR Partner";
+export const COMPANY_ADDRESS = "401, 4th Floor, Empire Arcade, Beside AV Manis, Sakore Nagar, Viman Nagar, Pune-411014";
+export const COMPANY_WEBSITE = "www.asnhrconsultancy.com";
+export const HR_NAME = "Nikita Nagargoje";
+export const HR_DESIGNATION = "HR Manager";
+
+export interface PDFConfig {
+  title: string;
+  subtitle?: string;
+  showLogo?: boolean;
+  showWatermark?: boolean;
+  showSignature?: boolean;
+  showHeader?: boolean;
+  showFooter?: boolean;
+}
+
+const LOGIN_LOGO_URL = "/images/img.png";
+
+export async function addCompanyHeader(doc: jsPDF, config: PDFConfig = { title: "" }) {
+  const pageWidth = doc.internal.pageSize.getWidth();
+  
+  doc.setFillColor(166, 199, 199);
+  doc.rect(0, 0, pageWidth, 35, "F");
+  
+  doc.setFillColor(207, 69, 32);
+  doc.rect(0, 35, pageWidth, 3, "F");
+  
+  try {
+    doc.addImage(LOGIN_LOGO_URL, "PNG", 10, 5, 25, 25); 
+  } catch (e) {
+    try {
+      doc.addImage(ASN_LOGO_BASE64, "PNG", 10, 5, 40, 25);
+    } catch (e2) {
+      doc.setFontSize(16);
+      doc.setTextColor(207, 69, 32);
+      doc.setFont("helvetica", "bold");
+      doc.text("ASN", 15, 20);
+    }
+  }
+  
+  doc.setFontSize(14);
+  doc.setTextColor(0, 51, 102);
+  doc.setFont("helvetica", "bold");
+  doc.text(COMPANY_NAME, pageWidth - 15, 15, { align: "right" });
+  
+  doc.setFontSize(9);
+  doc.setTextColor(80, 80, 80);
+  doc.setFont("helvetica", "normal");
+  doc.text(COMPANY_TAGLINE, pageWidth - 15, 25, { align: "right" });
+  
+  doc.setTextColor(0, 0, 0);
+  
+  if (config.title) {
+    doc.setFontSize(16);
+    doc.setFont("helvetica", "bold");
+    doc.text(config.title, pageWidth / 2, 50, { align: "center" });
+    
+    if (config.subtitle) {
+      doc.setFontSize(10);
+      doc.setFont("helvetica", "normal");
+      doc.text(config.subtitle, pageWidth / 2, 58, { align: "center" });
+    }
+  }
+}
+
+export function addWatermark(doc: jsPDF) {
+  const pageWidth = doc.internal.pageSize.getWidth();
+  const pageHeight = doc.internal.pageSize.getHeight();
+  
+  doc.saveGraphicsState();
+  
+  try {
+    const logoWidth = 80;
+    const logoHeight = 50;
+    const centerX = (pageWidth - logoWidth) / 2;
+    const centerY = (pageHeight - logoHeight) / 2;
+    
+    // Use raw style for GState since the type might not be exposed correctly
+    (doc as any).setGState(new (doc as any).GState({ opacity: 0.08 }));
+    doc.addImage(ASN_LOGO_BASE64, "PNG", centerX, centerY, logoWidth, logoHeight);
+  } catch (e) {
+    doc.setTextColor(245, 245, 245);
+    doc.setFontSize(50);
+    doc.setFont("helvetica", "bold");
+    
+    const text = "ASN";
+    const textWidth = doc.getTextWidth(text);
+    
+    const centerX = pageWidth / 2;
+    const centerY = pageHeight / 2;
+    
+    doc.text(text, centerX - textWidth / 2 + 30, centerY + 15, {
+      angle: 45
+    });
+  }
+  
+  doc.restoreGraphicsState();
+  doc.setTextColor(0, 0, 0);
+}
+
+export function addHRSignature(doc: jsPDF, yPosition?: number) {
+  const pageHeight = doc.internal.pageSize.getHeight();
+  const y = yPosition || pageHeight - 50;
+  
+  doc.setDrawColor(0, 0, 0);
+  doc.line(20, y, 80, y);
+  
+  doc.setFontSize(10);
+  doc.setFont("helvetica", "normal");
+  doc.setTextColor(0, 0, 0);
+  doc.text("Authorized Signatory", 20, y + 8);
+  
+  doc.setFont("helvetica", "bold");
+  doc.text(HR_NAME, 20, y + 16);
+  
+  doc.setFont("helvetica", "normal");
+  doc.text(HR_DESIGNATION, 20, y + 24);
+  
+  doc.line(130, y, 190, y);
+  doc.text("Company Seal", 130, y + 8);
+}
+
+export function addFooter(doc: jsPDF) {
+  const pageWidth = doc.internal.pageSize.getWidth();
+  const pageHeight = doc.internal.pageSize.getHeight();
+  
+  doc.setFillColor(166, 199, 199);
+  doc.rect(0, pageHeight - 20, pageWidth, 20, "F");
+  
+  doc.setDrawColor(207, 69, 32);
+  doc.setLineWidth(0.5);
+  doc.line(0, pageHeight - 20, pageWidth, pageHeight - 20);
+  
+  doc.setFontSize(8);
+  doc.setTextColor(60, 60, 60);
+  doc.setFont("helvetica", "normal");
+  
+  doc.text(COMPANY_ADDRESS, pageWidth / 2, pageHeight - 12, { align: "center" });
+  doc.text(`Email: info@asnhrconsultancy.com | Website: ${COMPANY_WEBSITE}`, pageWidth / 2, pageHeight - 6, { align: "center" });
+}
+
+export function addDocumentDate(doc: jsPDF, date?: string, yPosition: number = 68) {
+  const pageWidth = doc.internal.pageSize.getWidth();
+  const currentDate = date || new Date().toLocaleDateString('en-IN', {
+    day: '2-digit',
+    month: 'long',
+    year: 'numeric'
+  });
+  
+  doc.setFontSize(10);
+  doc.setFont("helvetica", "normal");
+  doc.setTextColor(80, 80, 80);
+  doc.text(`Date: ${currentDate}`, pageWidth - 15, yPosition, { align: "right" });
+}
+
+export function addReferenceNumber(doc: jsPDF, refNumber: string, yPosition: number = 68) {
+  doc.setFontSize(10);
+  doc.setFont("helvetica", "normal");
+  doc.setTextColor(80, 80, 80);
+  doc.text(`Ref No: ${refNumber}`, 15, yPosition);
+}
+
+export function generateReferenceNumber(prefix: string = "CYB"): string {
+  const date = new Date();
+  const year = date.getFullYear().toString().slice(-2);
+  const month = (date.getMonth() + 1).toString().padStart(2, '0');
+  const random = Math.floor(Math.random() * 10000).toString().padStart(4, '0');
+  return `${prefix}/${year}${month}/${random}`;
+}
+
+export function initializePDF(config: PDFConfig): jsPDF {
+  const doc = new jsPDF();
+  
+  if (config.showWatermark !== false) {
+    addWatermark(doc);
+  }
+  
+  if (config.showHeader !== false) {
+    addCompanyHeader(doc, config);
+  }
+  
+  if (config.showFooter !== false) {
+    addFooter(doc);
+  }
+  
+  return doc;
+}
+
+export function finalizePDF(doc: jsPDF, config: PDFConfig, signatureY?: number) {
+  if (config.showSignature !== false) {
+    addHRSignature(doc, signatureY);
+  }
+}

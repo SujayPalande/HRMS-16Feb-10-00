@@ -1,0 +1,68 @@
+Example-1
+Mr. A, has a salary income of Rs. 10 lakhs. He has investment deductions under section 80C for Rs.1 lakhs and medical insurance premium paid of Rs. 30,000 for his self and family. The computation of taxable income and total tax payable under both the regimes is tabulated below:
+
+Particulars	New Regime	Old Regime
+Salary	10,00,000	10,00,000
+Less Standard Deduction:	75,000	50,000
+Gross Total income	9,25,000	9,50,000
+Deductions:
+Section 80C	Nil	1,00,000
+Section 80D: Insurance Premium	Nil	25,000
+Taxable Income	9,25,000	8,25,000
+Tax on Total Income	0	77,500
+Cess	 	3,100
+Total tax payable including Cess	0	80,600
+New regime proved to be beneficial, wholly attributable to increased rebate.
+
+Example-2
+Mr. A, has a salary income of Rs. 20 lakhs. He has investment deductions as follows:
+
+Investment deductions under section 80C - Rs.1 lakh
+Medical insurance premium paid of Rs. 30,000 for his self and family.
+Interest on home loan (self occupied property) - Rs. 2,00,000
+Donation to political party - Rs. 2,75,000
+ The computation of taxable income and total tax payable under both the regimes is tabulated below:
+Particulars	New Regime	Old Regime
+Salary	20,00,000	20,00,000
+Less Standard Deduction:	75,000	50,000
+Loss under House Property	Nil	2,00,000
+Gross Total income	19,25,000	17,50,000
+Deductions:
+Section 80C	Nil	1,00,000
+Section 80D: Insurance Premium	Nil	25,000
+Donation to political party	Nil	2,75,000
+Taxable Income	19,25,000	13,50,000
+Tax on Total Income	1,85,000	2,17,500
+Cess	7,400	8,700
+Total tax payable including Cess	1,92,400	2,26,200
+In the current example, the new tax regime proved to be more beneficial in spite of to high tax saving deductions, because of the relaxed slab rates.
+
+The Learning: Only a lot of tax saving deductions would make the old regime more beneficial
+
+Note: 
+
+Deduction amount more than the amount specified on column 2 is required to make the old regime the most beneficial. If the deduction amount is less than what is shown in column 2, new regime is the most beneficial.
+The income level here denotes the income net of standard deduction.
+The following table summarizes the level of deduction required to make the old regime the most beneficial for you. Please note that the income given here does not include any special tax income, and 
+
+Note: First column contains income levels and first row contains deduction amount. The above table applies only for FY 2025-2026.
+
+Gross Income	Exempt Allowance
+Up to Rs. 12 lakhs	0
+Rs. 13 lakhs	6,87,500 
+Rs. 14 lakhs	5,18,750
+Rs. 15 lakhs	5,43,750 
+Rs. 16 lakhs	5,68,750 
+Rs. 17 lakhs	6,08,330 
+Rs. 18 lakhs	6,41,670 
+Rs. 19 lakhs	6,75,000 
+Rs. 20 lakhs	7,08,330 
+Rs. 22 lakhs	7,54,170 
+Rs. 24 lakhs	7,87,500 
+Rs. 25 lakhs	8,00,000 
+Note: 
+
+Deduction amount more than the amount specified on column 2 is required to make the old regime the most beneficial. If the deduction amount is less than what is shown in column 2, new regime is the most beneficial.
+The income level here denotes the income net of standard deduction.
+The Better Tax Regime for Investors
+There are a lot of tax saving investments, including insurance schemes, equity, residential real estate and other traditional investments like deposits and retirement fund. If you are want to save taxes through investments, the old regime could be a very good choice for you.

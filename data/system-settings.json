@@ -1,0 +1,29 @@
+{
+  "organizationName": "HR Connect",
+  "organizationEmail": "admin@hrconnect.com",
+  "timeZone": "UTC",
+  "dateFormat": "MM/dd/yyyy",
+  "workingHours": {
+    "start": "09:00",
+    "end": "17:00"
+  },
+  "notifications": {
+    "email": true,
+    "push": false,
+    "attendance": true,
+    "leave": true
+  },
+  "systemLimits": {
+    "maxEmployees": 10,
+    "contactEmail": "support@hrconnect.com",
+    "contactPhone": "+1-555-0123",
+    "upgradeLink": "https://example.com/upgrade"
+  },
+  "salaryComponents": {
+    "basicSalaryPercentage": 50,
+    "hraPercentage": 30,
+    "epfPercentage": 12,
+    "esicPercentage": 0.75,
+    "professionalTax": 200
+  }
+}

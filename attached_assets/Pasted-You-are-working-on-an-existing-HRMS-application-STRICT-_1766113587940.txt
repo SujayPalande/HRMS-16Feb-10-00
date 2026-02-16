@@ -1,0 +1,93 @@
+You are working on an existing HRMS application.
+
+STRICT RULE:
+- Do NOT modify, remove, or refactor any existing feature, layout, data, or logic.
+- ONLY ADD a new Courses section.
+- Everything else must remain exactly as it is.
+
+================================================
+GOAL
+================================================
+Add a "Recommended Training Courses" section inside
+the Training & Development area.
+
+This section is meant for:
+- New Employees (basic onboarding knowledge)
+- HR users (HR fundamentals & compliance awareness)
+
+================================================
+1️⃣ COURSE CARDS SECTION
+================================================
+
+Add a new section BELOW existing content named:
+"Recommended Training Courses"
+
+Display courses as responsive cards.
+
+Each card must show:
+- Course title
+- Category (Employee / HR)
+- Short description
+- Source platform (Udemy / YouTube / OpenLearn / Coursera etc.)
+- "View Course" button or clickable card
+
+================================================
+2️⃣ COURSE CATEGORIES
+================================================
+
+Create two groups of cards:
+
+A) Employee Essentials
+- Company Workplace Ethics
+- Communication Skills
+- Time Management Basics
+- Introduction to Corporate Culture
+- Cybersecurity Awareness for Employees
+
+B) HR Essentials
+- HR Fundamentals
+- Employee Onboarding Process
+- Payroll & Attendance Basics
+- POSH Awareness
+- HR Compliance Basics (India)
+
+================================================
+3️⃣ REDIRECTION BEHAVIOR
+================================================
+
+When a card or button is clicked:
+- Open the course in a NEW TAB
+- Redirect to a FREE or OPEN learning resource such as:
+  - YouTube
+  - Udemy (free courses only)
+  - Coursera free modules
+  - OpenLearn
+  - Great Learning free courses
+
+Use real, publicly accessible URLs.
+
+================================================
+4️⃣ TECHNICAL CONSTRAINTS
+================================================
+
+- This section is READ-ONLY
+- No database changes required
+- Courses can be stored as a static list / config array
+- Do NOT connect this to approvals or requests
+
+================================================
+5️⃣ UI CONSTRAINTS
+================================================
+
+- Match existing design style (cards, spacing, fonts)
+- Do NOT change sidebar, navbar, or existing sections
+- Ensure mobile responsiveness
+
+================================================
+EXPECTED RESULT
+================================================
+
+- Existing Training Requests section remains unchanged
+- A new Courses section appears below it
+- Cards are clickable and redirect correctly
+- No existing functionality is affected

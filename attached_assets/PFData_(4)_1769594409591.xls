@@ -1,0 +1,23 @@
+<table cellspacing="0" cellpadding="4" border="0" id="pfgrid" style="color:#333333;font-family:Arial;font-size:X-Small;height:110px;width:391px;border-collapse:collapse;">
+	<tr style="color:White;background-color:#507CD1;font-weight:bold;">
+		<td>UAN</td><td>Name of the Employee</td><td>BirthDate</td><td>Date of Joining</td><td>GrossWages</td><td>PF WAGES</td><td>PF Contr</td><td>EMPLR PF</td><td>Pension Fund</td><td>NCP</td><td>MonthDays</td><td>WorkedDays</td>
+	</tr><tr style="background-color:#EFF3FB;">
+		<td>100097728780</td><td>AJINATH NAMDEO JANGLE</td><td>01/06/1990  </td><td>            </td><td>30000.00</td><td>15000.00</td><td>1800.00</td><td>550</td><td>1250</td><td>0.00</td><td>26</td><td>26.00</td>
+	</tr><tr style="background-color:White;">
+		<td>100119293252</td><td>BHASKAR GANPAT SHINDE</td><td>10/11/1969  </td><td>            </td><td>36000.00</td><td>15000.00</td><td>1800.00</td><td>550</td><td>1250</td><td>0.00</td><td>26</td><td>26.00</td>
+	</tr><tr style="background-color:#EFF3FB;">
+		<td>100199708021</td><td>KAMALAKAR SUKADEV SHINDE</td><td>12/04/1989  </td><td>            </td><td>43000.00</td><td>15000.00</td><td>1800.00</td><td>550</td><td>1250</td><td>0.00</td><td>26</td><td>26.00</td>
+	</tr><tr style="background-color:White;">
+		<td>100385178008</td><td>SUJATA VIJAY SHINDE</td><td>13/03/1982  </td><td>            </td><td>27500.00</td><td>13750.00</td><td>1650.00</td><td>505</td><td>1145</td><td>0.00</td><td>26</td><td>26.00</td>
+	</tr><tr style="background-color:#EFF3FB;">
+		<td>100813037216</td><td>VIJAY H. SHINDE</td><td>03/11/1974  </td><td>            </td><td>35000.00</td><td>15000.00</td><td>1800.00</td><td>550</td><td>1250</td><td>0.00</td><td>26</td><td>26.00</td>
+	</tr><tr style="background-color:White;">
+		<td>101250907796</td><td>KHAJAPPA GAUTAM GAJADHANE</td><td>14/08/1994  </td><td>            </td><td>21500.00</td><td>10750.00</td><td>1290.00</td><td>395</td><td>895</td><td>0.00</td><td>26</td><td>26.00</td>
+	</tr><tr style="background-color:#EFF3FB;">
+		<td>101261253957</td><td>RAMDATT KAILAS MHASKE</td><td>28/03/1996  </td><td>            </td><td>17000.00</td><td>8500.00</td><td>1020.00</td><td>312</td><td>708</td><td>0.00</td><td>26</td><td>26.00</td>
+	</tr><tr style="background-color:White;">
+		<td>101705153446</td><td>SANKET SUNIL MALI</td><td>28/03/1998  </td><td>            </td><td>25000.00</td><td>12500.00</td><td>1500.00</td><td>459</td><td>1041</td><td>0.00</td><td>26</td><td>26.00</td>
+	</tr><tr style="background-color:#EFF3FB;">
+		<td>102061998815</td><td>SACHIN GANAPATARAV TAVARE</td><td>01/06/1979  </td><td>            </td><td>18000.00</td><td>9000.00</td><td>1080.00</td><td>330</td><td>750</td><td>0.00</td><td>26</td><td>26.00</td>
+	</tr>
+</table>

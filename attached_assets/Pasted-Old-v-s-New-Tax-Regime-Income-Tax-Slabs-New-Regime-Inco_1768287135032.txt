@@ -1,0 +1,172 @@
+Old v/s New Tax Regime - Income Tax Slabs
+New Regime Income Tax Slabs FY 2025-26 (AY 2026-27) 
+The Budget 2025 introduced enhanced income tax slab rates under the new tax regime, thus increasing the basic exemption limit to Rs. 4 lakh and making income above Rs. 24 lakh to be taxed at 30%.
+
+The Income Tax slab rates under the new tax regime applicable for FY 2025-2026 are as follows:
+
+Income Tax Slabs	Tax Rates
+Up-to Rs. 4 lakhs	NIL
+Rs. 4 lakhs - Rs. 8 lakhs	5%
+Rs. 8 lakhs- Rs. 12 lakhs	10%
+Rs. 12 lakhs - Rs. 16 lakhs	15%
+Rs. 16 lakhs - Rs. 20 lakhs	20%
+Rs. 20 lakhs - Rs. 24 lakhs	25%
+Above Rs. 24 lakhs	30%
+Budget 2024 has increased the standard deduction under the new tax regime to Rs. 75,000. The family pension deduction has also been increased from Rs. 15,000 to Rs. 25,000. With the revised tax structure the taxpayer will save Rs.17,500.
+
+Income Tax Slabs Under Old Regime FY 2025-26 (AY 2026-27)
+The slab rates under the old regime has not changed for the recent financial years. The following slab rates are applicable for individuals aged below 60 years and non-residents.
+
+New Income Tax Slabs 	New Income Tax Rates
+Up to Rs. 2.5 Lakhs	Nil
+Rs. 2.5 Lakhs to Rs. 5 Lakhs	5%
+Rs. 5 Lakhs to Rs. 10 Lakhs	20%
+Above Rs. 10 Lakhs	30%
+Income Tax Slabs applicable for resident senior citizens aged between 60-80 under the old regime years are given below
+
+New Income Tax Slabs 	New Income Tax Rates
+Up to Rs. 3 Lakhs	Nil
+Rs. 3 Lakhs to Rs. 5 Lakhs	5%
+Rs. 5 Lakhs to Rs. 10 Lakhs	20%
+Above Rs. 10 Lakhs	30%
+For resident super senior citizens aged above 80 years, the basic exemption limit increases to Rs 5 lakhs.
+
+There is no separate slab benefit for senior citizens under the new tax regime.
+
+Old v/s New Tax Regime - Deductions and Exemptions
+There are numerous deductions available under the old regime, for which deductions are not available under the new regime. Let us understand how the new tax regime differs from the old regime based on deductions and exemptions.
+
+Rebate
+Basis of Differentiation	Old Tax Regime	New Tax Regime
+Persons Eligible for Rebate	Rebate is allowed only for resident individuals whose taxable income is within Rs. 5 lakhs.	Rebate is allowed only for resident individuals whose taxable income is within Rs. 12 lakhs.
+Maximum Rebate	Rs. 12,500 rebate is allowed.	Rs. 60,000 rebate is allowed.
+Marginal relief on rebate	Not allowed.	Not allowed.
+Standard Deduction
+Old Tax Regime	New Tax Regime
+Persons having salary income can claim a standard deduction of Rs. 50,000 under the old regime.	Persons having salary income can claim a standard deduction of Rs. 75,000 under the old regime.
+House Rent
+Basis of Differentiation	Old Tax Regime	New Tax Regime 
+House Rent Allowance Exemption u/s Section 10(13A) - for employees receiving HRA	Allowed, subject to limits prescribed 	Not available
+House Rent deduction u/s 80GG - for employees not receiving HRA and self employed taxpayers	Allowed, subject to limits prescribed	Not available
+Home Loan Interest
+Basis of Differentiation	Old Tax Regime	New Tax Regime
+Home Loan Interest on Self Occupied Property	Up to Rs. 2 lakh of deduction is allowed	No deduction is allowed
+Home Loan Interest on Let Out Property	Entire interest can be claimed as a deduction.	Entire interest can be claimed as a deduction.
+Additional interest under section 80EE	Up to Rs. 50,000 can be claimed as a additional deduction.	No deduction is allowed
+Additional interest under section 80EEA	Up to Rs. 1,50,000 can be claimed as a additional deduction.	No deduction is allowed
+Chapter VI-A Deductions
+Basis of Differentiation
+
+Old Tax Regime
+
+New Tax Regime
+
+Investment deductions u/s 80C
+
+Up to Rs. 1.5 lakhs can be claimed as a deduction.
+Popular investments are life insurance policy, ELSS, 5 years fixed deposits, etc.
+Not available
+
+Employer's Contribution to National Pension System (NPS)  - Section 80CCD(2)
+
+Up to 10% of basic pay allowed
+
+Up to 14% of basic pay allowed
+
+Employee's contribution to Pension Fund (NPS) - Section 80CCD(1)
+
+Allowed up to R. 1.5 lakh limit
+
+Not available
+
+Medical insurance premium under section 80D
+
+Up to Rs. 25,000 for self and family.
+Up to Rs. 25,000 for senior citizens.
+Up to Rs. 50,000 for senior citizens
+Not available
+
+Education loan deduction under section 80E
+
+Entire interest can be claimed as a deduction.
+
+Not available
+
+Section 80U - Disability
+
+Up to Rs. 1.25 lakhs deduction available
+
+Not available
+
+Donations to charitable institutions under section 80G
+
+Deduction available subject to limits prescribed
+
+Not available
+
+Donations to political parties u/s 80GGC
+
+Entire donation can be claimed as a deduction.
+
+Not available
+
+All contributions to Agniveer Corpus Fund - 80CCH
+
+Allowed
+
+Allowed
+
+Retirement Benefits
+Basis of Differentiation	Old Tax Regime	New Tax Regime
+Exemption on voluntary retirement 10(10C)
+
+Allowed	Allowed
+Exemption on gratuity u/s 10(10)
+
+Allowed	Allowed
+Exemption on Leave encashment u/s 10(10AA)
+
+Allowed	Allowed
+Other Deductions
+Basis of Differentiation	Old Tax Regime	New Tax Regime
+Leave Travel Allowance (LTA)
+
+Allowed within the limits prescribed	Not available
+Food allowance	Allowed Rs. 100 per day.	Not available
+Entertainment Allowance and Professional Tax
+
+Allowed	Not available
+Perquisites for official purposes
+
+Allowed	Allowed
+Deduction on Family Pension Income
+
+Max deduction of Rs. 15,000
+
+Max deduction of Rs. 25,000
+
+Gifts received up to Rs 50,000
+
+Allowed	Allowed
+Daily Allowance
+
+Allowed	Allowed
+Conveyance Allowance
+
+Allowed	Allowed
+Transport Allowance for a specially-abled person
+
+Allowed	Allowed
+Old v/s New Tax Regime - Other Differences
+The significant differences are already explained above. However, the following table describes other differences between the old and new regime in general.
+
+Form 10 IEA Requirements
+Basis of Differentiation	Old Tax Regime	New Tax Regime
+Default Regime	Not the default regime	Default tax regime
+Option to switch	Should choose every financial year. 	Not required as it is the default option.
+Option to switch to old regime for Business income earners	Taxpayers having business income should file Form 10-IEA within the due date.	Not required as it is the default option.
+Option of switching back to new regime	Taxpayers having business income should file Form 10-IEA within the due date.	Not Applicable
+ Other Differences
+Basis of Differentiation	Old Tax Regime	New Tax Regime
+Documentation	All the deductions applicable should be supported by valid proof documents.	Less documentation as compared to the old regime.
+Tax Planning Effort	Encourages making more investments, thereby systematic tax planning effort required.	Not much effort on tax planning is required.

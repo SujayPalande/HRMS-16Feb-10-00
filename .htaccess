@@ -1,0 +1,13 @@
+RewriteEngine On
+
+# Proxy API requests under /hrms/api/ to the local Node app (change port if needed)
+# NOTE: This requires mod_proxy/mod_proxy_http enabled on the server. If your
+# host disables these modules in .htaccess, ask hosting support to enable
+# proxying or configure the proxy in the server control panel.
+
+RewriteRule ^hrms/api/(.*)$ http://127.0.0.1:5000/hrms/api/$1 [P,L]
+ProxyPassReverse /hrms/api/ http://127.0.0.1:5000/hrms/api/
+
+# If you want Apache to serve the static files directly from public_html/hrms
+# leave the client files inside public_html/hrms. The server (Node) must still
+# be running for API endpoints.

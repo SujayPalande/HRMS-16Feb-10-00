@@ -1,0 +1,68 @@
+A. Payroll Components – Earnings
+Component	Description	Calculation / Formula	Example
+Basic Salary	Core salary for PF, Gratuity	Fixed % of Gross	₹12,000
+Dearness Allowance (DA)	Cost of living allowance	Fixed / % of Basic	₹2,000
+HRA	House Rent Allowance	40% / 50% of Basic	₹4,800
+Conveyance	Travel allowance	Fixed monthly	₹1,600
+Special Allowance	Balancing component	CTC – Other earnings	₹6,000
+Medical Allowance	Medical benefit	Fixed amount	₹1,250
+Overtime (OT)	Extra working hours pay	(Basic+DA)/26/8×2	₹1,340
+Bonus / Incentive	Statutory / performance	Min 8.33% of Basic	₹1,000
+Arrears	Past salary difference	Difference amount	₹2,500
+B. Payroll Components – Deductions
+Deduction	Applicability	Rate / Formula	Example
+Provident Fund (PF)	Basic ≤ ₹15,000	12% of Basic	₹1,440
+ESIC	Gross ≤ ₹21,000	0.75% (Emp)	₹135
+Professional Tax	State-wise	Slab based	₹200
+Income Tax (TDS)	Taxable income	Annual tax / 12	₹2,000
+Labour Welfare Fund	State-specific	Fixed	₹25
+Loan / Advance	If applicable	Installment based	₹2,000
+C. Payroll Calculation Summary (Sample)
+Description	Amount (₹)
+Gross Salary	30,000
+Total Deductions	3,640
+Net Pay (Take Home)	26,360
+D. Key Payroll Formulas (HRMS Logic)
+
+1. Gross Salary = Sum of All Earnings
+2. Employee PF = Basic × 12%
+3. Employer PF = Basic × 13%
+4. Employee ESIC = Gross × 0.75%
+5. Employer ESIC = Gross × 3.25%
+6. Net Salary = Gross – Total Deductions
+
+
+
+Employee Master (Payroll Base)
+Employee ID
+Name, Department, Designation
+Date of Joining
+Employment Type (Permanent / Contract / Consultant)
+Salary Structure
+Bank Details
+PAN, Aadhaar
+PF / ESIC / PT applicability
+UAN & ESIC Number
+________________________________________
+Salary Structure Components
+Earnings
+Basic Salary
+Dearness Allowance (DA)
+House Rent Allowance (HRA)
+Conveyance Allowance
+Special Allowance
+Medical Allowance
+Bonus / Incentives
+Overtime (OT)
+Arrears
+Performance Pay
+Deductions
+Provident Fund (PF – Employee & Employer)
+ESIC (Employee & Employer)
+Professional Tax (PT – State-wise)
+Income Tax (TDS)
+Loan / Advance Recovery
+LWF (Labour Welfare Fund)
+Salary Advance
+Other Deductions
+

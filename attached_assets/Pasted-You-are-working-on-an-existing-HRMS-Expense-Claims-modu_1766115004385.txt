@@ -1,0 +1,104 @@
+You are working on an existing HRMS Expense Claims module.
+
+STRICT RULES:
+- Do NOT remove or modify existing Expense Claims UI, table, or actions.
+- Do NOT break current approval functionality.
+- ONLY ADD an approval workflow layer on top of existing logic.
+
+================================================
+GOAL
+================================================
+Add a rule-based multi-level approval flow for expense claims
+based on predefined criteria such as claim amount.
+
+================================================
+1️⃣ APPROVAL FLOW RULES
+================================================
+
+Introduce approval levels based on expense amount:
+
+Example rules:
+- If amount ≤ ₹10,000
+  → Approval required: Reporting Manager only
+
+- If amount > ₹10,000 and ≤ ₹25,000
+  → Approval required:
+     1. Reporting Manager
+     2. Manager’s Senior / Department Head
+
+- If amount > ₹25,000
+  → Approval required:
+     1. Reporting Manager
+     2. Department Head
+     3. Finance / Admin
+
+These rules must be configurable in code (easy to adjust later).
+
+================================================
+2️⃣ DATA MODEL (NON-DESTRUCTIVE)
+================================================
+
+Extend expense claim data with:
+- approvalLevel (number)
+- currentApprovalStep (number)
+- approvalStatus per level (Pending / Approved / Rejected)
+- approvedBy (role or user)
+
+Do NOT alter existing fields.
+
+================================================
+3️⃣ APPROVAL ACTION BEHAVIOR
+================================================
+
+When "Approve" is clicked:
+- If more approvals are required:
+  → Move claim to next approval level
+  → Status remains "Pending"
+- If final level approved:
+  → Status becomes "Approved"
+
+When "Reject" is clicked:
+- Immediately mark claim as "Rejected"
+- Stop further approvals
+
+================================================
+4️⃣ ROLE-BASED VISIBILITY
+================================================
+
+Approval buttons should appear ONLY if:
+- Logged-in user matches the current approval role
+  (Manager / Senior Manager / Finance)
+
+Other users can only view status.
+
+================================================
+5️⃣ UI ENHANCEMENT (MINIMAL)
+================================================
+
+Add a small "Approval Flow" indicator:
+- Example:
+  Manager ✔ → Senior Manager ⏳ → Finance ⏳
+
+This can be:
+- Tooltip
+- Inline text
+- Small step indicator
+
+Do NOT redesign the table.
+
+================================================
+6️⃣ SECURITY RULES
+================================================
+
+- Users cannot approve their own expense
+- Backend must validate approval authority
+- Approval order must not be bypassed
+
+================================================
+EXPECTED RESULT
+================================================
+
+- Existing Expense Claims page remains unchanged
+- Approval automatically routes to next authority based on amount
+- Status updates correctly at each stage
+- Enterprise-grade approval flow is achieved
