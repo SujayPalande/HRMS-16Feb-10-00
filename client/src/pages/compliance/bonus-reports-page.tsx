@@ -4,7 +4,11 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Download, Gift, FileSpreadsheet, Building2, Search, Calendar, Users, TrendingUp } from "lucide-react";
+import { exportToExcel, exportToTxt } from "@/lib/export-utils";
+import jsPDF from "jspdf";
+import autoTable from "jspdf-autotable";
+import { addCompanyHeader, addWatermark, addHRSignature, addFooter, addDocumentDate, generateReferenceNumber, addReferenceNumber } from "@/lib/pdf-utils";
+import { Download, Gift, FileSpreadsheet, FileText, FileDown, Building2, Search, Calendar, Users, TrendingUp } from "lucide-react";
 import { motion } from "framer-motion";
 import { useQuery } from "@tanstack/react-query";
 import { User, Department, Unit } from "@shared/schema";
@@ -112,11 +116,70 @@ export default function BonusReportsPage() {
 
   const exportToExcel = () => {
     const flatData = Object.values(hierarchicalBonusData).flatMap(depts => Object.values(depts).flat());
-    const ws = XLSX.utils.json_to_sheet(flatData);
-    const wb = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(wb, ws, "Bonus Data");
-    XLSX.writeFile(wb, "bonus-report.xlsx");
+    const dataForExport = flatData.map(item => ({
+      "Emp ID": item.employeeId,
+      "Name": item.name,
+      "Designation": item.designation,
+      "Annual Bonus": item.annualBonus,
+      "Department": item.departmentName,
+      "Unit": item.unitName
+    }));
+    XLSX.utils.json_to_sheet(dataForExport); // Keep for original functionality if needed
+    
+    // Using helper
+    import("@/lib/export-utils").then(module => {
+      module.exportToExcel(dataForExport, `Bonus_Report_${selectedDate}`);
+    });
     toast({ title: "Bonus Report Exported", description: "Excel file generated." });
+  };
+
+  const handleExportTxt = () => {
+    const flatData = Object.values(hierarchicalBonusData).flatMap(depts => Object.values(depts).flat());
+    const dataForExport = flatData.map(item => ({
+      "Emp ID": item.employeeId,
+      "Name": item.name,
+      "Designation": item.designation,
+      "Annual Bonus": item.annualBonus,
+      "Department": item.departmentName,
+      "Unit": item.unitName
+    }));
+    exportToTxt(dataForExport, `Bonus_Report_${selectedDate}`, "Bonus Report");
+    toast({ title: "Export Successful", description: "Text report has been downloaded." });
+  };
+
+  const generateReport = () => {
+    const doc = new jsPDF();
+    addWatermark(doc);
+    addCompanyHeader(doc, { 
+      title: "BONUS REPORT", 
+      subtitle: `Period: ${selectedPeriod.toUpperCase()} (${startDate.toLocaleDateString()} - ${endDate.toLocaleDateString()})` 
+    });
+    addFooter(doc);
+    const refNumber = generateReferenceNumber("BON");
+    addReferenceNumber(doc, refNumber, 68);
+    addDocumentDate(doc, undefined, 68);
+    
+    const tableBody = Object.values(hierarchicalBonusData).flatMap(depts => 
+      Object.values(depts).flat()
+    ).map(row => [
+      row.employeeId,
+      row.name,
+      row.designation,
+      `Rs. ${row.annualBonus.toLocaleString()}`,
+      row.departmentName,
+      row.unitName
+    ]);
+
+    autoTable(doc, {
+      startY: 80,
+      head: [['Emp ID', 'Name', 'Designation', 'Bonus Amount', 'Department', 'Unit']],
+      body: tableBody,
+      theme: 'striped',
+      headStyles: { fillColor: [0, 150, 136] },
+    });
+    
+    addHRSignature(doc, (doc as any).lastAutoTable.finalY + 20);
+    doc.save(`bonus-report-${selectedPeriod}-${selectedDate}.pdf`);
   };
 
   return (
@@ -212,8 +275,14 @@ export default function BonusReportsPage() {
                 />
               )}
             </div>
-            <Button className="gap-2" onClick={exportToExcel} data-testid="button-export-excel">
-              <FileSpreadsheet className="h-4 w-4" /> Export Excel
+            <Button variant="outline" className="gap-2" onClick={exportToExcel} data-testid="button-export-excel">
+              <FileSpreadsheet className="h-4 w-4" /> Excel
+            </Button>
+            <Button variant="outline" className="gap-2" onClick={handleExportTxt} data-testid="button-export-txt">
+              <FileText className="h-4 w-4" /> Text
+            </Button>
+            <Button className="gap-2" onClick={generateReport} data-testid="button-generate-report">
+              <FileDown className="h-4 w-4" /> PDF
             </Button>
           </div>
         </motion.div>

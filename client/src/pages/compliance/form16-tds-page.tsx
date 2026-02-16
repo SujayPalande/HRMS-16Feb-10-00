@@ -13,7 +13,8 @@ import {
   DialogTitle,
   DialogFooter,
 } from "@/components/ui/dialog";
-import { FileText, Download, Search, Calendar, IndianRupee, CheckCircle, Clock, AlertCircle, Loader2, Plus, FilePlus } from "lucide-react";
+import { exportToExcel, exportToTxt } from "@/lib/export-utils";
+import { FileSpreadsheet, FileText, FileDown, FileText as FileIcon, FileText as FileTDS, FileText as Form16Icon, FileText as TDSIcon, Download, Search, Calendar, IndianRupee, CheckCircle, Clock, AlertCircle, Loader2, Plus, FilePlus } from "lucide-react";
 import { motion } from "framer-motion";
 import { useState, useMemo } from "react";
 import { useToast } from "@/hooks/use-toast";
@@ -361,6 +362,34 @@ export default function Form16TdsPage() {
     doc.save(`Form16_${basicForm16Data.employeeName.replace(/\s+/g, '_')}_${basicForm16Data.assessmentYear}.pdf`);
   };
 
+  const handleExportExcel = () => {
+    const dataForExport = filteredEmployees.map(emp => ({
+      "Employee": emp.employee,
+      "PAN": emp.pan,
+      "Total Income": emp.totalIncome,
+      "TDS Deducted": emp.tdsDeducted,
+      "Form 16 Status": emp.form16,
+      "Department": emp.departmentName,
+      "Unit": emp.unitName
+    }));
+    exportToExcel(dataForExport, `Form16_TDS_Report_${selectedDate}`);
+    toast({ title: "Export Successful", description: "Excel report has been downloaded." });
+  };
+
+  const handleExportTxt = () => {
+    const dataForExport = filteredEmployees.map(emp => ({
+      "Employee": emp.employee,
+      "PAN": emp.pan,
+      "Total Income": emp.totalIncome,
+      "TDS Deducted": emp.tdsDeducted,
+      "Form 16 Status": emp.form16,
+      "Department": emp.departmentName,
+      "Unit": emp.unitName
+    }));
+    exportToTxt(dataForExport, `Form16_TDS_Report_${selectedDate}`, "Form 16 & TDS Report");
+    toast({ title: "Export Successful", description: "Text report has been downloaded." });
+  };
+
   const handleGenerateForm16 = async (index: number) => {
     setGeneratingIndex(index);
     await new Promise(resolve => setTimeout(resolve, 1000));
@@ -583,6 +612,20 @@ export default function Form16TdsPage() {
                 </SelectContent>
               </Select>
             </div>
+            <Button 
+              variant="outline"
+              className="gap-2" 
+              onClick={handleExportExcel}
+            >
+              <FileSpreadsheet className="h-4 w-4" /> Excel
+            </Button>
+            <Button 
+              variant="outline"
+              className="gap-2" 
+              onClick={handleExportTxt}
+            >
+              <FileText className="h-4 w-4" /> Text
+            </Button>
             <Button 
               variant="outline"
               className="gap-2" 

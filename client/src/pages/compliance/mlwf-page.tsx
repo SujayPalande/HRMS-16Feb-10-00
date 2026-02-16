@@ -6,7 +6,8 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Download, Upload, Shield, Building2, Users, Calendar } from "lucide-react";
+import { exportToExcel, exportToTxt } from "@/lib/export-utils";
+import { FileSpreadsheet, FileText, Download, Upload, Shield, Building2, Users, Calendar } from "lucide-react";
 import { motion } from "framer-motion";
 import { useState, useMemo } from "react";
 import { useToast } from "@/hooks/use-toast";
@@ -152,6 +153,18 @@ export default function MlwfPage() {
     doc.save('maharashtra-labour-welfare-fund-report.pdf');
   };
 
+  const handleExportExcel = () => {
+    const flatData = Object.values(hierarchicalData).flatMap(depts => Object.values(depts).flat());
+    exportToExcel(flatData, `MLWF_Report_${selectedDate}`);
+    toast({ title: "Export Successful", description: "Excel report has been downloaded." });
+  };
+
+  const handleExportTxt = () => {
+    const flatData = Object.values(hierarchicalData).flatMap(depts => Object.values(depts).flat());
+    exportToTxt(flatData, `MLWF_Report_${selectedDate}`, "MLWF Report");
+    toast({ title: "Export Successful", description: "Text report has been downloaded." });
+  };
+
   const downloadTemplate = () => {
     const templateHeader = [
       ["Employee ID", "Full Name", "Gross Salary", "Employee Contrib", "Employer Contrib"],
@@ -173,7 +186,13 @@ export default function MlwfPage() {
           </div>
           <div className="flex gap-2 items-end flex-wrap">
             <Button variant="outline" onClick={downloadTemplate} className="gap-2">
-              <Download className="h-4 w-4" /> Download Template
+              <Download className="h-4 w-4" /> Template
+            </Button>
+            <Button variant="outline" className="gap-2" onClick={handleExportExcel}>
+              <FileSpreadsheet className="h-4 w-4" /> Excel
+            </Button>
+            <Button variant="outline" className="gap-2" onClick={handleExportTxt}>
+              <FileText className="h-4 w-4" /> Text
             </Button>
             <div className="flex flex-col gap-1">
               <label className="text-[10px] font-black uppercase text-slate-400 ml-1 tracking-widest">Period</label>
