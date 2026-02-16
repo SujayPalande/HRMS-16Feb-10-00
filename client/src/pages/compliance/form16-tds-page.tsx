@@ -470,9 +470,9 @@ export default function Form16TdsPage() {
           </div>
           <div className="flex flex-wrap gap-2 items-end">
             <div className="flex flex-col gap-1">
-              <label className="text-[10px] font-bold uppercase text-slate-400 ml-1">Period</label>
+              <label className="text-[10px] font-black uppercase text-slate-400 ml-1 tracking-widest">Period</label>
               <Select value={selectedPeriod} onValueChange={setSelectedPeriod}>
-                <SelectTrigger className="w-32 h-9">
+                <SelectTrigger className="w-32 h-9 font-bold shadow-sm">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
@@ -484,26 +484,58 @@ export default function Form16TdsPage() {
               </Select>
             </div>
             <div className="flex flex-col gap-1">
-              <label className="text-[10px] font-bold uppercase text-slate-400 ml-1">Selection</label>
-              <Input
-                type={selectedPeriod === 'year' ? 'number' : 'date'}
-                max={selectedPeriod === 'year' ? new Date().getFullYear() : new Date().toISOString().split('T')[0]}
-                value={selectedPeriod === 'year' ? new Date(selectedDate).getFullYear() : selectedDate}
-                onChange={(e) => {
-                  const val = e.target.value;
-                  if (selectedPeriod === 'year') {
-                    const year = parseInt(val);
-                    const currentYear = new Date().getFullYear();
-                    if (year > currentYear) return;
+              <label className="text-[10px] font-black uppercase text-slate-400 ml-1 tracking-widest">Selection</label>
+              {selectedPeriod === 'year' ? (
+                <Select 
+                  value={String(new Date(selectedDate).getFullYear())} 
+                  onValueChange={(v) => {
                     const d = new Date(selectedDate);
-                    d.setFullYear(year);
+                    d.setFullYear(parseInt(v));
                     setSelectedDate(d.toISOString().split('T')[0]);
-                  } else {
-                    setSelectedDate(val);
-                  }
-                }}
-                className="h-9 w-40"
-              />
+                  }}
+                >
+                  <SelectTrigger className="h-9 w-40 font-bold shadow-sm">
+                    <Calendar className="h-4 w-4 mr-2 text-teal-600" />
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {Array.from({ length: 11 }, (_, i) => new Date().getFullYear() - 10 + i)
+                      .filter(year => year <= new Date().getFullYear())
+                      .map(year => (
+                        <SelectItem key={year} value={String(year)}>{year}</SelectItem>
+                      ))
+                    }
+                  </SelectContent>
+                </Select>
+              ) : selectedPeriod === 'week' ? (
+                <Input
+                  type="week"
+                  value={selectedDate ? (() => {
+                    const d = new Date(selectedDate);
+                    const year = d.getFullYear();
+                    const oneJan = new Date(year, 0, 1);
+                    const numberOfDays = Math.floor((d.getTime() - oneJan.getTime()) / (24 * 60 * 60 * 1000));
+                    const result = Math.ceil((d.getDay() + 1 + numberOfDays) / 7);
+                    return `${year}-W${String(result).padStart(2, '0')}`;
+                  })() : ""}
+                  onChange={(e) => {
+                    if (!e.target.value) return;
+                    const [year, week] = e.target.value.split('-W');
+                    const d = new Date(parseInt(year), 0, 1);
+                    d.setDate(d.getDate() + (parseInt(week) - 1) * 7);
+                    setSelectedDate(d.toISOString().split('T')[0]);
+                  }}
+                  className="h-9 w-40 font-bold shadow-sm"
+                />
+              ) : (
+                <Input
+                  type="date"
+                  value={selectedDate}
+                  onChange={(e) => setSelectedDate(e.target.value)}
+                  max={new Date().toISOString().split('T')[0]}
+                  className="h-9 w-40 font-bold shadow-sm"
+                />
+              )}
             </div>
             <div className="w-40">
               <Select value={selectedUnit} onValueChange={setSelectedUnit}>

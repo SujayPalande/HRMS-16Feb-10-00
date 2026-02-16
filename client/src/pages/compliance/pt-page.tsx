@@ -5,7 +5,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Download, Upload, Calculator, Building2, Users } from "lucide-react";
+import { Download, Upload, Calculator, Building2, Users, Calendar } from "lucide-react";
 import { motion } from "framer-motion";
 import { useState, useMemo } from "react";
 import { useToast } from "@/hooks/use-toast";
@@ -150,9 +150,9 @@ export default function PtPage() {
           </div>
           <div className="flex gap-2 items-end flex-wrap">
             <div className="flex flex-col gap-1">
-              <label className="text-[10px] font-bold uppercase text-slate-400 ml-1">Period</label>
+              <label className="text-[10px] font-black uppercase text-slate-400 ml-1 tracking-widest">Period</label>
               <Select value={selectedPeriod} onValueChange={setSelectedPeriod}>
-                <SelectTrigger className="w-32 h-9">
+                <SelectTrigger className="w-32 h-9 font-bold shadow-sm">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
@@ -164,7 +164,7 @@ export default function PtPage() {
               </Select>
             </div>
             <div className="flex flex-col gap-1">
-              <label className="text-[10px] font-bold uppercase text-slate-400 ml-1">Selection</label>
+              <label className="text-[10px] font-black uppercase text-slate-400 ml-1 tracking-widest">Selection</label>
               {selectedPeriod === 'year' ? (
                 <Select 
                   value={String(new Date(selectedDate).getFullYear())} 
@@ -174,7 +174,8 @@ export default function PtPage() {
                     setSelectedDate(d.toISOString().split('T')[0]);
                   }}
                 >
-                  <SelectTrigger className="h-9 w-40">
+                  <SelectTrigger className="h-9 w-40 font-bold shadow-sm">
+                    <Calendar className="h-4 w-4 mr-2 text-teal-600" />
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
@@ -186,13 +187,33 @@ export default function PtPage() {
                     }
                   </SelectContent>
                 </Select>
+              ) : selectedPeriod === 'week' ? (
+                <Input
+                  type="week"
+                  value={selectedDate ? (() => {
+                    const d = new Date(selectedDate);
+                    const year = d.getFullYear();
+                    const oneJan = new Date(year, 0, 1);
+                    const numberOfDays = Math.floor((d.getTime() - oneJan.getTime()) / (24 * 60 * 60 * 1000));
+                    const result = Math.ceil((d.getDay() + 1 + numberOfDays) / 7);
+                    return `${year}-W${String(result).padStart(2, '0')}`;
+                  })() : ""}
+                  onChange={(e) => {
+                    if (!e.target.value) return;
+                    const [year, week] = e.target.value.split('-W');
+                    const d = new Date(parseInt(year), 0, 1);
+                    d.setDate(d.getDate() + (parseInt(week) - 1) * 7);
+                    setSelectedDate(d.toISOString().split('T')[0]);
+                  }}
+                  className="h-9 w-40 font-bold shadow-sm"
+                />
               ) : (
                 <Input
                   type="date"
                   value={selectedDate}
                   onChange={(e) => setSelectedDate(e.target.value)}
                   max={new Date().toISOString().split('T')[0]}
-                  className="h-9 w-40"
+                  className="h-9 w-40 font-bold shadow-sm"
                 />
               )}
             </div>
