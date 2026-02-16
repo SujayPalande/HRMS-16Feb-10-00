@@ -643,7 +643,187 @@ export default function MusterRollCombinedPage() {
   };
 
   const handlePrint = () => {
-    window.print();
+    const printWindow = window.open('', '_blank');
+    if (!printWindow) return;
+
+    if (activeForm === "form-ii") {
+      const monthName = months.find(m => m.value === selectedMonth)?.label || "";
+      const html = `
+        <html>
+          <head>
+            <title>Form II - Muster Roll - ${monthName} ${selectedYear}</title>
+            <style>
+              @page { size: A3 landscape; margin: 10mm; }
+              body { font-family: sans-serif; font-size: 10px; color: #333; }
+              table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+              th, td { border: 1px solid #999; padding: 4px; text-align: center; }
+              th { background-color: #f3f4f6; font-weight: bold; }
+              .header { text-align: center; margin-bottom: 20px; }
+              .info-grid { display: grid; grid-template-cols: 1fr 1fr; margin-bottom: 10px; }
+              .text-left { text-align: left; }
+              .text-right { text-align: right; }
+            </style>
+          </head>
+          <body>
+            <div class="header">
+              <h1 style="margin: 0;">Form II - Muster Roll cum Wage Register</h1>
+              <p style="margin: 2px;">[See Rule 27(1)]</p>
+            </div>
+            <div class="info-grid">
+              <div class="text-left">
+                <p><strong>Name of the Establishment:</strong> ${establishmentName}</p>
+                <p><strong>Name of the Employer:</strong> ${employerName}</p>
+              </div>
+              <div class="text-right">
+                <p><strong>For the month of:</strong> ${monthName} ${selectedYear}</p>
+              </div>
+            </div>
+            <table>
+              <thead>
+                <tr>
+                  <th rowspan="2">Sl No</th>
+                  <th rowspan="2">Full name of employee</th>
+                  <th rowspan="2">Age/Sex</th>
+                  <th rowspan="2">Designation</th>
+                  <th colspan="${daysInMonth}">Attendance</th>
+                  <th rowspan="2">Total Days</th>
+                  <th rowspan="2">Basic Wages</th>
+                  <th rowspan="2">HRA</th>
+                  <th rowspan="2">OT Pay</th>
+                  <th rowspan="2">Gross</th>
+                  <th rowspan="2">Net</th>
+                </tr>
+                <tr>
+                  ${Array.from({ length: daysInMonth }, (_, i) => `<th>${i + 1}</th>`).join('')}
+                </tr>
+              </thead>
+              <tbody>
+                ${filteredEmployees.map((emp, index) => {
+                  const data = calculateEmployeeData(emp);
+                  return `
+                    <tr>
+                      <td>${index + 1}</td>
+                      <td class="text-left">${emp.firstName} ${emp.lastName}</td>
+                      <td>${calculateEmployeeData(emp).totalDaysWorked ? '30/M' : '-'}</td>
+                      <td>${emp.position || '-'}</td>
+                      ${Array.from({ length: daysInMonth }, (_, i) => `<td>${getAttendanceForDay(emp.id, i + 1)}</td>`).join('')}
+                      <td>${data.totalDaysWorked}</td>
+                      <td>${data.normalWages}</td>
+                      <td>${data.hraPayable}</td>
+                      <td>${data.overtimePayable}</td>
+                      <td>${data.grossWages}</td>
+                      <td>${data.netWages}</td>
+                    </tr>
+                  `;
+                }).join('')}
+              </tbody>
+            </table>
+            <script>
+              window.onload = () => {
+                window.print();
+                window.onafterprint = () => window.close();
+              };
+            </script>
+          </body>
+        </html>
+      `;
+      printWindow.document.write(html);
+      printWindow.document.close();
+    } else {
+      const html = `
+        <html>
+          <head>
+            <title>FORM 20 - Register of leave with wages - ${selectedYear}</title>
+            <style>
+              @page { size: A3 landscape; margin: 10mm; }
+              body { font-family: sans-serif; font-size: 10px; color: #333; }
+              table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+              th, td { border: 1px solid #999; padding: 4px; text-align: center; }
+              th { background-color: #f3f4f6; font-weight: bold; }
+              .header { text-align: center; margin-bottom: 20px; }
+              .info-grid { display: grid; grid-template-cols: 1fr 1fr; margin-bottom: 10px; }
+              .text-left { text-align: left; }
+              .text-right { text-align: right; }
+            </style>
+          </head>
+          <body>
+            <div class="header">
+              <p style="margin: 0;">The Maharashtra Factories Rules</p>
+              <h1 style="margin: 0;">FORM 20</h1>
+              <p style="margin: 2px;">(See Rules 105 and 106)</p>
+              <p style="margin: 0;">Register of leave with wages</p>
+            </div>
+            <div class="info-grid">
+              <div class="text-left">
+                <p><strong>Factory:</strong> ${factoryName}</p>
+                <p><strong>Department:</strong> ${departmentName}</p>
+              </div>
+              <div class="text-right">
+                <p><strong>Part I - Adults</strong></p>
+                <p><strong>Financial Year:</strong> ${selectedYear}-${selectedYear + 1}</p>
+              </div>
+            </div>
+            <table>
+              <thead>
+                <tr>
+                  <th rowspan="2">Sr. No.</th>
+                  <th rowspan="2">Emp ID</th>
+                  <th rowspan="2">Name</th>
+                  <th rowspan="2">DOJ</th>
+                  <th colspan="4">Number of days during calendar year</th>
+                  <th rowspan="2">Total</th>
+                  <th colspan="3">Leave with wages to credit</th>
+                  <th rowspan="2">Daily Rate</th>
+                  <th rowspan="2">Leave Wages</th>
+                  <th rowspan="2">Remarks</th>
+                </tr>
+                <tr>
+                  <th>Days Worked</th>
+                  <th>Lay-off</th>
+                  <th>Maternity</th>
+                  <th>Leave Enjoyed</th>
+                  <th>Previous Balance</th>
+                  <th>Earned</th>
+                  <th>Balance</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${filteredEmployees.map((emp, index) => {
+                  const data = calculateLeaveData(emp);
+                  return `
+                    <tr>
+                      <td>${index + 1}</td>
+                      <td>${emp.employeeId || '-'}</td>
+                      <td class="text-left">${emp.firstName} ${emp.lastName}</td>
+                      <td>${emp.joinDate ? new Date(emp.joinDate).toLocaleDateString() : '-'}</td>
+                      <td>${data.daysWorked}</td>
+                      <td>${data.layOffDays}</td>
+                      <td>${data.maternityLeave}</td>
+                      <td>${data.leaveEnjoyed}</td>
+                      <td>${data.totalDays}</td>
+                      <td>${data.previousBalance}</td>
+                      <td>${data.earnedLeave}</td>
+                      <td>${data.balanceLeave}</td>
+                      <td>${data.dailyRate}</td>
+                      <td>${data.leaveWages}</td>
+                      <td>-</td>
+                    </tr>
+                  `;
+                }).join('')}
+              </tbody>
+            </table>
+            <script>
+              window.onload = () => {
+                window.print();
+                window.onafterprint = () => window.close();
+              };
+            </script>
+          </body>
+        </html>
+      `;
+      printWindow.document.write(html);
+      printWindow.document.close();
+    }
   };
 
   return (
@@ -688,6 +868,56 @@ export default function MusterRollCombinedPage() {
                 </p>
               </div>
               <div className="flex flex-wrap gap-2">
+                <Input
+                  type="file"
+                  id="import-file"
+                  className="hidden"
+                  accept=".xlsx, .xls, .csv"
+                  onChange={async (e) => {
+                    const file = e.target.files?.[0];
+                    if (!file) return;
+
+                    const reader = new FileReader();
+                    reader.onload = async (evt) => {
+                      try {
+                        const bstr = evt.target?.result;
+                        const wb = XLSX.read(bstr, { type: 'binary' });
+                        const wsname = wb.SheetNames[0];
+                        const ws = wb.Sheets[wsname];
+                        const data = XLSX.utils.sheet_to_json(ws);
+
+                        const endpoint = activeForm === "form-ii" 
+                          ? "/api/attendance/bulk" 
+                          : "/api/leave-requests/bulk";
+
+                        const res = await apiRequest("POST", endpoint, { records: data });
+                        const result = await res.json();
+                        
+                        toast({ 
+                          title: "Import Successful", 
+                          description: `Processed ${result.results.success} records successfully.` 
+                        });
+                        queryClient.invalidateQueries({ queryKey: [activeForm === "form-ii" ? "/api/attendance" : "/api/leave-requests"] });
+                      } catch (error) {
+                        console.error("Import failed:", error);
+                        toast({ 
+                          title: "Import Failed", 
+                          description: "Check file format and try again.",
+                          variant: "destructive"
+                        });
+                      }
+                    };
+                    reader.readAsBinaryString(file);
+                  }}
+                />
+                <Button 
+                  variant="outline" 
+                  onClick={() => document.getElementById('import-file')?.click()}
+                  data-testid="button-import-data"
+                >
+                  <Upload className="h-4 w-4 mr-2" />
+                  Import Data
+                </Button>
                 <Button variant="outline" onClick={downloadTemplate} data-testid="button-download-template">
                   <Download className="h-4 w-4 mr-2" />
                   Download Template
