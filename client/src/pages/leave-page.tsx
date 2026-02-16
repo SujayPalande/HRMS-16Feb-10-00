@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { useToast } from "@/hooks/use-toast";
 import { AppLayout } from "@/components/layout/app-layout";
@@ -50,6 +50,7 @@ import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { useAuth } from "@/hooks/use-auth";
+import { useLocation } from "wouter";
 import { format, eachDayOfInterval, isWeekend, subMonths, startOfMonth, endOfMonth } from "date-fns";
 import { Card, CardContent } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -69,7 +70,8 @@ import { cn } from "@/lib/utils";
 
 export default function LeavePage() {
   const { toast } = useToast();
-  const { user } = useAuth();
+  const { user: authUser } = useAuth();
+  const [location] = useLocation();
   const [isAddOpen, setIsAddOpen] = useState(false);
   const [isEditOpen, setIsEditOpen] = useState(false);
   const [isViewOpen, setIsViewOpen] = useState(false);
@@ -77,42 +79,61 @@ export default function LeavePage() {
   const [activeTab, setActiveTab] = useState("my-requests");
   const [searchQuery, setSearchQuery] = useState("");
   const [viewMode, setViewMode] = useState<'grid' | 'table'>('grid');
+
+  // Parse userId from URL if present
+  const queryParams = new URLSearchParams(window.location.search);
+  const targetUserId = queryParams.get("id") ? parseInt(queryParams.get("id")!) : authUser?.id;
   
+  // Get the effective user for the page content
+  const { data: targetUser } = useQuery<User>({
+    queryKey: ["/api/users", targetUserId],
+    enabled: !!targetUserId && targetUserId !== authUser?.id,
+  });
+
+  const effectiveUser = targetUserId === authUser?.id ? authUser : targetUser;
+  
+  // Parse userId from URL if present
+  const queryParams = new URLSearchParams(window.location.search);
+  const targetUserId = queryParams.get("id") ? parseInt(queryParams.get("id")!) : authUser?.id;
+
+  // Get effective user
+  const effectiveUser = targetUserId === authUser?.id ? authUser : employees.find(e => e.id === targetUserId);
+
   // Fetch leave requests for current user
   const { data: myLeaveRequests = [] } = useQuery<LeaveRequest[]>({
-    queryKey: ["/api/leave-requests", { userId: user?.id }],
-    enabled: !!user,
+    queryKey: ["/api/leave-requests", { userId: effectiveUser?.id }],
+    enabled: !!effectiveUser,
   });
   
   // Fetch pending leave requests (for admins/HR/managers)
   const { data: pendingRequests = [] } = useQuery<LeaveRequest[]>({
     queryKey: ["/api/leave-requests", { status: "pending" }],
-    enabled: !!user && (user.role === 'admin' || user.role === 'hr' || user.role === 'manager'),
+    enabled: !!authUser && (authUser.role === 'admin' || authUser.role === 'hr' || authUser.role === 'manager'),
   });
   
   // Fetch all leave requests for analytics
   const { data: allLeaveRequests = [] } = useQuery<LeaveRequest[]>({
     queryKey: ["/api/leave-requests"],
-    enabled: !!user && (user.role === 'admin' || user.role === 'hr' || user.role === 'manager'),
+    enabled: !!authUser && (authUser.role === 'admin' || authUser.role === 'hr' || authUser.role === 'manager'),
   });
   
   // Fetch all employees to display names
   const { data: employees = [] } = useQuery<User[]>({
     queryKey: ["/api/employees"],
-    enabled: !!user,
+    enabled: !!authUser,
   });
   
   // Fetch current user's leave balance with segmented query key for proper cache invalidation
   const { data: leaveBalance, isLoading: isLoadingLeaveBalance, error: leaveBalanceError, refetch: refetchLeaveBalance } = useQuery<LeaveBalance>({
-    queryKey: ['/api/employees/leave-balance', user?.id],
+    queryKey: ['/api/employees/leave-balance', effectiveUser?.id],
     queryFn: async () => {
-      const response = await fetch(`/api/employees/${user?.id}/leave-balance`);
+      const response = await fetch(`/api/employees/${effectiveUser?.id}/leave-balance`);
       if (!response.ok) {
         throw new Error('Failed to fetch leave balance');
       }
       return response.json();
     },
-    enabled: !!user,
+    enabled: !!effectiveUser,
     retry: (failureCount, error) => {
       // Don't retry on auth errors or not found
       if (error instanceof Error) {
@@ -132,7 +153,7 @@ export default function LeavePage() {
     mutationFn: async (requestId: number) => {
       await apiRequest("PUT", `/api/leave-requests/${requestId}`, {
         status: "approved",
-        approvedById: user?.id
+        approvedById: authUser?.id
       });
     },
     onSuccess: () => {
@@ -158,7 +179,7 @@ export default function LeavePage() {
     mutationFn: async (requestId: number) => {
       await apiRequest("PUT", `/api/leave-requests/${requestId}`, {
         status: "rejected",
-        approvedById: user?.id
+        approvedById: authUser?.id
       });
     },
     onSuccess: () => {
@@ -271,8 +292,10 @@ export default function LeavePage() {
     // Types that count toward paid leave quota (exclude unpaid and workfromhome)
     const paidLeaveTypes = ['annual', 'sick', 'personal', 'halfday', 'other'];
     
-    // Use appropriate data source - myLeaveRequests for current user, allLeaveRequests for admin view
-    const leaveRequestsData = userId === user?.id ? myLeaveRequests : allLeaveRequests;
+    // Use appropriate data source - targetLeaveRequests for target user, myLeaveRequests for current user, allLeaveRequests for admin view
+    const leaveRequestsData = userId === authUser?.id ? myLeaveRequests : 
+                             userId === effectiveUser?.id ? targetLeaveRequests : 
+                             allLeaveRequests;
     
     const monthlyPaidLeaveUsed = leaveRequestsData
       .filter(request => {
@@ -452,24 +475,25 @@ export default function LeavePage() {
     }
   };
 
-  // Calculate analytics
+  // Fetch analytics for effective user
   const getLeaveAnalytics = () => {
     const thisMonth = new Date();
-    const lastMonth = subMonths(thisMonth, 1);
     
-    const thisMonthRequests = allLeaveRequests.filter(req => {
+    const requestsData = displayLeaveRequests;
+    
+    const thisMonthRequests = requestsData.filter(req => {
       const createdAt = new Date(req.createdAt || req.startDate);
       return createdAt.getMonth() === thisMonth.getMonth() && 
              createdAt.getFullYear() === thisMonth.getFullYear();
     });
 
-    const approvedRequests = allLeaveRequests.filter(req => req.status === 'approved');
-    const rejectedRequests = allLeaveRequests.filter(req => req.status === 'rejected');
-    const workFromHomeRequests = allLeaveRequests.filter(req => req.type === 'workfromhome');
+    const approvedRequests = requestsData.filter(req => req.status === 'approved');
+    const rejectedRequests = requestsData.filter(req => req.status === 'rejected');
+    const workFromHomeRequests = requestsData.filter(req => req.type === 'workfromhome');
 
     return {
-      totalRequests: allLeaveRequests.length,
-      pendingCount: pendingRequests.length,
+      totalRequests: requestsData.length,
+      pendingCount: requestsData.filter(r => r.status === 'pending').length,
       approvedCount: approvedRequests.length,
       rejectedCount: rejectedRequests.length,
       thisMonthRequests: thisMonthRequests.length,
@@ -480,7 +504,7 @@ export default function LeavePage() {
   const analytics = getLeaveAnalytics();
 
   // Filter leave requests based on search
-  const filteredMyRequests = myLeaveRequests.filter(request => {
+  const filteredMyRequests = displayLeaveRequests.filter(request => {
     const searchLower = searchQuery.toLowerCase();
     return (
       request.type.toLowerCase().includes(searchLower) ||
@@ -664,12 +688,14 @@ export default function LeavePage() {
                 <Calendar className="w-8 h-8 text-teal-700" />
               </div>
               <div>
-                <h1 className="text-3xl font-bold bg-gradient-to-r from-slate-900 to-slate-700 bg-clip-text text-transparent mb-2">
-                  Leave Management
-                </h1>
-                <p className="text-slate-600 text-lg">
-                  Manage leave requests and track time off
-                </p>
+                <div className="flex flex-col">
+                  <h1 className="text-3xl font-bold bg-gradient-to-r from-slate-900 to-slate-700 bg-clip-text text-transparent mb-2">
+                    {effectiveUser ? `${effectiveUser.firstName} ${effectiveUser.lastName}'s ` : ""}Leave Management
+                  </h1>
+                  <p className="text-slate-600 text-lg">
+                    Manage leave requests and track time off
+                  </p>
+                </div>
               </div>
             </div>
             
@@ -678,8 +704,8 @@ export default function LeavePage() {
                 <div className="flex items-center space-x-2">
                   <TrendingUp className="w-5 h-5 text-emerald-600" />
                   <div>
-                    <div className="text-sm font-medium text-slate-600">My Requests</div>
-                    <div className="text-2xl font-bold text-slate-900">{myLeaveRequests.length}</div>
+                    <div className="text-sm font-medium text-slate-600">{targetUserId === authUser?.id ? "My Requests" : "Total Requests"}</div>
+                    <div className="text-2xl font-bold text-slate-900">{displayLeaveRequests.length}</div>
                   </div>
                 </div>
               </div>
@@ -708,7 +734,7 @@ export default function LeavePage() {
         </div>
 
         {/* Key Metrics Dashboard */}
-        {(user?.role === 'admin' || user?.role === 'hr' || user?.role === 'manager') ? (
+        {(authUser?.role === 'admin' || authUser?.role === 'hr' || authUser?.role === 'manager') ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6">
             <motion.div
               initial={{ opacity: 0, y: 20 }}
