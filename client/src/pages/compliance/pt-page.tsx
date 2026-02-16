@@ -1,3 +1,4 @@
+import * as XLSX from "xlsx";
 import { AppLayout } from "@/components/layout/app-layout";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -209,6 +210,18 @@ export default function PtPage() {
                     }
                   </SelectContent>
                 </Select>
+              ) : selectedPeriod === 'month' ? (
+                <Input
+                  type="month"
+                  value={selectedDate.substring(0, 7)}
+                  onChange={(e) => {
+                    if (e.target.value) {
+                      setSelectedDate(`${e.target.value}-01`);
+                    }
+                  }}
+                  max={new Date().toISOString().substring(0, 7)}
+                  className="h-9 w-40 font-bold shadow-sm"
+                />
               ) : selectedPeriod === 'week' ? (
                 <Input
                   type="week"
