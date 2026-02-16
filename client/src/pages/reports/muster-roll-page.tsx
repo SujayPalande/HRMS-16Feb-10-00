@@ -191,14 +191,19 @@ export default function MusterRollPage() {
     const proRatedBasic = Math.round((basicSalary / totalDaysInMonth) * totalDaysWorked);
     const proRatedHra = Math.round((hra / totalDaysInMonth) * totalDaysWorked);
     
-    const dailyRate = basicSalary / 26;
+    // Fallback to salary if basicSalary is not set
+    const effectiveSalary = employee.salary || 0;
+    const finalBasic = proRatedBasic || Math.round((effectiveSalary * 0.5 / totalDaysInMonth) * totalDaysWorked);
+    const finalHra = proRatedHra || Math.round((effectiveSalary * 0.5 / totalDaysInMonth) * totalDaysWorked);
+
+    const dailyRate = (basicSalary || effectiveSalary) / 26;
     const hourlyRate = dailyRate / 8;
-    const normalWages = proRatedBasic;
-    const hraPayable = proRatedHra;
+    const normalWages = finalBasic;
+    const hraPayable = finalHra;
     const overtimePayable = Math.round(totalHoursWorked > 0 ? (overtimeHours * hourlyRate * 2) : 0);
     const allowances = payrollData?.allowances || 0;
     const grossWages = normalWages + hraPayable + overtimePayable + allowances;
-    const pfDeduction = payrollData?.pfContribution || Math.round(proRatedBasic * 0.12);
+    const pfDeduction = payrollData?.pfContribution || Math.round(normalWages * 0.12);
     const esiDeduction = payrollData?.esiContribution || (grossWages <= 21000 ? Math.round(grossWages * 0.0075) : 0);
     const otherDeductions = payrollData?.deductions || 0;
     const totalDeductions = pfDeduction + esiDeduction + otherDeductions;
@@ -209,7 +214,7 @@ export default function MusterRollPage() {
       totalHoursWorked,
       overtimeHours,
       dailyRate: Math.round(dailyRate),
-      basicSalary: proRatedBasic,
+      basicSalary: normalWages,
       normalWages,
       hraPayable,
       overtimePayable,
@@ -236,23 +241,40 @@ export default function MusterRollPage() {
     doc.text(`Employer: ${employerName}`, 14, 38);
     doc.text(`Month: ${monthName} ${selectedYear}`, doc.internal.pageSize.width - 60, 32);
 
+    const dayColumns = Array.from({ length: daysInMonth }, (_, i) => String(i + 1));
+    const header = [
+      "Sl No", "Employee Name", "Designation",
+      ...dayColumns,
+      viewType === "muster" ? "Total Days" : "Days"
+    ];
+    
+    if (viewType === "wage") {
+      header.push("Basic", "HRA", "PF", "ESI", "Gross", "Net");
+    }
+
     const body = Object.values(hierarchicalData).flatMap(depts => Object.values(depts).flat()).map((emp, index) => {
       const data = calculateEmployeeData(emp);
-      const row = [
+      const row: any[] = [
         index + 1,
         `${emp.firstName} ${emp.lastName}`,
         emp.position || "Worker",
-        data.totalDaysWorked,
       ];
+      
+      // Add daily attendance
+      for (let day = 1; day <= daysInMonth; day++) {
+        row.push(getAttendanceForDay(emp.id, day));
+      }
+      
+      row.push(data.totalDaysWorked);
       
       if (viewType === "wage") {
         row.push(
-          `Rs. ${data.basicSalary.toLocaleString()}`,
-          `Rs. ${data.hraPayable.toLocaleString()}`,
-          `Rs. ${data.pfDeduction.toLocaleString()}`,
-          `Rs. ${data.esiDeduction.toLocaleString()}`,
-          `Rs. ${data.grossWages.toLocaleString()}`,
-          `Rs. ${data.netWages.toLocaleString()}`
+          data.basicSalary,
+          data.hraPayable,
+          data.pfDeduction,
+          data.esiDeduction,
+          data.grossWages,
+          data.netWages
         );
       }
       return row;
@@ -260,14 +282,12 @@ export default function MusterRollPage() {
 
     autoTable(doc, {
       startY: 45,
-      head: [viewType === "muster" 
-        ? ["Sl No", "Employee Name", "Designation", "Days Worked"]
-        : ["Sl No", "Employee Name", "Designation", "Days", "Basic", "HRA", "PF", "ESI", "Gross", "Net"]
-      ],
+      head: [header],
       body: body,
       theme: 'grid',
-      headStyles: { fillColor: [0, 121, 107] },
-      styles: { fontSize: 8 }
+      headStyles: { fillColor: [0, 121, 107], fontSize: 5 },
+      styles: { fontSize: 5, cellPadding: 1 },
+      margin: { left: 5, right: 5 }
     });
 
     doc.save(`${viewType}_report_${monthName}_${selectedYear}.pdf`);
@@ -298,7 +318,111 @@ export default function MusterRollPage() {
   const { toast } = useToast();
 
   const handlePrint = () => {
-    window.print();
+    const printWindow = window.open('', '_blank');
+    if (!printWindow) return;
+
+    const monthName = months.find(m => m.value === selectedMonth)?.label || "";
+    const isWage = viewType === "wage";
+
+    const html = `
+      <html>
+        <head>
+          <title>${isWage ? 'Wage Register' : 'Muster Roll'} - ${monthName} ${selectedYear}</title>
+          <style>
+            @page { size: A3 landscape; margin: 10mm; }
+            body { font-family: sans-serif; font-size: 10px; color: #333; }
+            table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+            th, td { border: 1px solid #999; padding: 4px; text-align: center; }
+            th { background-color: #f3f4f6; font-weight: bold; }
+            .header { text-align: center; margin-bottom: 20px; }
+            .info-grid { display: grid; grid-template-cols: 1fr 1fr; margin-bottom: 10px; }
+            .text-left { text-align: left; }
+            .text-right { text-align: right; }
+            .unit-section { margin-top: 20px; page-break-inside: avoid; }
+            .unit-title { background: #00796b; color: white; padding: 4px 8px; font-weight: bold; margin: 0; }
+            .dept-title { background: #f0fdfa; color: #00796b; padding: 4px 8px; font-weight: bold; border-bottom: 1px solid #00796b; margin: 0; }
+          </style>
+        </head>
+        <body>
+          <div class="header">
+            <h1 style="margin: 0;">${isWage ? 'FORM II - WAGE REGISTER' : 'FORM II - MUSTER ROLL'}</h1>
+            <p style="margin: 2px;">[See Rule 27(1)]</p>
+          </div>
+          <div class="info-grid">
+            <div class="text-left">
+              <p><strong>Establishment:</strong> ${establishmentName}</p>
+              <p><strong>Employer:</strong> ${employerName}</p>
+            </div>
+            <div class="text-right">
+              <p><strong>Month:</strong> ${monthName} ${selectedYear}</p>
+            </div>
+          </div>
+          ${Object.entries(hierarchicalData).map(([unitName, departments]) => `
+            <div class="unit-section">
+              <h2 class="unit-title text-left">Unit: ${unitName}</h2>
+              ${Object.entries(departments).map(([deptName, staff]) => `
+                <div style="margin-top: 10px;">
+                  <h3 class="dept-title text-left">Department: ${deptName}</h3>
+                  <table>
+                    <thead>
+                      <tr>
+                        <th rowspan="2">Sl No</th>
+                        <th rowspan="2">Employee Name</th>
+                        <th rowspan="2">Designation</th>
+                        <th colspan="${daysInMonth}">Attendance</th>
+                        <th rowspan="2">Days</th>
+                        ${isWage ? `
+                          <th rowspan="2">Basic</th>
+                          <th rowspan="2">HRA</th>
+                          <th rowspan="2">PF</th>
+                          <th rowspan="2">ESI</th>
+                          <th rowspan="2">Gross</th>
+                          <th rowspan="2">Net</th>
+                        ` : ''}
+                      </tr>
+                      <tr>
+                        ${Array.from({ length: daysInMonth }, (_, i) => `<th>${i + 1}</th>`).join('')}
+                      </tr>
+                    </thead>
+                    <tbody>
+                      ${staff.map((emp, index) => {
+                        const data = calculateEmployeeData(emp);
+                        return `
+                          <tr>
+                            <td>${index + 1}</td>
+                            <td class="text-left">${emp.firstName} ${emp.lastName}</td>
+                            <td>${emp.position || 'Worker'}</td>
+                            ${Array.from({ length: daysInMonth }, (_, i) => `<td>${getAttendanceForDay(emp.id, i + 1)}</td>`).join('')}
+                            <td>${data.totalDaysWorked}</td>
+                            ${isWage ? `
+                              <td>${data.basicSalary}</td>
+                              <td>${data.hraPayable}</td>
+                              <td>${data.pfDeduction}</td>
+                              <td>${data.esiDeduction}</td>
+                              <td>${data.grossWages}</td>
+                              <td>${data.netWages}</td>
+                            ` : ''}
+                          </tr>
+                        `;
+                      }).join('')}
+                    </tbody>
+                  </table>
+                </div>
+              `).join('')}
+            </div>
+          `).join('')}
+          <script>
+            window.onload = () => {
+              window.print();
+              window.onafterprint = () => window.close();
+            };
+          </script>
+        </body>
+      </html>
+    `;
+
+    printWindow.document.write(html);
+    printWindow.document.close();
   };
 
   return (
