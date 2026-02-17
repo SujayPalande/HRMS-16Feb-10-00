@@ -392,6 +392,7 @@ export default function EmployeeDetailPage() {
         return {
           month,
           paymentStatus,
+          monthlyCTC: latestRecord?.amount || employee?.salary || 0,
           grossAmount: Math.round(totalGrossAmount / records.length), // Average for display
           netAmount: Math.round(totalNetAmount / records.length), // Average for display
           paymentDate,
@@ -512,12 +513,14 @@ export default function EmployeeDetailPage() {
 
   // Generate professional payslip PDF
   const generatePayslipPDF = (historyItem?: any) => {
-    const b = historyItem 
-      ? getSalaryBreakdown(
-          historyItem.latestRecord?.amount || historyItem.grossAmount,
-          historyItem.latestRecord?.daysWorked || 25
-        ) 
-      : salaryBreakdown;
+    // If we have a history item with records, use the actual payment record for breakdown
+    // Otherwise fall back to current employee salary
+    const record = historyItem?.latestRecord;
+    
+    const b = record 
+      ? getSalaryBreakdown(record.amount, record.daysWorked || 25)
+      : (historyItem ? getSalaryBreakdown(historyItem.monthlyCTC || employee.salary || 0, 25) : salaryBreakdown);
+
     const payrollMonth = historyItem?.month || format(new Date(), 'MMMM yyyy');
 
     generateProfessionalPayslip({
