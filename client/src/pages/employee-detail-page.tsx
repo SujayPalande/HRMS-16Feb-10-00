@@ -32,7 +32,7 @@ import {
   RefreshCw
 } from "lucide-react";
 import { User, Department, LeaveRequest, Attendance, PaymentRecord, LeaveBalance } from "@shared/schema";
-import { Link, useParams } from "wouter";
+import { Link, useParams, useLocation } from "wouter";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { generateProfessionalPayslip } from "@/lib/payslip-utils";
@@ -42,7 +42,12 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 export default function EmployeeDetailPage() {
   const { id } = useParams<{ id: string }>();
+  const [search] = useLocation();
+  const queryParams = new URLSearchParams(search.split('?')[1] || '');
+  const initialTab = queryParams.get('tab') || "personal";
+  
   const employeeId = parseInt(id || "0");
+  const [activeTab, setActiveTab] = useState(initialTab);
   
   // State for attendance month selection
   const [selectedAttendanceMonth, setSelectedAttendanceMonth] = useState(format(new Date(), 'yyyy-MM'));
@@ -529,6 +534,9 @@ export default function EmployeeDetailPage() {
         gross: b.grossSalary,
         basic: b.basicSalary,
         hra: b.hra,
+        da: b.da,
+        conveyance: b.conveyance,
+        medical: b.medical,
         specialAllowance: b.specialAllowance,
         epf: b.epf,
         esic: b.esic,
@@ -732,7 +740,11 @@ export default function EmployeeDetailPage() {
             </div>
           </div>
 
-          <Tabs defaultValue="payroll" className="w-full space-y-6">
+          <Tabs 
+            value={activeTab} 
+            onValueChange={setActiveTab}
+            className="w-full space-y-6"
+          >
             <TabsList className="grid w-full grid-cols-4 h-14 bg-slate-100/50 p-1.5 rounded-2xl border border-slate-200">
               <TabsTrigger value="payroll" className="rounded-xl data-[state=active]:bg-indigo-600 data-[state=active]:text-white font-bold text-slate-500">Payroll Details</TabsTrigger>
               <TabsTrigger value="leave" className="rounded-xl data-[state=active]:bg-emerald-600 data-[state=active]:text-white font-bold text-slate-500">Leave Management</TabsTrigger>
@@ -1353,6 +1365,9 @@ export default function EmployeeDetailPage() {
                                         gross: b.grossSalary,
                                         basic: b.basicSalary,
                                         hra: b.hra,
+                                        da: b.da,
+                                        conveyance: b.conveyance,
+                                        medical: b.medical,
                                         specialAllowance: b.specialAllowance,
                                         epf: b.epf,
                                         esic: b.esic,

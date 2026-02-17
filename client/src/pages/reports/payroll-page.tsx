@@ -382,7 +382,7 @@ export default function PayrollReportPage() {
                                 <div className="flex justify-end gap-3 flex-wrap">
                                   <Button variant="outline" size="sm" className="h-8 rounded-lg font-bold gap-2 hover-elevate" onClick={() => handleDownloadIndividualPDF(emp)}><FileDown className="h-3.5 w-3.5" /> PDF</Button>
                                   <Button variant="outline" size="sm" className="h-8 rounded-lg font-bold gap-2 hover-elevate" onClick={() => handleExportIndividualText(emp)}><FileText className="h-3.5 w-3.5" /> Text</Button>
-                                  <Button variant="outline" size="sm" className="h-8 rounded-lg font-bold hover-elevate" onClick={() => window.location.href=`/payroll/slips?id=${emp.id}`}>View Slip</Button>
+                                  <Button variant="outline" size="sm" className="h-8 rounded-lg font-bold hover-elevate" onClick={() => window.location.href=`/employee/${emp.id}?tab=payroll`}>Full Profile</Button>
                                 </div>
                               </motion.div>
                             )}

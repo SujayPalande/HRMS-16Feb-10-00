@@ -264,3 +264,4 @@
 [x] 264. Created and configured PostgreSQL database with environment variables - February 17, 2026
 [x] 265. Applied database schema using drizzle-kit push command - February 17, 2026
 [x] 266. ALL MIGRATION TASKS COMPLETE: Application successfully running on port 5000 - February 17, 2026
+[x] 267. Fixed 404 errors on Full Profile buttons in Attendance, Leave, and Payroll reports by redirecting to Employee Details with proper tab parameters - February 17, 2026
