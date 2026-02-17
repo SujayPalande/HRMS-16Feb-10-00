@@ -276,9 +276,9 @@ export default function EmployeeDetailPage() {
   });
 
   // Calculate salary breakdown using the new formula
-  const getSalaryBreakdown = (monthlyCTC: number) => {
+  const getSalaryBreakdown = (monthlyCTC: number, daysWorked: number = 25) => {
     // Step 1: Gross Salary
-    const grossSalary = (monthlyCTC / 30) * 25; // Monthly CTC ÷ 30 × 25 payable days
+    const grossSalary = (monthlyCTC / 30) * daysWorked; // Monthly CTC ÷ 30 × days worked
     
     // Step 2: Earnings
     const basicSalary = grossSalary * 0.5; // 50% of Gross
@@ -319,7 +319,8 @@ export default function EmployeeDetailPage() {
       mlwfEmployee,
       mlwfEmployer,
       totalDeductions,
-      netSalary
+      netSalary,
+      daysWorked
     };
   };
 
@@ -365,12 +366,12 @@ export default function EmployeeDetailPage() {
         
         // Calculate monthly totals
         const totalGrossAmount = records.reduce((sum, record) => {
-          const breakdown = getSalaryBreakdown(record.amount);
+          const breakdown = getSalaryBreakdown(record.amount, record.daysWorked || 25);
           return sum + Math.round(breakdown.grossSalary);
         }, 0);
         
         const totalNetAmount = records.reduce((sum, record) => {
-          const breakdown = getSalaryBreakdown(record.amount);
+          const breakdown = getSalaryBreakdown(record.amount, record.daysWorked || 25);
           return sum + Math.round(breakdown.netSalary);
         }, 0);
 
@@ -511,7 +512,12 @@ export default function EmployeeDetailPage() {
 
   // Generate professional payslip PDF
   const generatePayslipPDF = (historyItem?: any) => {
-    const b = historyItem ? getSalaryBreakdown(historyItem.latestRecord?.amount || historyItem.grossAmount) : salaryBreakdown;
+    const b = historyItem 
+      ? getSalaryBreakdown(
+          historyItem.latestRecord?.amount || historyItem.grossAmount,
+          historyItem.latestRecord?.daysWorked || 25
+        ) 
+      : salaryBreakdown;
     const payrollMonth = historyItem?.month || format(new Date(), 'MMMM yyyy');
 
     generateProfessionalPayslip({
@@ -521,8 +527,8 @@ export default function EmployeeDetailPage() {
       department: department?.name || "N/A",
       dateOfJoining: employee.joinDate || new Date(),
       bankAccountNo: employee.bankAccountNumber || "N/A",
-      paidDays: 25,
-      lopDays: 0,
+      paidDays: b.daysWorked,
+      lopDays: 30 - b.daysWorked,
       pfAccountNumber: employee.employeeId ? 'PU/PUN/' + employee.employeeId : 'N/A',
       uan: employee.uanNumber || 'N/A',
       esiNumber: employee.esicNumber || 'N/A',
