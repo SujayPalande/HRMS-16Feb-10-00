@@ -549,7 +549,12 @@ export default function AttendanceReportPage() {
                                     <Button variant="outline" size="sm" className="h-8 rounded-lg text-xs font-bold gap-2 hover-elevate" onClick={() => handleExportIndividualText(emp)}>
                                       <FileText className="h-3.5 w-3.5" /> Text
                                     </Button>
-                                    <Button variant="outline" size="sm" className="h-8 rounded-lg text-xs font-bold gap-2 hover-elevate" onClick={() => window.location.href=`/employee/${emp.id}`}>
+                                    <Button 
+                                      variant="outline" 
+                                      size="sm" 
+                                      className="h-8 rounded-lg text-xs font-bold gap-2 hover-elevate" 
+                                      onClick={() => window.location.href=`/employees/${emp.id}?tab=attendance`}
+                                    >
                                       Full Profile
                                     </Button>
                                   </div>

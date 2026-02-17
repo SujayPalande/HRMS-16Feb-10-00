@@ -343,7 +343,51 @@ export default function LeavePage() {
                   )}
                 </div>
                 <div className="flex items-center space-x-1">
-                  <Button variant="ghost" size="icon" onClick={() => handleView(request)} className="h-8 w-8 opacity-0 group-hover:opacity-100 hover:bg-teal-100"><Eye className="h-4 w-4 text-teal-600" /></Button>
+                  <Dialog open={isViewOpen && selectedLeave?.id === request.id} onOpenChange={(open) => {
+                    if (!open) setIsViewOpen(false);
+                    else handleView(request);
+                  }}>
+                    <DialogTrigger asChild>
+                      <Button variant="ghost" size="icon" className="h-8 w-8 opacity-0 group-hover:opacity-100 hover:bg-teal-100">
+                        <Eye className="h-4 w-4 text-teal-600" />
+                      </Button>
+                    </DialogTrigger>
+                    <DialogContent className="max-w-md">
+                      <DialogHeader>
+                        <DialogTitle>Leave Details</DialogTitle>
+                      </DialogHeader>
+                      {selectedLeave && (
+                        <div className="space-y-4 py-4">
+                          <div className="flex items-center justify-between border-b pb-2">
+                            <span className="text-sm font-medium text-slate-500">Employee</span>
+                            <span className="font-bold">{employee ? `${employee.firstName} ${employee.lastName}` : 'N/A'}</span>
+                          </div>
+                          <div className="flex items-center justify-between border-b pb-2">
+                            <span className="text-sm font-medium text-slate-500">Type</span>
+                            <Badge variant="outline" className="capitalize">{selectedLeave.type}</Badge>
+                          </div>
+                          <div className="flex items-center justify-between border-b pb-2">
+                            <span className="text-sm font-medium text-slate-500">Period</span>
+                            <span className="text-sm font-medium">{formatDateRange(selectedLeave.startDate, selectedLeave.endDate)}</span>
+                          </div>
+                          <div className="flex items-center justify-between border-b pb-2">
+                            <span className="text-sm font-medium text-slate-500">Duration</span>
+                            <span className="text-sm font-medium">{calculateDuration(selectedLeave.startDate, selectedLeave.endDate)}</span>
+                          </div>
+                          <div className="flex items-center justify-between border-b pb-2">
+                            <span className="text-sm font-medium text-slate-500">Status</span>
+                            {getStatusBadge(selectedLeave.status)}
+                          </div>
+                          <div className="space-y-1">
+                            <span className="text-sm font-medium text-slate-500">Reason</span>
+                            <p className="text-sm bg-slate-50 p-3 rounded-lg border italic">
+                              {selectedLeave.reason || 'No reason provided'}
+                            </p>
+                          </div>
+                        </div>
+                      )}
+                    </DialogContent>
+                  </Dialog>
                   {isPending && !showEmployee && (
                     <Button variant="ghost" size="icon" onClick={() => handleEdit(request)} className="h-8 w-8 opacity-0 group-hover:opacity-100 hover:bg-slate-100"><Settings className="h-4 w-4 text-slate-600" /></Button>
                   )}

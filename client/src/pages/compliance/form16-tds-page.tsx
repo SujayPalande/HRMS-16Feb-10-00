@@ -79,15 +79,30 @@ export default function Form16TdsPage() {
         const matchesUnit = selectedUnit === 'all' || (dept && dept.unitId === parseInt(selectedUnit));
         const matchesDept = selectedDept === 'all' || emp.departmentId === parseInt(selectedDept);
         
+        // Dynamic filtering based on period
         const joinDate = emp.joinDate ? new Date(emp.joinDate) : null;
         const isJoinedBeforeEnd = !joinDate || joinDate <= endDate;
+        
+        // Filter by participation in selected period if needed
+        // For TDS/Form 16, we usually look at the financial year or selected period
         
         return matchesUnit && matchesDept && isJoinedBeforeEnd;
       })
       .map(emp => {
-        const records = payrollRecords.filter(r => r.userId === emp.id);
-        const totalIncome = records.reduce((sum, r) => sum + (r.netSalary || 0), 0) || (emp.salary || 0) * 12;
-        const tdsDeducted = records.reduce((sum, r) => sum + (r.deductions?.tds || 0), 0) || Math.round(totalIncome * 0.1);
+        const { startDate: pStart, endDate: pEnd } = getReportPeriod();
+        const records = payrollRecords.filter(r => {
+          const rDate = new Date(r.paymentDate || r.createdAt);
+          return r.userId === emp.id && rDate >= pStart && rDate <= pEnd;
+        });
+        
+        const totalIncome = records.length > 0 
+          ? records.reduce((sum, r) => sum + (r.netSalary || 0), 0)
+          : (emp.salary || 0) * (selectedPeriod === 'year' ? 12 : selectedPeriod === 'month' ? 1 : selectedPeriod === 'week' ? 0.25 : 0.033);
+        
+        const tdsDeducted = records.length > 0
+          ? records.reduce((sum, r) => sum + (r.deductions?.tds || 0), 0)
+          : Math.round(totalIncome * 0.1);
+
         const dept = departments.find(d => d.id === emp.departmentId);
         const unit = units.find(u => u.id === dept?.unitId);
 

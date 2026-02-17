@@ -44,17 +44,33 @@ export const exportToCSV = (data: any[], fileName: string) => {
 export const exportToTxt = (data: any[], fileName: string, title: string) => {
   if (data.length === 0) return;
   const headers = Object.keys(data[0]);
-  let content = `${title}\n`;
-  content += `Generated on: ${new Date().toLocaleString()}\n`;
-  content += "=".repeat(title.length) + "\n\n";
   
-  data.forEach((row, index) => {
-    content += `Record ${index + 1}:\n`;
-    headers.forEach(header => {
-      content += `${header}: ${row[header]}\n`;
-    });
-    content += "-".repeat(20) + "\n";
+  // Calculate column widths
+  const colWidths = headers.map(header => {
+    const maxValLen = data.reduce((max, row) => Math.max(max, String(row[header]).length), header.length);
+    return maxValLen + 2; // Add padding
   });
+
+  let content = `\n${"=".repeat(colWidths.reduce((a, b) => a + b, 0) + headers.length)}\n`;
+  content += ` ${title.toUpperCase()}\n`;
+  content += ` Generated on: ${new Date().toLocaleString()}\n`;
+  content += `${"=".repeat(colWidths.reduce((a, b) => a + b, 0) + headers.length)}\n\n`;
+  
+  // Header row
+  headers.forEach((header, i) => {
+    content += header.padEnd(colWidths[i]) + "|";
+  });
+  content += `\n${"-".repeat(colWidths.reduce((a, b) => a + b, 0) + headers.length)}\n`;
+  
+  // Data rows
+  data.forEach((row) => {
+    headers.forEach((header, i) => {
+      content += String(row[header]).padEnd(colWidths[i]) + "|";
+    });
+    content += "\n";
+  });
+  
+  content += `${"=".repeat(colWidths.reduce((a, b) => a + b, 0) + headers.length)}\n`;
   
   const blob = new Blob([content], { type: 'text/plain;charset=utf-8;' });
   const link = document.createElement("a");
