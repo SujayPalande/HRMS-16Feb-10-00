@@ -4645,6 +4645,15 @@
       "notes": "",
       "id": 523,
       "checkOutTime": null
+    },
+    {
+      "userId": 29,
+      "checkInTime": "2026-02-17T07:08:39.665Z",
+      "date": "2026-02-17T07:08:39.665Z",
+      "status": "present",
+      "notes": "",
+      "id": 524,
+      "checkOutTime": null
     }
   ],
   "leaveRequests": [
@@ -13863,14 +13872,25 @@
       "createdAt": "2026-02-17T06:44:07.755Z",
       "relatedUserId": null,
       "relatedLeaveId": null
+    },
+    {
+      "userId": 29,
+      "type": "login",
+      "title": "Successful Login",
+      "message": "You have successfully logged in at 2/17/2026",
+      "isRead": false,
+      "id": 784,
+      "createdAt": "2026-02-17T07:07:53.560Z",
+      "relatedUserId": null,
+      "relatedLeaveId": null
     }
   ],
   "currentUserId": 40,
   "currentDepartmentId": 11,
-  "currentAttendanceId": 524,
+  "currentAttendanceId": 525,
   "currentLeaveRequestId": 41,
   "currentHolidayId": 67,
-  "currentNotificationId": 784,
+  "currentNotificationId": 785,
   "paymentRecords": [
     {
       "id": 1,
@@ -44717,7 +44737,8 @@
       "paymentStatus": "pending",
       "amount": 12807,
       "id": 2983,
-      "createdAt": "2026-02-17T06:50:30.426Z"
+      "createdAt": "2026-02-17T06:50:30.426Z",
+      "paymentDate": null
     },
     {
       "employeeId": 29,
@@ -44758,7 +44779,8 @@
       "paymentStatus": "pending",
       "amount": 35500,
       "id": 2987,
-      "createdAt": "2026-02-17T06:50:30.906Z"
+      "createdAt": "2026-02-17T06:50:30.906Z",
+      "paymentDate": null
     },
     {
       "employeeId": 31,
@@ -44788,7 +44810,8 @@
       "paymentStatus": "pending",
       "amount": 60500,
       "id": 2990,
-      "createdAt": "2026-02-17T06:50:30.975Z"
+      "createdAt": "2026-02-17T06:50:30.975Z",
+      "paymentDate": null
     },
     {
       "employeeId": 32,
@@ -44818,7 +44841,8 @@
       "paymentStatus": "pending",
       "amount": 39667,
       "id": 2993,
-      "createdAt": "2026-02-17T06:50:31.373Z"
+      "createdAt": "2026-02-17T06:50:31.373Z",
+      "paymentDate": null
     },
     {
       "employeeId": 33,
@@ -44848,7 +44872,8 @@
       "paymentStatus": "pending",
       "amount": 98000,
       "id": 2996,
-      "createdAt": "2026-02-17T06:50:31.407Z"
+      "createdAt": "2026-02-17T06:50:31.407Z",
+      "paymentDate": null
     },
     {
       "employeeId": 34,
@@ -44867,7 +44892,8 @@
       "paymentStatus": "pending",
       "amount": 43833,
       "id": 2998,
-      "createdAt": "2026-02-17T06:50:31.777Z"
+      "createdAt": "2026-02-17T06:50:31.777Z",
+      "paymentDate": null
     },
     {
       "employeeId": 34,
@@ -44908,7 +44934,8 @@
       "paymentStatus": "pending",
       "amount": 52167,
       "id": 3002,
-      "createdAt": "2026-02-17T06:50:31.982Z"
+      "createdAt": "2026-02-17T06:50:31.982Z",
+      "paymentDate": null
     },
     {
       "employeeId": 36,
@@ -44938,7 +44965,8 @@
       "paymentStatus": "pending",
       "amount": 68833,
       "id": 3005,
-      "createdAt": "2026-02-17T06:50:32.187Z"
+      "createdAt": "2026-02-17T06:50:32.187Z",
+      "paymentDate": null
     },
     {
       "employeeId": 37,
@@ -44968,7 +44996,8 @@
       "paymentStatus": "pending",
       "amount": 48000,
       "id": 3008,
-      "createdAt": "2026-02-17T06:50:32.601Z"
+      "createdAt": "2026-02-17T06:50:32.601Z",
+      "paymentDate": null
     },
     {
       "employeeId": 38,
@@ -44987,7 +45016,8 @@
       "paymentStatus": "pending",
       "amount": 39667,
       "id": 3010,
-      "createdAt": "2026-02-17T06:50:32.632Z"
+      "createdAt": "2026-02-17T06:50:32.632Z",
+      "paymentDate": null
     },
     {
       "employeeId": 38,
@@ -45028,7 +45058,8 @@
       "paymentStatus": "pending",
       "amount": 56333,
       "id": 3014,
-      "createdAt": "2026-02-17T06:50:32.994Z"
+      "createdAt": "2026-02-17T06:50:32.994Z",
+      "paymentDate": null
     }
   ],
   "currentPaymentRecordId": 3015,

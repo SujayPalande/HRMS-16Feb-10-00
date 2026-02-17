@@ -401,7 +401,7 @@ export default function HeadcountReportPage() {
                                     </div>
                                   </div>
                                   <div className="flex justify-end gap-3">
-                                    <Button variant="outline" size="sm" className="h-8 rounded-lg font-bold hover-elevate px-4 border-teal-200 text-teal-600" onClick={() => window.location.href=`/employee/${emp.id}`}>
+                                    <Button variant="outline" size="sm" className="h-8 rounded-lg font-bold hover-elevate px-4 border-teal-200 text-teal-600" onClick={() => window.location.href=`/employee/${emp.id}?tab=personal`}>
                                       View Full Profile <ChevronRight className="h-3 w-3 ml-1" />
                                     </Button>
                                   </div>
