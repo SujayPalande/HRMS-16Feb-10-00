@@ -1352,46 +1352,10 @@ export default function EmployeeDetailPage() {
                                   size="sm" 
                                   className="h-8 gap-2 border-indigo-100 text-indigo-600 hover:bg-indigo-50 hover:text-indigo-700 disabled:opacity-50"
                                   disabled={payment.paymentStatus === 'not_generated'}
-                                  onClick={() => {
-                                    // Use the specific record's amount for this month
-                                    const recordToUse = payment.records[0] || payment.latestRecord;
-                                    const amountToUse = recordToUse?.amount || employee.salary || 0;
-                                    const b = getSalaryBreakdown(amountToUse);
-                                    
-                                    generateProfessionalPayslip({
-                                      employeeName: `${employee.firstName} ${employee.lastName}`,
-                                      employeeId: employee.employeeId || employee.id.toString(),
-                                      designation: employee.position || "N/A",
-                                      department: department?.name || "N/A",
-                                      dateOfJoining: employee.joinDate || new Date(),
-                                      bankAccountNo: employee.bankAccountNumber || "N/A",
-                                      paidDays: 25,
-                                      lopDays: 0,
-                                      pfAccountNumber: employee.employeeId ? 'PU/PUN/' + employee.employeeId : 'N/A',
-                                      uan: employee.uanNumber || 'N/A',
-                                      esiNumber: employee.esicNumber || 'N/A',
-                                      pan: employee.panCard || 'N/A',
-                                      workLocation: employee.workLocation || 'Pune',
-                                      month: payment.month,
-                                      breakdown: {
-                                        gross: b.grossSalary,
-                                        basic: b.basicSalary,
-                                        hra: b.hra,
-                                        da: b.da,
-                                        conveyance: b.conveyance,
-                                        medical: b.medical,
-                                        specialAllowance: b.specialAllowance,
-                                        epf: b.epf,
-                                        esic: b.esic,
-                                        pt: b.professionalTax,
-                                        deductions: b.totalDeductions,
-                                        net: b.netSalary
-                                      }
-                                    });
-                                  }}
+                                  onClick={() => generatePayslipPDF(payment)}
                                 >
-                                  <Download className="h-3 w-3" />
-                                  <span className="text-[10px] font-bold uppercase">Payslip</span>
+                                  <Download className="h-3.5 w-3.5" />
+                                  Payslip
                                 </Button>
                               </td>
                             </tr>

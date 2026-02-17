@@ -160,7 +160,7 @@ export default function Form16TdsPage() {
           unitName: unit?.name || "Unassigned"
         };
       });
-  }, [employees, departments, units, payrollRecords, selectedUnit, selectedDept, statusMap, selectedPeriod, selectedDate]);
+  }, [employees, departments, units, payrollRecords, selectedUnit, selectedDept, statusMap, selectedPeriod]);
 
   const [basicForm16Data, setBasicForm16Data] = useState({
     employeeName: "",
