@@ -80,9 +80,14 @@ export default function LeaveReportPage() {
       const matchesSearch = searchQuery === "" || 
         `${emp.firstName} ${emp.lastName}`.toLowerCase().includes(searchQuery.toLowerCase()) ||
         (emp.employeeId || "").toLowerCase().includes(searchQuery.toLowerCase());
-      return matchesUnit && matchesDept && matchesSearch;
+      
+      // Filter by period activity (joined before end of period)
+      const joinDate = emp.joinDate ? new Date(emp.joinDate) : null;
+      const isJoinedBeforeEnd = !joinDate || joinDate <= endDate;
+
+      return matchesUnit && matchesDept && matchesSearch && isJoinedBeforeEnd;
     });
-  }, [employees, departments, selectedUnit, selectedDept, searchQuery]);
+  }, [employees, departments, selectedUnit, selectedDept, searchQuery, startDate, endDate]);
 
   const filteredDepartments = departments.filter((dept: Department) => 
     (selectedUnit === "all" || dept.unitId === parseInt(selectedUnit)) &&

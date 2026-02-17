@@ -261,7 +261,7 @@ export default function Form16TdsPage() {
         ['   c) Other Allowances', `Rs.${allowances.toLocaleString()}`],
         ['   d) Bonus/Incentive', `Rs.${bonus.toLocaleString()}`],
         ['2. Less: Standard Deduction u/s 16(ia)', 'Rs.50,000'],
-        ['3. Net Taxable Income', `Rs.${(employee.totalIncome - 50000).toLocaleString()}`],
+        ['3. Net Taxable Income', `Rs.${Math.max(0, employee.totalIncome - 50000).toLocaleString()}`],
         ['4. Tax Payable', `Rs.${employee.tdsDeducted.toLocaleString()}`],
         ['5. Less: Rebate u/s 87A', 'Rs.0'],
         ['6. Tax Deducted at Source', `Rs.${employee.tdsDeducted.toLocaleString()}`],

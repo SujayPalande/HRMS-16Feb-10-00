@@ -553,7 +553,7 @@ export default function AttendanceReportPage() {
                                       variant="outline" 
                                       size="sm" 
                                       className="h-8 rounded-lg text-xs font-bold gap-2 hover-elevate" 
-                                      onClick={() => window.location.href=`/employees/${emp.id}?tab=attendance`}
+                                      onClick={() => window.location.href=`/payroll/salary/${emp.id}?tab=attendance`}
                                     >
                                       Full Profile
                                     </Button>
