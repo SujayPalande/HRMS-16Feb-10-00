@@ -510,10 +510,9 @@ export default function EmployeeDetailPage() {
   const salaryBreakdown = getSalaryBreakdown(employee.salary || 0);
 
   // Generate professional payslip PDF
-  const generatePayslipPDF = () => {
-    const latestPayment = paymentRecords[0];
-    const payrollMonth = latestPayment?.month || format(new Date(), 'MMMM yyyy');
-    const b = salaryBreakdown;
+  const generatePayslipPDF = (historyItem?: any) => {
+    const b = historyItem ? getSalaryBreakdown(historyItem.latestRecord?.amount || historyItem.grossAmount) : salaryBreakdown;
+    const payrollMonth = historyItem?.month || format(new Date(), 'MMMM yyyy');
 
     generateProfessionalPayslip({
       employeeName: `${employee.firstName} ${employee.lastName}`,

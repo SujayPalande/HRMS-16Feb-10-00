@@ -25,8 +25,14 @@ export default function PfPage() {
   const [selectedUnit, setSelectedUnit] = useState<string>("all");
   const [selectedDepartment, setSelectedDepartment] = useState<string>("all");
   const [selectedPeriod, setSelectedPeriod] = useState("month");
+  const [selectedMonth, setSelectedMonth] = useState(new Date().getMonth());
+  const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
   const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0]);
   const { toast } = useToast();
+
+  const monthsList = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+  const currentYear = new Date().getFullYear();
+  const yearsList = Array.from({ length: 11 }, (_, i) => currentYear - 10 + i);
   
   const getReportPeriod = () => {
     const date = new Date(selectedDate);
@@ -43,8 +49,8 @@ export default function PfPage() {
       endDate.setDate(startDate.getDate() + 6);
       endDate.setHours(23, 59, 59, 999);
     } else if (selectedPeriod === "month") {
-      startDate = new Date(date.getFullYear(), date.getMonth(), 1);
-      endDate = new Date(date.getFullYear(), date.getMonth() + 1, 0, 23, 59, 59, 999);
+      startDate = new Date(selectedYear, selectedMonth, 1);
+      endDate = new Date(selectedYear, selectedMonth + 1, 0, 23, 59, 59, 999);
     } else {
       startDate = new Date(date.getFullYear(), 0, 1);
       endDate = new Date(date.getFullYear(), 11, 31, 23, 59, 59, 999);
@@ -195,7 +201,7 @@ export default function PfPage() {
     });
     
     addHRSignature(doc, (doc as any).lastAutoTable.finalY + 20);
-    doc.save(`provident-fund-report-${selectedPeriod}-${selectedDate}.pdf`);
+    doc.save(`provident-fund-report-${monthsList[selectedMonth]}-${selectedYear}.pdf`);
   };
 
   const handleExportExcel = () => {
@@ -269,7 +275,7 @@ export default function PfPage() {
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    {Array.from({ length: 11 }, (_, i) => new Date().getFullYear() - 10 + i)
+                    {yearsList
                       .filter(year => year <= new Date().getFullYear())
                       .map(year => (
                         <SelectItem key={year} value={String(year)}>{year}</SelectItem>
@@ -278,17 +284,41 @@ export default function PfPage() {
                   </SelectContent>
                 </Select>
               ) : selectedPeriod === 'month' ? (
-                <Input
-                  type="month"
-                  value={selectedDate.substring(0, 7)}
-                  onChange={(e) => {
-                    if (e.target.value) {
-                      setSelectedDate(`${e.target.value}-01`);
-                    }
-                  }}
-                  max={new Date().toISOString().substring(0, 7)}
-                  className="h-9 w-40 font-bold shadow-sm"
-                />
+                <div className="flex gap-2">
+                  <Select 
+                    value={monthsList[selectedMonth]} 
+                    onValueChange={(v) => {
+                      const monthIndex = monthsList.indexOf(v);
+                      setSelectedMonth(monthIndex);
+                    }}
+                  >
+                    <SelectTrigger className="w-32 h-9 font-bold shadow-sm" data-testid="select-month">
+                      <Calendar className="h-4 w-4 mr-2 text-teal-600" />
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {monthsList.map(m => (
+                        <SelectItem key={m} value={m}>{m}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <Select 
+                    value={String(selectedYear)} 
+                    onValueChange={(v) => setSelectedYear(parseInt(v))}
+                  >
+                    <SelectTrigger className="w-24 h-9 font-bold shadow-sm" data-testid="select-year">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {yearsList
+                        .filter(y => y <= new Date().getFullYear())
+                        .map(y => (
+                          <SelectItem key={y} value={String(y)}>{y}</SelectItem>
+                        ))
+                      }
+                    </SelectContent>
+                  </Select>
+                </div>
               ) : selectedPeriod === 'week' ? (
                 <Input
                   type="week"

@@ -20,16 +20,25 @@ export default function BonusReportsPage() {
   const [selectedDept, setSelectedDept] = useState("all");
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedPeriod, setSelectedPeriod] = useState("month");
-  const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0]);
+  const [selectedMonth, setSelectedMonth] = useState(new Date().getMonth());
+  const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
   const { toast } = useToast();
 
+  const monthsList = [
+    "January", "February", "March", "April", "May", "June",
+    "July", "August", "September", "October", "November", "December"
+  ];
+
+  const yearsList = Array.from({ length: 11 }, (_, i) => new Date().getFullYear() - 5 + i);
+
   const getReportPeriod = () => {
-    const date = new Date(selectedDate);
     let startDate, endDate;
     if (selectedPeriod === "day") {
+      const date = new Date(selectedMonth === new Date().getMonth() && selectedYear === new Date().getFullYear() ? new Date().toISOString().split('T')[0] : `${selectedYear}-${String(selectedMonth + 1).padStart(2, '0')}-01`);
       startDate = new Date(date.setHours(0, 0, 0, 0));
       endDate = new Date(date.setHours(23, 59, 59, 999));
     } else if (selectedPeriod === "week") {
+      const date = new Date(selectedMonth === new Date().getMonth() && selectedYear === new Date().getFullYear() ? new Date().toISOString().split('T')[0] : `${selectedYear}-${String(selectedMonth + 1).padStart(2, '0')}-01`);
       const day = date.getDay();
       const diff = date.getDate() - day + (day === 0 ? -6 : 1);
       startDate = new Date(date.setDate(diff));
@@ -38,11 +47,11 @@ export default function BonusReportsPage() {
       endDate.setDate(startDate.getDate() + 6);
       endDate.setHours(23, 59, 59, 999);
     } else if (selectedPeriod === "month") {
-      startDate = new Date(date.getFullYear(), date.getMonth(), 1);
-      endDate = new Date(date.getFullYear(), date.getMonth() + 1, 0, 23, 59, 59, 999);
+      startDate = new Date(selectedYear, selectedMonth, 1);
+      endDate = new Date(selectedYear, selectedMonth + 1, 0, 23, 59, 59, 999);
     } else {
-      startDate = new Date(date.getFullYear(), 0, 1);
-      endDate = new Date(date.getFullYear(), 11, 31, 23, 59, 59, 999);
+      startDate = new Date(selectedYear, 0, 1);
+      endDate = new Date(selectedYear, 11, 31, 23, 59, 59, 999);
     }
     return { startDate, endDate };
   };
@@ -101,7 +110,7 @@ export default function BonusReportsPage() {
       hierarchical[item.unitName][item.departmentName].push(item);
     });
     return hierarchical;
-  }, [filteredEmployees, departments, units, selectedPeriod, selectedDate]);
+  }, [filteredEmployees, departments, units, selectedPeriod, selectedMonth, selectedYear]);
 
   const totalBonus = Object.values(hierarchicalBonusData)
     .flatMap(depts => Object.values(depts).flat())
@@ -128,7 +137,7 @@ export default function BonusReportsPage() {
     
     // Using helper
     import("@/lib/export-utils").then(module => {
-      module.exportToExcel(dataForExport, `Bonus_Report_${selectedDate}`);
+      module.exportToExcel(dataForExport, `Bonus_Report_${monthsList[selectedMonth]}_${selectedYear}`);
     });
     toast({ title: "Bonus Report Exported", description: "Excel file generated." });
   };
@@ -143,7 +152,7 @@ export default function BonusReportsPage() {
       "Department": item.departmentName,
       "Unit": item.unitName
     }));
-    exportToTxt(dataForExport, `Bonus_Report_${selectedDate}`, "Bonus Report");
+    exportToTxt(dataForExport, `Bonus_Report_${monthsList[selectedMonth]}_${selectedYear}`, "Bonus Report");
     toast({ title: "Export Successful", description: "Text report has been downloaded." });
   };
 
@@ -179,7 +188,7 @@ export default function BonusReportsPage() {
     });
     
     addHRSignature(doc, (doc as any).lastAutoTable.finalY + 20);
-    doc.save(`bonus-report-${selectedPeriod}-${selectedDate}.pdf`);
+    doc.save(`bonus-report-${selectedPeriod}-${monthsList[selectedMonth]}-${selectedYear}.pdf`);
   };
 
   return (
@@ -213,63 +222,68 @@ export default function BonusReportsPage() {
               <label className="text-[10px] font-black uppercase text-slate-400 ml-1 tracking-widest">Selection</label>
               {selectedPeriod === 'year' ? (
                 <Select 
-                  value={String(new Date(selectedDate).getFullYear())} 
-                  onValueChange={(v) => {
-                    const d = new Date(selectedDate);
-                    d.setFullYear(parseInt(v));
-                    setSelectedDate(d.toISOString().split('T')[0]);
-                  }}
+                  value={String(selectedYear)} 
+                  onValueChange={(v) => setSelectedYear(parseInt(v))}
                 >
-                  <SelectTrigger className="h-9 w-40 font-bold shadow-sm">
+                  <SelectTrigger className="h-9 w-32 font-bold shadow-sm">
                     <Calendar className="h-4 w-4 mr-2 text-teal-600" />
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    {Array.from({ length: 11 }, (_, i) => new Date().getFullYear() - 10 + i)
-                      .filter(year => year <= new Date().getFullYear())
-                      .map(year => (
-                        <SelectItem key={year} value={String(year)}>{year}</SelectItem>
-                      ))
-                    }
+                    {yearsList.map(year => (
+                      <SelectItem key={year} value={String(year)}>{year}</SelectItem>
+                    ))}
                   </SelectContent>
                 </Select>
               ) : selectedPeriod === 'month' ? (
-                <Input
-                  type="month"
-                  value={selectedDate.substring(0, 7)}
-                  onChange={(e) => {
-                    if (e.target.value) {
-                      setSelectedDate(`${e.target.value}-01`);
-                    }
-                  }}
-                  max={new Date().toISOString().substring(0, 7)}
-                  className="h-9 w-40 font-bold shadow-sm"
-                />
+                <div className="flex gap-2">
+                  <Select 
+                    value={String(selectedMonth)} 
+                    onValueChange={(v) => setSelectedMonth(parseInt(v))}
+                  >
+                    <SelectTrigger className="h-9 w-32 font-bold shadow-sm">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {monthsList.map((month, idx) => (
+                        <SelectItem key={idx} value={String(idx)}>{month}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <Select 
+                    value={String(selectedYear)} 
+                    onValueChange={(v) => setSelectedYear(parseInt(v))}
+                  >
+                    <SelectTrigger className="h-9 w-24 font-bold shadow-sm">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {yearsList.map(year => (
+                        <SelectItem key={year} value={String(year)}>{year}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
               ) : selectedPeriod === 'week' ? (
                 <Input
                   type="week"
-                  value={selectedDate ? (() => {
-                    const d = new Date(selectedDate);
-                    const year = d.getFullYear();
-                    const oneJan = new Date(year, 0, 1);
-                    const numberOfDays = Math.floor((d.getTime() - oneJan.getTime()) / (24 * 60 * 60 * 1000));
-                    const result = Math.ceil((d.getDay() + 1 + numberOfDays) / 7);
-                    return `${year}-W${String(result).padStart(2, '0')}`;
-                  })() : ""}
+                  value={`${selectedYear}-W01`}
                   onChange={(e) => {
                     if (!e.target.value) return;
                     const [year, week] = e.target.value.split('-W');
-                    const d = new Date(parseInt(year), 0, 1);
-                    d.setDate(d.getDate() + (parseInt(week) - 1) * 7);
-                    setSelectedDate(d.toISOString().split('T')[0]);
+                    setSelectedYear(parseInt(year));
                   }}
                   className="h-9 w-40 font-bold shadow-sm"
                 />
               ) : (
                 <Input
                   type="date"
-                  value={selectedDate}
-                  onChange={(e) => setSelectedDate(e.target.value)}
+                  value={`${selectedYear}-${String(selectedMonth + 1).padStart(2, '0')}-01`}
+                  onChange={(e) => {
+                    const d = new Date(e.target.value);
+                    setSelectedMonth(d.getMonth());
+                    setSelectedYear(d.getFullYear());
+                  }}
                   max={new Date().toISOString().split('T')[0]}
                   className="h-9 w-40 font-bold shadow-sm"
                 />

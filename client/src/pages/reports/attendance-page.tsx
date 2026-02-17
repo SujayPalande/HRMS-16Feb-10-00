@@ -30,7 +30,8 @@ import { User, Department, Unit } from "@shared/schema";
 export default function AttendanceReportPage() {
   const [selectedPeriod, setSelectedPeriod] = useState("month"); // day, week, month, year
   const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0]);
-  const [selectedMonth, setSelectedMonth] = useState(`${new Date().toLocaleString('default', { month: 'long' })} ${new Date().getFullYear()}`);
+  const [selectedMonth, setSelectedMonth] = useState(new Date().getMonth());
+  const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
   const [selectedUnit, setSelectedUnit] = useState("all");
   const [selectedDept, setSelectedDept] = useState("all");
   const [expandedEmployees, setExpandedEmployees] = useState<Set<number>>(new Set());
@@ -69,8 +70,8 @@ export default function AttendanceReportPage() {
       endDate.setDate(startDate.getDate() + 6);
       endDate.setHours(23, 59, 59, 999);
     } else if (selectedPeriod === "month") {
-      startDate = new Date(date.getFullYear(), date.getMonth(), 1);
-      endDate = new Date(date.getFullYear(), date.getMonth() + 1, 0, 23, 59, 59, 999);
+      startDate = new Date(selectedYear, selectedMonth, 1);
+      endDate = new Date(selectedYear, selectedMonth + 1, 0, 23, 59, 59, 999);
     } else { // year
       startDate = new Date(date.getFullYear(), 0, 1);
       endDate = new Date(date.getFullYear(), 11, 31, 23, 59, 59, 999);
@@ -155,7 +156,7 @@ export default function AttendanceReportPage() {
       const refNumber = generateReferenceNumber("ATT");
       addReferenceNumber(doc, refNumber, 68);
       addDocumentDate(doc, undefined, 68);
-      doc.save(`attendance_report_${selectedMonth.replace(/\s+/g, '_')}.pdf`);
+      doc.save(`attendance_report_${monthsList[selectedMonth]}_${selectedYear}.pdf`);
       toast({ title: "PDF Exported Successfully" });
     } catch (error) {
       console.error("PDF Export Error:", error);
@@ -169,7 +170,7 @@ export default function AttendanceReportPage() {
       addWatermark(doc);
       addCompanyHeader(doc, { 
         title: "INDIVIDUAL ATTENDANCE REPORT", 
-        subtitle: `${emp.firstName} ${emp.lastName} | ${selectedMonth}` 
+        subtitle: `${emp.firstName} ${emp.lastName} | ${monthsList[selectedMonth]} ${selectedYear}` 
       });
 
       const stats = getDetailedAttendance(emp.id);
@@ -198,7 +199,7 @@ export default function AttendanceReportPage() {
       const refNumber = generateReferenceNumber("IND-ATT");
       addReferenceNumber(doc, refNumber, 68);
       addDocumentDate(doc, undefined, 68);
-      doc.save(`attendance_${emp.firstName}_${emp.lastName}_${selectedMonth.replace(/\s+/g, '_')}.pdf`);
+      doc.save(`attendance_${emp.firstName}_${emp.lastName}_${monthsList[selectedMonth]}_${selectedYear}.pdf`);
       toast({ title: "Individual Report Exported" });
     } catch (error) {
       console.error("Individual PDF Export Error:", error);
@@ -224,7 +225,7 @@ export default function AttendanceReportPage() {
     const worksheet = XLSX.utils.json_to_sheet(dataToExport);
     const workbook = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(workbook, worksheet, "Attendance");
-    XLSX.writeFile(workbook, `attendance_report_${selectedMonth.replace(/\s+/g, '_')}.xlsx`);
+    XLSX.writeFile(workbook, `attendance_report_${monthsList[selectedMonth]}_${selectedYear}.xlsx`);
     toast({ title: "Excel Exported Successfully" });
   };
 
@@ -234,7 +235,7 @@ export default function AttendanceReportPage() {
       return `${emp.employeeId || '-'}\t${emp.firstName} ${emp.lastName}\t${departments.find(d => d.id === emp.departmentId)?.name || '-'}\t${stats.present}\t${stats.absent}\t${stats.total}\n`;
     });
 
-    let textContent = `ATTENDANCE REPORT - ${selectedMonth}\n`;
+    let textContent = `ATTENDANCE REPORT - ${monthsList[selectedMonth]} ${selectedYear}\n`;
     textContent += `Unit: ${selectedUnit === 'all' ? 'All' : selectedUnit}\n`;
     textContent += "=".repeat(80) + "\n";
     textContent += `Emp ID\tName\tDepartment\tPresent\tAbsent\tTotal\n`;
@@ -245,7 +246,7 @@ export default function AttendanceReportPage() {
     const url = window.URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
-    a.download = `attendance_report_${selectedMonth.replace(/\s+/g, '_')}.txt`;
+    a.download = `attendance_report_${monthsList[selectedMonth]}_${selectedYear}.txt`;
     a.click();
     toast({ title: "Text File Exported" });
   };
@@ -269,7 +270,7 @@ export default function AttendanceReportPage() {
     const worksheet = XLSX.utils.json_to_sheet(data);
     const workbook = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(workbook, worksheet, "Attendance");
-    XLSX.writeFile(workbook, `attendance_${emp.firstName}_${emp.lastName}_${selectedMonth.replace(/\s+/g, '_')}.xlsx`);
+    XLSX.writeFile(workbook, `attendance_${emp.firstName}_${emp.lastName}_${monthsList[selectedMonth]}_${selectedYear}.xlsx`);
     toast({ title: "Individual Excel Exported" });
   };
 
@@ -277,7 +278,7 @@ export default function AttendanceReportPage() {
     const stats = getDetailedAttendance(emp.id);
     const dept = departments.find(d => d.id === emp.departmentId);
     
-    let textContent = `ATTENDANCE STATEMENT - ${selectedMonth}\n`;
+    let textContent = `ATTENDANCE STATEMENT - ${monthsList[selectedMonth]} ${selectedYear}\n`;
     textContent += `Employee: ${emp.firstName} ${emp.lastName} (${emp.employeeId})\n`;
     textContent += `Department: ${dept?.name || '-'}\n`;
     textContent += "=".repeat(50) + "\n";
@@ -326,28 +327,38 @@ export default function AttendanceReportPage() {
             <div className="flex flex-col gap-1">
               <label className="text-[10px] font-black uppercase text-slate-400 ml-1 tracking-widest">Selection</label>
               {selectedPeriod === 'month' ? (
-                <Select 
-                  value={selectedMonth} 
-                  onValueChange={(v) => {
-                    setSelectedMonth(v);
-                    const [monthName, year] = v.split(' ');
-                    const monthIndex = monthsList.indexOf(monthName);
-                    const newDate = new Date(parseInt(year), monthIndex, 1);
-                    setSelectedDate(newDate.toISOString().split('T')[0]);
-                  }}
-                >
-                  <SelectTrigger className="w-40 h-9 font-bold shadow-sm" data-testid="select-month">
-                    <Calendar className="h-4 w-4 mr-2 text-teal-600" />
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {[currentYear - 1, currentYear].map(year => (
-                      monthsList.map(m => (
-                        <SelectItem key={`${m}-${year}`} value={`${m} ${year}`}>{m} {year}</SelectItem>
-                      ))
-                    ))}
-                  </SelectContent>
-                </Select>
+                <div className="flex gap-2">
+                  <Select 
+                    value={monthsList[selectedMonth]} 
+                    onValueChange={(v) => {
+                      const monthIndex = monthsList.indexOf(v);
+                      setSelectedMonth(monthIndex);
+                    }}
+                  >
+                    <SelectTrigger className="w-32 h-9 font-bold shadow-sm" data-testid="select-month">
+                      <Calendar className="h-4 w-4 mr-2 text-teal-600" />
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {monthsList.map(m => (
+                        <SelectItem key={m} value={m}>{m}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <Select 
+                    value={String(selectedYear)} 
+                    onValueChange={(v) => setSelectedYear(parseInt(v))}
+                  >
+                    <SelectTrigger className="w-24 h-9 font-bold shadow-sm" data-testid="select-year">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {yearsList.map(y => (
+                        <SelectItem key={y} value={String(y)}>{y}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
               ) : selectedPeriod === 'week' ? (
                  <Input
                   type="week"
