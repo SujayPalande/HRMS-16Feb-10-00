@@ -13916,6 +13916,17 @@
       "createdAt": "2026-02-17T09:13:14.576Z",
       "relatedUserId": null,
       "relatedLeaveId": null
+    },
+    {
+      "userId": 29,
+      "type": "login",
+      "title": "Successful Login",
+      "message": "You have successfully logged in at 2/17/2026",
+      "isRead": false,
+      "id": 788,
+      "createdAt": "2026-02-17T09:46:18.643Z",
+      "relatedUserId": null,
+      "relatedLeaveId": null
     }
   ],
   "currentUserId": 40,
@@ -13923,7 +13934,7 @@
   "currentAttendanceId": 525,
   "currentLeaveRequestId": 41,
   "currentHolidayId": 67,
-  "currentNotificationId": 788,
+  "currentNotificationId": 789,
   "paymentRecords": [
     {
       "id": 1,

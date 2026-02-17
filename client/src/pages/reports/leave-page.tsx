@@ -30,7 +30,8 @@ import { User, Department, Unit } from "@shared/schema";
 export default function LeaveReportPage() {
   const [selectedPeriod, setSelectedPeriod] = useState("month");
   const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0]);
-  const [selectedMonth, setSelectedMonth] = useState(`${new Date().toLocaleString('default', { month: 'long' })} ${new Date().getFullYear()}`);
+  const [selectedMonth, setSelectedMonth] = useState(new Date().getMonth());
+  const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
   const [selectedUnit, setSelectedUnit] = useState("all");
   const [selectedDept, setSelectedDept] = useState("all");
   const [expandedEmployees, setExpandedEmployees] = useState<Set<number>>(new Set());
@@ -61,8 +62,8 @@ export default function LeaveReportPage() {
       endDate.setDate(startDate.getDate() + 6);
       endDate.setHours(23, 59, 59, 999);
     } else if (selectedPeriod === "month") {
-      startDate = new Date(date.getFullYear(), date.getMonth(), 1);
-      endDate = new Date(date.getFullYear(), date.getMonth() + 1, 0, 23, 59, 59, 999);
+      startDate = new Date(selectedYear, selectedMonth, 1);
+      endDate = new Date(selectedYear, selectedMonth + 1, 0, 23, 59, 59, 999);
     } else {
       startDate = new Date(date.getFullYear(), 0, 1);
       endDate = new Date(date.getFullYear(), 11, 31, 23, 59, 59, 999);
@@ -143,7 +144,7 @@ export default function LeaveReportPage() {
       });
       autoTable(doc, { head: [['Emp ID', 'Name', 'Department', 'Approved', 'Pending', 'Remaining']], body: tableData, startY: 70 });
       addFooter(doc);
-      doc.save(`leave_report_${selectedMonth}.pdf`);
+      doc.save(`leave_report_${monthsList[selectedMonth]}_${selectedYear}.pdf`);
       toast({ title: "PDF Exported Successfully" });
     } catch (error) { toast({ title: "Export Failed", variant: "destructive" }); }
   };
@@ -163,7 +164,7 @@ export default function LeaveReportPage() {
     const worksheet = XLSX.utils.json_to_sheet(dataToExport);
     const workbook = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(workbook, worksheet, "Leaves");
-    XLSX.writeFile(workbook, `leave_report_${selectedMonth}.xlsx`);
+    XLSX.writeFile(workbook, `leave_report_${monthsList[selectedMonth]}_${selectedYear}.xlsx`);
     toast({ title: "Excel Exported Successfully" });
   };
 
@@ -176,7 +177,7 @@ export default function LeaveReportPage() {
     const url = window.URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
-    a.download = `leave_report_${selectedMonth}.txt`;
+    a.download = `leave_report_${monthsList[selectedMonth]}_${selectedYear}.txt`;
     a.click();
     toast({ title: "Text Exported Successfully" });
   };
@@ -232,28 +233,38 @@ export default function LeaveReportPage() {
             <div className="flex flex-col gap-1">
               <label className="text-[10px] font-black uppercase text-slate-400 ml-1 tracking-widest">Selection</label>
               {selectedPeriod === 'month' ? (
-                <Select 
-                  value={selectedMonth} 
-                  onValueChange={(v) => {
-                    setSelectedMonth(v);
-                    const [monthName, year] = v.split(' ');
-                    const monthIndex = monthsList.indexOf(monthName);
-                    const newDate = new Date(parseInt(year), monthIndex, 1);
-                    setSelectedDate(newDate.toISOString().split('T')[0]);
-                  }}
-                >
-                  <SelectTrigger className="w-40 h-9 font-bold shadow-sm" data-testid="select-month">
-                    <Calendar className="h-4 w-4 mr-2 text-teal-600" />
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {[currentYear - 1, currentYear].map(year => (
-                      monthsList.map(m => (
-                        <SelectItem key={`${m}-${year}`} value={`${m} ${year}`}>{m} {year}</SelectItem>
-                      ))
-                    ))}
-                  </SelectContent>
-                </Select>
+                <div className="flex gap-2">
+                  <Select 
+                    value={monthsList[selectedMonth]} 
+                    onValueChange={(v) => {
+                      const monthIndex = monthsList.indexOf(v);
+                      setSelectedMonth(monthIndex);
+                    }}
+                  >
+                    <SelectTrigger className="w-32 h-9 font-bold shadow-sm" data-testid="select-month">
+                      <Calendar className="h-4 w-4 mr-2 text-teal-600" />
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {monthsList.map(m => (
+                        <SelectItem key={m} value={m}>{m}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <Select 
+                    value={String(selectedYear)} 
+                    onValueChange={(v) => setSelectedYear(parseInt(v))}
+                  >
+                    <SelectTrigger className="w-24 h-9 font-bold shadow-sm" data-testid="select-year">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {yearsList.map(y => (
+                        <SelectItem key={y} value={String(y)}>{y}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
               ) : selectedPeriod === 'week' ? (
                  <Input
                   type="week"
