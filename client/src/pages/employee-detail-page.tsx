@@ -1345,7 +1345,11 @@ export default function EmployeeDetailPage() {
                                   className="h-8 gap-2 border-indigo-100 text-indigo-600 hover:bg-indigo-50 hover:text-indigo-700 disabled:opacity-50"
                                   disabled={payment.paymentStatus === 'not_generated'}
                                   onClick={() => {
-                                    const b = getSalaryBreakdown(payment.records[0]?.amount || 0);
+                                    // Use the specific record's amount for this month
+                                    const recordToUse = payment.records[0] || payment.latestRecord;
+                                    const amountToUse = recordToUse?.amount || employee.salary || 0;
+                                    const b = getSalaryBreakdown(amountToUse);
+                                    
                                     generateProfessionalPayslip({
                                       employeeName: `${employee.firstName} ${employee.lastName}`,
                                       employeeId: employee.employeeId || employee.id.toString(),
