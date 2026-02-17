@@ -34,11 +34,11 @@ export default function BonusReportsPage() {
   const getReportPeriod = () => {
     let startDate, endDate;
     if (selectedPeriod === "day") {
-      const date = new Date(selectedMonth === new Date().getMonth() && selectedYear === new Date().getFullYear() ? new Date().toISOString().split('T')[0] : `${selectedYear}-${String(selectedMonth + 1).padStart(2, '0')}-01`);
+      const date = new Date(selectedYear, selectedMonth, 1);
       startDate = new Date(date.setHours(0, 0, 0, 0));
       endDate = new Date(date.setHours(23, 59, 59, 999));
     } else if (selectedPeriod === "week") {
-      const date = new Date(selectedMonth === new Date().getMonth() && selectedYear === new Date().getFullYear() ? new Date().toISOString().split('T')[0] : `${selectedYear}-${String(selectedMonth + 1).padStart(2, '0')}-01`);
+      const date = new Date(selectedYear, selectedMonth, 1);
       const day = date.getDay();
       const diff = date.getDate() - day + (day === 0 ? -6 : 1);
       startDate = new Date(date.setDate(diff));

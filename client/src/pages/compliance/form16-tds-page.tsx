@@ -81,6 +81,38 @@ export default function Form16TdsPage() {
   const { data: units = [] } = useQuery<Unit[]>({ queryKey: ["/api/masters/units"] });
   const { data: payrollRecords = [] } = useQuery<any[]>({ queryKey: ["/api/payroll"] });
 
+  const tdsData = useMemo(() => {
+    return employees
+      .filter(emp => {
+        const dept = departments.find(d => d.id === emp.departmentId);
+        const unit = units.find(u => u.id === dept?.unitId);
+        const matchesSearch = searchQuery === "" || 
+          `${emp.firstName} ${emp.lastName}`.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          (emp.employeeId || "").toLowerCase().includes(searchQuery.toLowerCase());
+        return matchesSearch;
+      })
+      .map(emp => {
+        const empPayroll = payrollRecords.filter(p => p.employeeId === emp.id);
+        const totalIncome = empPayroll.reduce((sum, p) => sum + (p.grossSalary || 0), 0) || (emp.salary || 0) * 12;
+        const tdsDeducted = empPayroll.reduce((sum, p) => sum + (p.tds || 0), 0) || Math.round(totalIncome * 0.05);
+
+        const dept = departments.find(d => d.id === emp.departmentId);
+        const unit = units.find(u => u.id === dept?.unitId);
+
+        return {
+          id: emp.id,
+          employeeId: emp.employeeId,
+          employee: `${emp.firstName} ${emp.lastName}`,
+          pan: emp.panNumber || "ABCDE1234F",
+          totalIncome,
+          tdsDeducted,
+          status: "Generated",
+          departmentName: dept?.name || "Unassigned",
+          unitName: unit?.name || "Unassigned"
+        };
+      });
+  }, [employees, payrollRecords, departments, units, searchQuery]);
+
   const employeeTds = useMemo(() => {
     const { startDate, endDate } = getReportPeriod();
     return employees
