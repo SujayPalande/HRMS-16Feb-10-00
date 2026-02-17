@@ -190,24 +190,32 @@ export default function HeadcountReportPage() {
               <div className="flex flex-col gap-1">
                 <label className="text-[10px] font-black uppercase text-slate-400 ml-1 tracking-widest">Selection</label>
                 {selectedPeriod === 'month' ? (
-                  <Select value={selectedMonth} onValueChange={setSelectedMonth}>
-                    <SelectTrigger className="w-40 h-9 font-bold shadow-sm" data-testid="select-month">
-                      <Calendar className="h-4 w-4 mr-2 text-teal-600" />
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {monthsList.map(m => {
-                        const monthYear = `${m} ${selectedDate ? new Date(selectedDate).getFullYear() : currentYear}`;
-                        const monthIndex = monthsList.indexOf(m);
-                        const year = selectedDate ? new Date(selectedDate).getFullYear() : currentYear;
+                <Select 
+                  value={selectedMonth} 
+                  onValueChange={(v) => {
+                    setSelectedMonth(v);
+                    const [monthName, year] = v.split(' ');
+                    const monthIndex = monthsList.indexOf(monthName);
+                    const newDate = new Date(parseInt(year), monthIndex, 1);
+                    setSelectedDate(newDate.toISOString().split('T')[0]);
+                  }}
+                >
+                  <SelectTrigger className="w-40 h-9 font-bold shadow-sm" data-testid="select-month">
+                    <Calendar className="h-4 w-4 mr-2 text-teal-600" />
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {[currentYear - 1, currentYear].map(year => (
+                      monthsList.map((m, monthIndex) => {
                         const isFuture = year > currentYear || (year === currentYear && monthIndex > new Date().getMonth());
                         if (isFuture) return null;
                         return (
-                          <SelectItem key={m} value={monthYear}>{monthYear}</SelectItem>
+                          <SelectItem key={`${m}-${year}`} value={`${m} ${year}`}>{m} {year}</SelectItem>
                         );
-                      })}
-                    </SelectContent>
-                  </Select>
+                      })
+                    ))}
+                  </SelectContent>
+                </Select>
                 ) : selectedPeriod === 'week' ? (
                    <Input
                     type="week"

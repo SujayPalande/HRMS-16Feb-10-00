@@ -179,9 +179,11 @@ export const generateProfessionalPayslip = (data: PayslipData) => {
     
     const netAmount = Math.round(b.net || 0);
     const amountInWords = numberToWords(netAmount);
-    const netPayText = `Total Net Payable ₹${netAmount.toLocaleString()}.00 (Indian Rupee ${amountInWords} Only)`;
+    const netPayText = `Total Net Payable Rs. ${netAmount.toLocaleString()}.00 (Indian Rupee ${amountInWords} Only)`;
     
-    doc.text(netPayText, pageWidth / 2, finalY + 10, { align: "center" });
+    doc.setFontSize(10);
+    const splitNetPay = doc.splitTextToSize(netPayText, pageWidth - 40);
+    doc.text(splitNetPay, pageWidth / 2, finalY + 10, { align: "center" });
 
     doc.setFontSize(8);
     doc.setFont("helvetica", "normal");
