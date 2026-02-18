@@ -5,7 +5,6 @@ import { Loader2 } from "lucide-react";
 import { motion } from "framer-motion";
 import { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { CTCCalculator } from "@/components/payroll/ctc-calculator";
 
 export default function SalaryStructurePage() {
@@ -32,8 +31,8 @@ export default function SalaryStructurePage() {
 
   const salaryComponents = [
     { name: "Basic Salary", type: "Earning", value: `${basicPercent}%`, taxable: true },
-    { name: "HRA", type: "Earning", value: `${hraPercent}%`, taxable: false },
-    { name: "Dearness Allowance", type: "Earning", value: "10%", taxable: true },
+    { name: "House Rent Allowance (HRA)", type: "Earning", value: `${hraPercent}%`, taxable: false },
+    { name: "Dearness Allowance (DA)", type: "Earning", value: "10%", taxable: true },
     { name: "PF (Employee)", type: "Deduction", value: `${epfPercent}%`, taxable: false },
     { name: "ESIC", type: "Deduction", value: `${esicPercent}%`, taxable: false },
     { name: "Professional Tax", type: "Deduction", value: `₹${professionalTax}`, taxable: false },
@@ -51,68 +50,59 @@ export default function SalaryStructurePage() {
 
   return (
     <AppLayout>
-      <div className="space-y-6">
+      <div className="space-y-8 max-w-7xl mx-auto">
         <motion.div
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
           className="flex flex-col md:flex-row md:items-center md:justify-between gap-4"
         >
           <div>
-            <h1 className="text-2xl font-bold text-slate-900" data-testid="text-page-title">Salary Structure (CTC Breakup)</h1>
-            <p className="text-slate-500 mt-1">Manage global salary structure and use the CTC calculator</p>
+            <h1 className="text-3xl font-bold text-slate-900 tracking-tight" data-testid="text-page-title">Salary Structure (CTC Breakup)</h1>
+            <p className="text-slate-500 mt-1 text-lg">Detailed compensation breakdown and statutory compliance calculator</p>
           </div>
         </motion.div>
 
-        <Tabs defaultValue="calculator" className="w-full">
-          <TabsList className="grid w-full grid-cols-2 max-w-[400px]">
-            <TabsTrigger value="calculator">CTC Calculator</TabsTrigger>
-            <TabsTrigger value="active-components">Active Components</TabsTrigger>
-          </TabsList>
+        <div className="space-y-8">
+          <CTCCalculator />
 
-          <TabsContent value="calculator" className="space-y-6 mt-6">
-            <CTCCalculator />
-          </TabsContent>
-
-          <TabsContent value="active-components" className="mt-6">
-            <Card>
-              <CardHeader>
-                <CardTitle>Active Components</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="overflow-x-auto">
-                  <table className="w-full">
-                    <thead>
-                      <tr className="border-b text-xs uppercase text-slate-500 tracking-wider">
-                        <th className="text-left py-3 px-4 font-medium">Component</th>
-                        <th className="text-left py-3 px-4 font-medium">Type</th>
-                        <th className="text-left py-3 px-4 font-medium">Value</th>
-                        <th className="text-left py-3 px-4 font-medium">Taxable</th>
+          <Card className="shadow-lg border-2 border-slate-100 overflow-hidden">
+            <CardHeader className="bg-slate-50/50 border-b">
+              <CardTitle className="text-xl font-bold text-slate-900">Active Salary Components</CardTitle>
+            </CardHeader>
+            <CardContent className="p-0">
+              <div className="overflow-x-auto">
+                <table className="w-full">
+                  <thead>
+                    <tr className="bg-slate-50 text-xs uppercase text-slate-500 tracking-widest font-bold">
+                      <th className="text-left py-4 px-6">Component</th>
+                      <th className="text-left py-4 px-6">Type</th>
+                      <th className="text-left py-4 px-6">Value</th>
+                      <th className="text-left py-4 px-6">Taxable</th>
+                    </tr>
+                  </thead>
+                  <tbody className="text-sm divide-y divide-slate-100">
+                    {salaryComponents.map((comp, index) => (
+                      <tr key={index} className="hover:bg-slate-50/50 transition-colors">
+                        <td className="py-4 px-6 font-semibold text-slate-900">{comp.name}</td>
+                        <td className="py-4 px-6">
+                          <Badge variant={comp.type === "Earning" ? "default" : "destructive"} className="font-bold px-3 py-1">
+                            {comp.type}
+                          </Badge>
+                        </td>
+                        <td className="py-4 px-6 font-mono font-bold text-slate-700">{comp.value}</td>
+                        <td className="py-4 px-6">
+                          <Badge variant={comp.taxable ? "secondary" : "outline"} className="font-bold">
+                            {comp.taxable ? "Yes" : "No"}
+                          </Badge>
+                        </td>
                       </tr>
-                    </thead>
-                    <tbody className="text-sm">
-                      {salaryComponents.map((comp, index) => (
-                        <tr key={index} className="border-b hover:bg-slate-50/50">
-                          <td className="py-3 px-4 font-medium">{comp.name}</td>
-                          <td className="py-3 px-4">
-                            <Badge variant={comp.type === "Earning" ? "default" : "destructive"} className="text-[10px] h-5">
-                              {comp.type}
-                            </Badge>
-                          </td>
-                          <td className="py-3 px-4">{comp.value}</td>
-                          <td className="py-3 px-4">
-                            <Badge variant={comp.taxable ? "secondary" : "outline"} className="text-[10px] h-5">
-                              {comp.taxable ? "Yes" : "No"}
-                            </Badge>
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              </CardContent>
-            </Card>
-          </TabsContent>
-        </Tabs>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
       </div>
     </AppLayout>
   );
