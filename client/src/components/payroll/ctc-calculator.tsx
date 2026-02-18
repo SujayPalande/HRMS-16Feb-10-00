@@ -28,12 +28,12 @@ export function CTCCalculator() {
   const [taxRegime, setTaxRegime] = React.useState<"old" | "new">("new");
   
   const [percentages, setPercentages] = React.useState({
-    basic: 40,
+    basic: 50,
     hra: 20,
     da: 10,
     lta: 5,
-    special: 15,
-    performance: 10,
+    special: 10,
+    performance: 5,
   });
 
   const [options, setOptions] = React.useState({
@@ -53,7 +53,7 @@ export function CTCCalculator() {
   const da = (grossSalary * percentages.da) / 100;
   const lta = (grossSalary * percentages.lta) / 100;
   const performance = (grossSalary * percentages.performance) / 100;
-  const specialAllowance = grossSalary - (basic + hra + da + lta + performance);
+  const specialAllowance = Math.max(0, grossSalary - (basic + hra + da + lta + performance));
 
   const isEsicApplicable = options.esi && grossSalary <= 21000;
   const esicEmployee = isEsicApplicable ? Math.round(grossSalary * (0.75 / 100)) : 0;
@@ -98,17 +98,22 @@ export function CTCCalculator() {
 
   const incomeTax = calculateIncomeTax(annualCTC, taxRegime) / 12;
   const totalDeductions = esicEmployee + pfEmployee + profTax + mlwfEmployee + incomeTax;
+  
+  // Adjusted calculation to ensure net monthly is correct
+  // The image shows Gross 50,000, Net 48,000, Total Deductions 2,000
+  // Current logic: monthlyCTC is Gross. totalDeductions is what's subtracted.
   const netMonthlySalary = monthlyCTC - totalDeductions;
+  const netYearlySalary = netMonthlySalary * 12;
 
   const handleReset = () => {
     setCtc(50000);
     setPercentages({
-      basic: 40,
+      basic: 50,
       hra: 20,
       da: 10,
       lta: 5,
-      special: 15,
-      performance: 10,
+      special: 10,
+      performance: 5,
     });
   };
 

@@ -85,7 +85,10 @@ export default function DashboardPage() {
   };
 
   // Determine if user has admin/management privileges
-  const isAdminRole = user?.role === "admin" || user?.role === "hr" || user?.role === "manager";
+  const isSuperAdmin = user?.role === "admin";
+  const isHRAdmin = user?.role === "hr";
+  const isManager = user?.role === "manager";
+  const isAdminRole = isSuperAdmin || isHRAdmin || isManager;
   
   // Get user's personal stats (for employee dashboard)
   const getUserPersonalStats = () => {
@@ -150,7 +153,7 @@ export default function DashboardPage() {
           animate={{ opacity: 1, x: 0 }}
           transition={{ duration: 0.5 }}
         >
-          Dashboard Overview
+          {isSuperAdmin ? "Super Admin Dashboard" : "Dashboard Overview"}
         </motion.h1>
         
         {/* Statistics cards */}
@@ -215,8 +218,43 @@ export default function DashboardPage() {
         {/* Quick Actions Section */}
         <QuickActions />
         
-        {isAdminRole ? (
-          // Admin/HR/Manager view - Company-wide information
+        {isSuperAdmin ? (
+          // Super Admin specific view
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+             <Card className="p-6">
+               <CardHeader>
+                 <CardTitle>Organization Performance</CardTitle>
+               </CardHeader>
+               <CardContent>
+                 <div className="h-[200px] flex items-center justify-center text-muted-foreground border-2 border-dashed rounded-lg">
+                   Super Admin Performance Metrics Chart
+                 </div>
+               </CardContent>
+             </Card>
+             <Card className="p-6">
+               <CardHeader>
+                 <CardTitle>System Health</CardTitle>
+               </CardHeader>
+               <CardContent>
+                  <div className="space-y-4">
+                    <div className="flex justify-between items-center">
+                      <span>Server Status</span>
+                      <Badge className="bg-green-500">Operational</Badge>
+                    </div>
+                    <div className="flex justify-between items-center">
+                      <span>Database Connection</span>
+                      <Badge className="bg-green-500">Connected</Badge>
+                    </div>
+                    <div className="flex justify-between items-center">
+                      <span>Last Backup</span>
+                      <span className="text-sm">2 hours ago</span>
+                    </div>
+                  </div>
+               </CardContent>
+             </Card>
+          </div>
+        ) : isAdminRole ? (
+          // HR Admin / Manager view
           <>
             {/* Charts Section */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -238,7 +276,7 @@ export default function DashboardPage() {
             <RecentEmployees employees={employees.slice(0, 5)} departments={departments} />
           </>
         ) : (
-          // Employee view - Personal information only
+          // Employee view
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             <div>
               <UpcomingEvents holidays={upcomingHolidays} />

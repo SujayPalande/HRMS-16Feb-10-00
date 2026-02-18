@@ -433,6 +433,50 @@ export class MemStorage implements IStorage {
       customPermissions: [],
       documents: []
     });
+
+    // HR user - Santosh Kelkar - Password: hr123 (hashed)
+    this.initializeUser({
+      id: 6,
+      employeeId: "EMP006",
+      username: "santosh",
+      password: "4ed0c57d4e5b87cd80d3a2060e82c30e6e8cddea45e9655bd2eb471192c1e8bb6e7a15d7f8134c04dcbe56f5ee49b249f38a63ddcd4d81a64ca0c8c06aa67154.b1d6f9fdf91e77c8",
+      email: "santosh@hrconnect.com",
+      firstName: "Santosh",
+      lastName: "Kelkar",
+      dateOfBirth: null,
+      gender: "male",
+      maritalStatus: "married",
+      photoUrl: null,
+      role: "hr",
+      departmentId: 1,
+      position: "Senior HR Specialist",
+      joinDate: new Date(),
+      workLocation: "Main Office",
+      reportingTo: 1,
+      phoneNumber: "987-654-3210",
+      address: "Pune, Maharashtra",
+      bankAccountNumber: null,
+      bankName: null,
+      bankIFSCCode: null,
+      bankAccountType: null,
+      aadhaarCard: null,
+      panCard: null,
+      salary: 75000,
+      uanNumber: null,
+      esicNumber: null,
+      employmentType: 'permanent',
+      pfApplicable: true,
+      esicApplicable: true,
+      ptApplicable: true,
+      mlwfApplicable: true,
+      incomeTaxApplicable: true,
+      overtimeApplicable: false,
+      bonusApplicable: true,
+      isActive: true,
+      status: "active",
+      customPermissions: [],
+      documents: []
+    });
   }
   
   // For initializing users with pre-hashed passwords
@@ -448,7 +492,7 @@ export class MemStorage implements IStorage {
     return {
       salaryComponents: {
         basicSalaryPercentage: 50,
-        hraPercentage: 50,
+        hraPercentage: 20,
         epfPercentage: 12,
         esicPercentage: 0.75,
         professionalTax: 200
