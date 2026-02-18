@@ -12,6 +12,8 @@ import { RecentEmployees } from "@/components/dashboard/recent-employees";
 import { WelcomeSection } from "@/components/dashboard/welcome-section";
 import { DepartmentDistribution } from "@/components/dashboard/department-distribution";
 import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
 import { Calendar, DownloadIcon, RefreshCw } from "lucide-react";
 import { User, Department, LeaveRequest, Holiday, Attendance } from "@shared/schema";
 import { motion } from "framer-motion";

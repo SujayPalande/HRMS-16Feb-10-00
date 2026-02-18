@@ -127,7 +127,7 @@ export const generateProfessionalPayslip = (data: PayslipData) => {
     // Standard Payroll Calculation Logic (Aligned with Statutory Requirements)
     const monthlyGross = b.gross || 0;
     const basicLimit = 15000;
-    const basic = b.basic || 0;
+    const basic = Math.round(monthlyGross * 0.5); // Fixed to 50%
     
     // Employee Side (for Deductions)
     const epfEmployee = Math.min(basic, basicLimit) * 0.12;

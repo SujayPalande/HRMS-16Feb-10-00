@@ -31,7 +31,7 @@ export default function SalaryStructurePage() {
 
   const salaryComponents = [
     { name: "Basic Salary", type: "Earning", value: `${basicPercent}%`, taxable: true },
-    { name: "House Rent Allowance (HRA)", type: "Earning", value: `${hraPercent}%`, taxable: false },
+    { name: "House Rent Allowance (HRA)", type: "Earning", value: "20%", taxable: false },
     { name: "Dearness Allowance (DA)", type: "Earning", value: "10%", taxable: true },
     { name: "PF (Employee)", type: "Deduction", value: `${epfPercent}%`, taxable: false },
     { name: "ESIC", type: "Deduction", value: `${esicPercent}%`, taxable: false },

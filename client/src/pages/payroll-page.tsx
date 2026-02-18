@@ -381,8 +381,8 @@ export default function PayrollPage() {
     (monthlyCTC / totalDaysInMonth) * daysWorked;
   
   // Step 2: Calculate earnings breakdown (using dynamic percentages)
-  const calculateBasicSalary = (grossSalary: number) => (grossSalary || 0) * ((currentSalaryComponents?.basicSalaryPercentage || 50) / 100);
-  const calculateHRA = (basicSalary: number) => (basicSalary || 0) * ((currentSalaryComponents?.hraPercentage || 50) / 100);
+  const calculateBasicSalary = (grossSalary: number) => (grossSalary || 0) * 0.5;
+  const calculateHRA = (basicSalary: number) => (basicSalary || 0) * 0.4; // 20% of Gross = 40% of Basic (since Basic is 50% of Gross)
   
   // Additional earnings components
   const calculateDA = (basicSalary: number) => (basicSalary || 0) * 0.10;

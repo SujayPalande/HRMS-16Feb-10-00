@@ -283,7 +283,7 @@ export default function EmployeeDetailPage() {
     // Step 2: Earnings
     const basicSalary = grossSalary * 0.5; // 50% of Gross
     const da = basicSalary * 0.1; // 10% of Basic
-    const hra = basicSalary * 0.5; // 50% of Basic
+    const hra = basicSalary * 0.4; // 40% of Basic (Adjusted to keep 50% Basic + 20% HRA logic if needed, but here it's 50% of Basic)
     const conveyance = 1600; // Fixed
     const medical = 1250; // Fixed
     const otAmount = 0; // Default
