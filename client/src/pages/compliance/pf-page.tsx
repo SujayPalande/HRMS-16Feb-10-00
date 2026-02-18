@@ -123,8 +123,8 @@ export default function PfPage() {
         return {
           uan: emp.uanNumber || "N/A",
           employee: `${emp.firstName} ${emp.lastName}`,
-          birthDate: emp.dateOfBirth ? new Date(emp.dateOfBirth).toLocaleDateString('dd-MM-yyyy') : "N/A",
-          joinDate: emp.joinDate ? new Date(emp.joinDate).toLocaleDateString('dd-MM-yyyy') : "N/A",
+          birthDate: emp.dateOfBirth ? new Date(emp.dateOfBirth).toLocaleDateString('en-GB').split('/').join('-') : "N/A",
+          joinDate: emp.joinDate ? new Date(emp.joinDate).toLocaleDateString('en-GB').split('/').join('-') : "N/A",
           grossWages: grossSalary,
           pfWages: pfWages,
           pfContr: employeeContrib,

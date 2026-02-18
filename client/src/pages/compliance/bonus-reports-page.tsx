@@ -157,38 +157,44 @@ export default function BonusReportsPage() {
   };
 
   const generateReport = () => {
-    const doc = new jsPDF();
+    const doc = new jsPDF({ orientation: "landscape" });
     addWatermark(doc);
     addCompanyHeader(doc, { 
-      title: "BONUS REPORT", 
-      subtitle: `Period: ${selectedPeriod.toUpperCase()} (${startDate.toLocaleDateString()} - ${endDate.toLocaleDateString()})` 
+      title: "BONUS SUMMARY STATEMENT FOR THE YEAR", 
+      subtitle: `${selectedYear}` 
     });
     addFooter(doc);
     const refNumber = generateReferenceNumber("BON");
     addReferenceNumber(doc, refNumber, 68);
     addDocumentDate(doc, undefined, 68);
     
-    const tableBody = Object.values(hierarchicalBonusData).flatMap(depts => 
+    const flatData = Object.values(hierarchicalBonusData).flatMap(depts => 
       Object.values(depts).flat()
-    ).map(row => [
-      row.employeeId,
-      row.name,
-      row.designation,
-      `Rs. ${row.annualBonus.toLocaleString()}`,
-      row.departmentName,
-      row.unitName
-    ]);
+    );
 
     autoTable(doc, {
       startY: 80,
-      head: [['Emp ID', 'Name', 'Designation', 'Bonus Amount', 'Department', 'Unit']],
-      body: tableBody,
-      theme: 'striped',
-      headStyles: { fillColor: [0, 150, 136] },
+      head: [['Sr.No.', 'Employee ID', 'Employee Name', 'Designation', 'Annual Wages', 'Bonus Amount (8.33%)']],
+      body: flatData.map((row, idx) => [
+        idx + 1,
+        row.employeeId,
+        row.name,
+        row.designation,
+        "N/A", // placeholder for annual wages
+        row.annualBonus.toLocaleString(undefined, { minimumFractionDigits: 2 })
+      ]),
+      theme: 'grid',
+      headStyles: { fillColor: [255, 255, 255], textColor: [0, 0, 0], lineWidth: 0.1, fontSize: 9 },
+      styles: { fontSize: 8, cellPadding: 2 },
+      foot: [[
+        { content: 'TOTALS', colSpan: 5, styles: { halign: 'center', fontStyle: 'bold' } },
+        flatData.reduce((sum, r) => sum + r.annualBonus, 0).toLocaleString(undefined, { minimumFractionDigits: 2 })
+      ]],
+      footStyles: { fillColor: [240, 240, 240], textColor: [0, 0, 0], fontStyle: 'bold' }
     });
     
     addHRSignature(doc, (doc as any).lastAutoTable.finalY + 20);
-    doc.save(`bonus-report-${selectedPeriod}-${monthsList[selectedMonth]}-${selectedYear}.pdf`);
+    doc.save(`Bonus-Report-${selectedYear}.pdf`);
   };
 
   return (

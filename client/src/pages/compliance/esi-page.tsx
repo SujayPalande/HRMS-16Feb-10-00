@@ -127,8 +127,44 @@ export default function EsiPage() {
     setUploadDialogOpen(false);
   };
 
+  const handleExportExcel = () => {
+    const flatData = Object.values(esiData).flatMap(depts => Object.values(depts).flat());
+    
+    // Header row based on Screenshot 2
+    const header = [
+      ["Sl. Number", "IP Name", "No of Days for which wages paid/payable during the month", "Total Monthly Wages", "Reason Code for Zero workings (days)(numeric only; provide 0 for all other reasons)", "Last Working Day"]
+    ];
+
+    const dataRows = flatData.map((row, index) => [
+      index + 1,
+      row.employee,
+      26, // Defaulting to 26 as per screenshot
+      row.grossSalary,
+      0,
+      ""
+    ]);
+
+    const ws = XLSX.utils.aoa_to_sheet([...header, ...dataRows]);
+    
+    // Set column widths for better visibility
+    ws['!cols'] = [
+      { wch: 10 }, // Sl. Number
+      { wch: 30 }, // IP Name
+      { wch: 45 }, // No of Days
+      { wch: 20 }, // Total Monthly Wages
+      { wch: 50 }, // Reason Code
+      { wch: 20 }  // Last Working Day
+    ];
+
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, "ESI Data");
+    XLSX.writeFile(wb, `ESI_Excel_Report_${selectedDate}.xlsx`);
+    
+    toast({ title: "Export Successful", description: "Excel report has been downloaded." });
+  };
+
   const generateReport = () => {
-    const doc = new jsPDF();
+    const doc = new jsPDF({ orientation: "landscape" });
     addWatermark(doc);
     addCompanyHeader(doc, { 
       title: "ESI COMPLIANCE REPORT", 
@@ -141,26 +177,24 @@ export default function EsiPage() {
     
     autoTable(doc, {
       startY: 80,
-      head: [['Employee', 'Gross Salary', 'Employee (0.75%)', 'Employer (3.25%)', 'Total']],
-      body: Object.values(esiData).flatMap(depts => Object.values(depts).flat()).map(row => [
+      head: [['Sl. No', 'Employee Name', 'IP Number', 'No. of Days', 'Gross Wages', 'Employee Contrib', 'Employer Contrib', 'Total']],
+      body: Object.values(esiData).flatMap(depts => Object.values(depts).flat()).map((row, idx) => [
+        idx + 1,
         row.employee,
+        "N/A", // IP Number placeholder
+        26,
         `Rs. ${row.grossSalary.toLocaleString()}`,
         `Rs. ${row.employeeContrib.toLocaleString()}`,
         `Rs. ${row.employerContrib.toLocaleString()}`,
         `Rs. ${row.total.toLocaleString()}`
       ]),
       theme: 'striped',
-      headStyles: { fillColor: [0, 98, 179] },
+      headStyles: { fillColor: [0, 98, 179], fontSize: 9 },
+      styles: { fontSize: 8 },
     });
     
     addHRSignature(doc, (doc as any).lastAutoTable.finalY + 20);
-    doc.save(`employees-state-insurance-report-${monthsList[selectedMonth]}-${selectedYear}.pdf`);
-  };
-
-  const handleExportExcel = () => {
-    const flatData = Object.values(esiData).flatMap(depts => Object.values(depts).flat());
-    exportToExcel(flatData, `ESI_Report_${selectedDate}`);
-    toast({ title: "Export Successful", description: "Excel report has been downloaded." });
+    doc.save(`ESI-Report-${monthsList[selectedMonth]}-${selectedYear}.pdf`);
   };
 
   const handleExportTxt = () => {

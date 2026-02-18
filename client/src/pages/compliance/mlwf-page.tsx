@@ -134,33 +134,51 @@ export default function MlwfPage() {
   };
 
   const generateReport = () => {
-    const doc = new jsPDF();
+    const doc = new jsPDF({ orientation: "landscape" });
     addWatermark(doc);
     addCompanyHeader(doc, { 
-      title: "MLWF COMPLIANCE REPORT", 
-      subtitle: `Period: ${selectedPeriod.toUpperCase()} (${startDate.toLocaleDateString()} - ${endDate.toLocaleDateString()})` 
+      title: "L.W.F. SUMMARY STATEMENT FOR THE MONTH OF", 
+      subtitle: `${monthsList[selectedMonth]} ${selectedYear}` 
     });
     addFooter(doc);
     const refNumber = generateReferenceNumber("MLWF");
     addReferenceNumber(doc, refNumber, 68);
     addDocumentDate(doc, undefined, 68);
     
+    const flatData = Object.values(hierarchicalData).flatMap(depts => Object.values(depts).flat());
+    
     autoTable(doc, {
       startY: 80,
-      head: [['Employee', 'Gross Salary', 'Employee Contrib', 'Employer Contrib', 'Total']],
-      body: Object.values(hierarchicalData).flatMap(depts => Object.values(depts).flat()).map(row => [
+      head: [['Sr.No.', 'Employee Name', 'Gross Wages', 'L.W.F. DEDUCTED', "Employer'sContr."]],
+      body: flatData.map((row, idx) => [
+        idx + 1,
         row.employee,
-        `Rs. ${row.grossSalary.toLocaleString()}`,
-        `Rs. ${row.employeeContrib}`,
-        `Rs. ${row.employerContrib}`,
-        `Rs. ${row.total}`
+        row.grossSalary.toLocaleString(undefined, { minimumFractionDigits: 2 }),
+        row.employeeContrib.toLocaleString(undefined, { minimumFractionDigits: 2 }),
+        row.employerContrib.toLocaleString(undefined, { minimumFractionDigits: 2 })
       ]),
-      theme: 'striped',
-      headStyles: { fillColor: [0, 128, 0] },
+      theme: 'grid',
+      headStyles: { fillColor: [255, 255, 255], textColor: [0, 0, 0], lineWidth: 0.1, fontSize: 9 },
+      styles: { fontSize: 8, cellPadding: 2 },
+      foot: [[
+        { content: 'TOTALS', colSpan: 2, styles: { halign: 'center', fontStyle: 'bold' } },
+        flatData.reduce((sum, r) => sum + r.grossSalary, 0).toLocaleString(undefined, { minimumFractionDigits: 2 }),
+        flatData.reduce((sum, r) => sum + r.employeeContrib, 0).toLocaleString(undefined, { minimumFractionDigits: 2 }),
+        flatData.reduce((sum, r) => sum + r.employerContrib, 0).toLocaleString(undefined, { minimumFractionDigits: 2 })
+      ]],
+      footStyles: { fillColor: [240, 240, 240], textColor: [0, 0, 0], fontStyle: 'bold' }
     });
+
+    const finalY = (doc as any).lastAutoTable.finalY;
+    const totalLWF = flatData.reduce((sum, r) => sum + r.total, 0);
     
-    addHRSignature(doc, (doc as any).lastAutoTable.finalY + 20);
-    doc.save('maharashtra-labour-welfare-fund-report.pdf');
+    doc.setFontSize(10);
+    doc.setFont("helvetica", "bold");
+    doc.text(`Total LWF (Employee's + Employer's) :`, 100, finalY + 15);
+    doc.text(totalLWF.toLocaleString(undefined, { minimumFractionDigits: 2 }), 160, finalY + 15);
+    
+    addHRSignature(doc, finalY + 30);
+    doc.save(`MLWF-Statement-${monthsList[selectedMonth]}-${selectedYear}.pdf`);
   };
 
   const handleExportExcel = () => {
