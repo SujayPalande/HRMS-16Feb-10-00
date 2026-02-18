@@ -73,22 +73,35 @@ export default function BonusReportsPage() {
   });
 
   const hierarchicalBonusData = useMemo(() => {
-    const { startDate, endDate } = getReportPeriod();
+    // Current year's fiscal range (April to March)
+    const fiscalYearStart = new Date(selectedYear, 3, 1); // April 1st
+    const fiscalYearEnd = new Date(selectedYear + 1, 2, 31, 23, 59, 59, 999); // March 31st next year
+
     const data = filteredEmployees
       .filter(emp => emp.isActive && emp.salary && emp.salary > 0)
-      .filter(emp => {
-        const joinDate = emp.joinDate ? new Date(emp.joinDate) : null;
-        return !joinDate || joinDate <= endDate;
-      })
       .map(emp => {
         const monthlyCTC = emp.salary!;
-        const totalDaysInPeriod = Math.ceil((endDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24)) + 1;
-        const daysToConsider = Math.min(30, totalDaysInPeriod);
+        const monthlyBasic = Math.round(monthlyCTC * 0.5);
+        const bonusEligibleSalary = Math.min(monthlyBasic, 7000);
         
-        const grossSalary = Math.round((monthlyCTC / 30) * daysToConsider);
-        const basicSalary = Math.round(grossSalary * 0.5);
-        const bonusEligibleSalary = Math.min(basicSalary, 7000);
-        const bonusAmount = Math.round((bonusEligibleSalary * 8.33 / 100));
+        // Mocking monthly breakdown for the fiscal year
+        const monthlyBreakdown = Array.from({ length: 12 }, (_, i) => {
+          // 0 = April, 1 = May, ..., 8 = December, 9 = January, 10 = February, 11 = March
+          const monthIdx = (i + 3) % 12;
+          const year = i < 9 ? selectedYear : selectedYear + 1;
+          
+          // Check if employee was active in this month (simplified)
+          const joinDate = emp.joinDate ? new Date(emp.joinDate) : null;
+          const isActive = !joinDate || joinDate <= new Date(year, monthIdx + 1, 0);
+          
+          return isActive ? {
+            wages: monthlyBasic,
+            bonus: Math.round(bonusEligibleSalary * 8.33 / 100)
+          } : { wages: 0, bonus: 0 };
+        });
+
+        const totalWages = monthlyBreakdown.reduce((sum, m) => sum + m.wages, 0);
+        const totalBonus = monthlyBreakdown.reduce((sum, m) => sum + m.bonus, 0);
         
         const dept = departments.find(d => d.id === emp.departmentId);
         const unit = units.find(u => u.id === dept?.unitId);
@@ -97,7 +110,9 @@ export default function BonusReportsPage() {
           employeeId: emp.employeeId,
           name: `${emp.firstName} ${emp.lastName}`,
           designation: emp.position,
-          annualBonus: bonusAmount,
+          monthlyBreakdown,
+          totalWages,
+          totalBonus,
           departmentName: dept?.name || "Unassigned",
           unitName: unit?.name || "Unassigned"
         };
@@ -110,11 +125,11 @@ export default function BonusReportsPage() {
       hierarchical[item.unitName][item.departmentName].push(item);
     });
     return hierarchical;
-  }, [filteredEmployees, departments, units, selectedPeriod, selectedMonth, selectedYear]);
+  }, [filteredEmployees, departments, units, selectedYear]);
 
   const totalBonus = Object.values(hierarchicalBonusData)
     .flatMap(depts => Object.values(depts).flat())
-    .reduce((sum, item) => sum + item.annualBonus, 0);
+    .reduce((sum, item) => sum + item.totalBonus, 0);
 
   const bonusStats = [
     { title: "Total Bonus", value: `₹${totalBonus.toLocaleString()}`, icon: <Gift className="h-6 w-6" />, color: "bg-teal-50 text-teal-600 dark:bg-teal-900/30 dark:text-teal-400" },
@@ -129,15 +144,14 @@ export default function BonusReportsPage() {
       "Emp ID": item.employeeId,
       "Name": item.name,
       "Designation": item.designation,
-      "Annual Bonus": item.annualBonus,
+      "Total Wages": item.totalWages,
+      "Total Bonus": item.totalBonus,
       "Department": item.departmentName,
       "Unit": item.unitName
     }));
-    XLSX.utils.json_to_sheet(dataForExport); // Keep for original functionality if needed
     
-    // Using helper
     import("@/lib/export-utils").then(module => {
-      module.exportToExcel(dataForExport, `Bonus_Report_${monthsList[selectedMonth]}_${selectedYear}`);
+      module.exportToExcel(dataForExport, `Bonus_Report_${selectedYear}_${selectedYear + 1}`);
     });
     toast({ title: "Bonus Report Exported", description: "Excel file generated." });
   };
@@ -148,53 +162,92 @@ export default function BonusReportsPage() {
       "Emp ID": item.employeeId,
       "Name": item.name,
       "Designation": item.designation,
-      "Annual Bonus": item.annualBonus,
-      "Department": item.departmentName,
-      "Unit": item.unitName
+      "Total Bonus": item.totalBonus,
     }));
-    exportToTxt(dataForExport, `Bonus_Report_${monthsList[selectedMonth]}_${selectedYear}`, "Bonus Report");
+    exportToTxt(dataForExport, `Bonus_Report_${selectedYear}_${selectedYear + 1}`, "Bonus Report");
     toast({ title: "Export Successful", description: "Text report has been downloaded." });
   };
 
   const generateReport = () => {
-    const doc = new jsPDF({ orientation: "landscape" });
+    const doc = new jsPDF({ orientation: "landscape", unit: "mm", format: "a4" });
     addWatermark(doc);
+    
+    const fiscalYear = `1st April ${selectedYear} to 31st March ${selectedYear + 1}`;
+    
     addCompanyHeader(doc, { 
-      title: "BONUS SUMMARY STATEMENT FOR THE YEAR", 
-      subtitle: `${selectedYear}` 
+      title: "BONUS REGISTER", 
+      subtitle: fiscalYear 
     });
     addFooter(doc);
     const refNumber = generateReferenceNumber("BON");
-    addReferenceNumber(doc, refNumber, 68);
-    addDocumentDate(doc, undefined, 68);
+    addReferenceNumber(doc, refNumber, 45);
+    addDocumentDate(doc, undefined, 45);
     
     const flatData = Object.values(hierarchicalBonusData).flatMap(depts => 
       Object.values(depts).flat()
     );
 
-    autoTable(doc, {
-      startY: 80,
-      head: [['Sr.No.', 'Employee ID', 'Employee Name', 'Designation', 'Annual Wages', 'Bonus Amount (8.33%)']],
-      body: flatData.map((row, idx) => [
+    const months = ["April", "May", "June", "July", "August", "September", "October", "November", "December", "January", "February", "March"];
+    
+    const tableHead = [
+      ['Sr.No.', 'EmpCode', 'Name of the Employee', ...months, 'Total', 'Bonus']
+    ];
+
+    const tableBody = flatData.map((row, idx) => {
+      const breakdown = row.monthlyBreakdown.map(m => m.wages > 0 ? `${m.wages}\n${m.bonus}` : "0.00\n0.00");
+      return [
         idx + 1,
-        row.employeeId,
+        row.employeeId || "N/A",
         row.name,
-        row.designation,
-        "N/A", // placeholder for annual wages
-        row.annualBonus.toLocaleString(undefined, { minimumFractionDigits: 2 })
-      ]),
+        ...breakdown,
+        row.totalWages.toLocaleString(undefined, { minimumFractionDigits: 2 }),
+        row.totalBonus.toLocaleString(undefined, { minimumFractionDigits: 2 })
+      ];
+    });
+
+    autoTable(doc, {
+      startY: 55,
+      head: tableHead,
+      body: tableBody,
       theme: 'grid',
-      headStyles: { fillColor: [255, 255, 255], textColor: [0, 0, 0], lineWidth: 0.1, fontSize: 9 },
-      styles: { fontSize: 8, cellPadding: 2 },
+      headStyles: { 
+        fillColor: [255, 255, 255], 
+        textColor: [0, 0, 0], 
+        lineWidth: 0.1, 
+        fontSize: 7,
+        halign: 'center',
+        valign: 'middle'
+      },
+      styles: { 
+        fontSize: 6, 
+        cellPadding: 1,
+        overflow: 'linebreak',
+        halign: 'right',
+        valign: 'middle'
+      },
+      columnStyles: {
+        0: { halign: 'center', cellWidth: 8 },
+        1: { halign: 'center', cellWidth: 15 },
+        2: { halign: 'left', cellWidth: 35 },
+        15: { fontStyle: 'bold', cellWidth: 18 },
+        16: { fontStyle: 'bold', cellWidth: 15 }
+      },
       foot: [[
-        { content: 'TOTALS', colSpan: 5, styles: { halign: 'center', fontStyle: 'bold' } },
-        flatData.reduce((sum, r) => sum + r.annualBonus, 0).toLocaleString(undefined, { minimumFractionDigits: 2 })
+        { content: 'TOTALS', colSpan: 15, styles: { halign: 'right', fontStyle: 'bold' } },
+        flatData.reduce((sum, r) => sum + r.totalWages, 0).toLocaleString(undefined, { minimumFractionDigits: 2 }),
+        flatData.reduce((sum, r) => sum + r.totalBonus, 0).toLocaleString(undefined, { minimumFractionDigits: 2 })
       ]],
-      footStyles: { fillColor: [240, 240, 240], textColor: [0, 0, 0], fontStyle: 'bold' }
+      footStyles: { fillColor: [255, 255, 255], textColor: [0, 0, 0], lineWidth: 0.1, fontStyle: 'bold' },
+      didParseCell: (data) => {
+        if (data.section === 'body' && data.column.index >= 3 && data.column.index <= 14) {
+          data.cell.styles.fontSize = 5;
+        }
+      }
     });
     
-    addHRSignature(doc, (doc as any).lastAutoTable.finalY + 20);
-    doc.save(`Bonus-Report-${selectedYear}.pdf`);
+    const finalY = (doc as any).lastAutoTable.finalY;
+    addHRSignature(doc, finalY + 15);
+    doc.save(`Bonus-Register-${selectedYear}-${selectedYear + 1}.pdf`);
   };
 
   return (
@@ -404,6 +457,7 @@ export default function BonusReportsPage() {
                               <th className="text-left py-3 px-4 text-slate-600 font-semibold">Emp ID</th>
                               <th className="text-left py-3 px-4 text-slate-600 font-semibold">Employee Name</th>
                               <th className="text-left py-3 px-4 text-slate-600 font-semibold">Designation</th>
+                              <th className="text-left py-3 px-4 text-slate-600 font-semibold">Annual Wages</th>
                               <th className="text-left py-3 px-4 text-slate-600 font-semibold">Annual Bonus</th>
                             </tr>
                           </thead>
@@ -413,7 +467,8 @@ export default function BonusReportsPage() {
                                 <td className="py-3 px-4 text-slate-600">{row.employeeId}</td>
                                 <td className="py-3 px-4 font-medium text-slate-900">{row.name}</td>
                                 <td className="py-3 px-4 text-slate-600">{row.designation}</td>
-                                <td className="py-3 px-4 font-bold text-teal-600">₹{row.annualBonus.toLocaleString()}</td>
+                                <td className="py-3 px-4 text-slate-600">₹{row.totalWages.toLocaleString()}</td>
+                                <td className="py-3 px-4 font-bold text-teal-600">₹{row.totalBonus.toLocaleString()}</td>
                               </tr>
                             ))}
                           </tbody>
