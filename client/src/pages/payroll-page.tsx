@@ -63,7 +63,6 @@ import { apiRequest } from "@/lib/queryClient";
 import { hasPermission } from "@/lib/permissions";
 import jsPDF from 'jspdf';
 import 'jspdf-autotable';
-import { CTCCalculator } from "@/components/payroll/ctc-calculator";
 
 export default function PayrollPage() {
   const { user } = useAuth();
@@ -1497,13 +1496,6 @@ export default function PayrollPage() {
                   Salary
                 </TabsTrigger>
                 <TabsTrigger 
-                  value="calculator" 
-                  className="data-[state=active]:bg-white data-[state=active]:text-indigo-600 data-[state=active]:shadow-md data-[state=active]:border data-[state=active]:border-indigo-200 text-slate-700 font-semibold px-6 py-2 rounded-lg transition-all duration-300 hover:bg-white/50"
-                >
-                  <Calculator className="w-4 h-4 mr-2" />
-                  CTC Calculator
-                </TabsTrigger>
-                <TabsTrigger 
                   value="payments" 
                   className="data-[state=active]:bg-white data-[state=active]:text-purple-600 data-[state=active]:shadow-md data-[state=active]:border data-[state=active]:border-purple-200 text-slate-700 font-semibold px-6 py-2 rounded-lg transition-all duration-300 hover:bg-white/50"
                 >
@@ -1523,10 +1515,6 @@ export default function PayrollPage() {
                 Export Excel
               </Button>
             </div>
-
-            <TabsContent value="calculator" className="p-8 space-y-4">
-              <CTCCalculator />
-            </TabsContent>
 
             <TabsContent value="overview" className="p-8 space-y-8">
               {/* Enhanced Overview Section Header */}
