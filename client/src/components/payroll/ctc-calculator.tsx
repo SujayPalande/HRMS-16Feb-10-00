@@ -7,7 +7,7 @@ import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Separator } from "@/components/ui/separator";
 import { Switch } from "@/components/ui/switch";
 import { Badge } from "@/components/ui/badge";
-import { Calculator, RotateCcw, TrendingUp, TrendingDown } from "lucide-react";
+import { Calculator, RotateCcw } from "lucide-react";
 import { cn } from "@/lib/utils";
 import jsPDF from "jspdf";
 import "jspdf-autotable";
