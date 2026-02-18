@@ -108,22 +108,37 @@ export default function PfPage() {
         
         const grossSalary = Math.round((monthlyCTC / 30) * daysToConsider);
         const basicSalary = Math.round(grossSalary * (salaryComponents.basicSalaryPercentage / 100));
-        const employeeContrib = Math.round(basicSalary * 0.12);
-        const employerContrib = Math.round(basicSalary * 0.12);
-        const edliContrib = Math.round(basicSalary * 0.005);
-        const adminCharges = Math.round(basicSalary * 0.005);
+        const pfWages = Math.min(basicSalary, 15000);
+        
+        const employeeContrib = Math.round(pfWages * 0.12);
+        const pensionFund = Math.round(pfWages * 0.0833);
+        const employerPF = employeeContrib - pensionFund;
+        
+        const edliContrib = Math.round(pfWages * 0.005);
+        const adminCharges = Math.round(pfWages * 0.005);
 
         const dept = departments.find(d => d.id === emp.departmentId);
         const unit = units.find(u => u.id === dept?.unitId);
 
         return {
+          uan: emp.uanNumber || "N/A",
           employee: `${emp.firstName} ${emp.lastName}`,
-          basicSalary,
+          birthDate: emp.dateOfBirth ? new Date(emp.dateOfBirth).toLocaleDateString('dd-MM-yyyy') : "N/A",
+          joinDate: emp.joinDate ? new Date(emp.joinDate).toLocaleDateString('dd-MM-yyyy') : "N/A",
+          grossWages: grossSalary,
+          pfWages: pfWages,
+          pfContr: employeeContrib,
+          emplrPF: employerPF,
+          pensionFund: pensionFund,
+          ncp: 0,
+          monthDays: 26, // As per screenshot 2
+          workedDays: 26, // As per screenshot 2
+          basicSalary, // Keeping for internal/PDF report
           employeeContrib,
-          employerContrib,
+          employerContrib: employeeContrib, // Original logic for total employer
           edliContrib,
           adminCharges,
-          total: employeeContrib + employerContrib + edliContrib + adminCharges,
+          total: employeeContrib + employeeContrib + edliContrib + adminCharges,
           departmentName: dept?.name || "Unassigned",
           unitName: unit?.name || "Unassigned"
         };
@@ -206,7 +221,26 @@ export default function PfPage() {
 
   const handleExportExcel = () => {
     const flatData = Object.values(pfData).flatMap(depts => Object.values(depts).flat());
-    exportToExcel(flatData, `PF_Report_${selectedDate}`);
+    const excelData = flatData.map(row => ({
+      "UAN": row.uan,
+      "Name of the Employee": row.employee,
+      "BirthDate": row.birthDate,
+      "Date of Joining": row.joinDate,
+      "GrossWages": row.grossWages,
+      "PF WAGES": row.pfWages,
+      "PF Contr": row.pfContr,
+      "EMPLR PF": row.emplrPF,
+      "Pension Fund": row.pensionFund,
+      "NCP": row.ncp,
+      "MonthDays": row.monthDays,
+      "WorkedDays": row.workedDays
+    }));
+    
+    const ws = XLSX.utils.json_to_sheet(excelData);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, "PF Data");
+    XLSX.writeFile(wb, `PF_Report_${selectedDate}.xlsx`);
+    
     toast({ title: "Export Successful", description: "Excel report has been downloaded." });
   };
 

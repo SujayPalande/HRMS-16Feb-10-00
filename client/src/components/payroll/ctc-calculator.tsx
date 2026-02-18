@@ -270,7 +270,7 @@ export function CTCCalculator() {
                 ].map((item, i) => (
                   <div key={i} className={cn("flex justify-between text-sm", item.bold && "pt-2 border-t font-bold text-base text-destructive")}>
                     <span className="text-muted-foreground">{item.label}</span>
-                    <span>-₹{Math.round(item.val).toLocaleString()}</span>
+                    <span>₹{Math.round(item.val).toLocaleString()}</span>
                   </div>
                 ))}
               </div>
