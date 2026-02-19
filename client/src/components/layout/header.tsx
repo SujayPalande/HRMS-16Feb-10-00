@@ -242,10 +242,21 @@ export function Header() {
     },
   });
 
+  const isSuperAdmin = user?.role === "admin";
+  const isHR = user?.role === "hr";
+  const isManager = user?.role === "manager";
+
+  const getRoleBadge = () => {
+    if (isSuperAdmin) return <Badge className="bg-indigo-600 hover:bg-indigo-700">Super Admin</Badge>;
+    if (isHR) return <Badge className="bg-teal-600 hover:bg-teal-700">HR Manager</Badge>;
+    if (isManager) return <Badge className="bg-blue-600 hover:bg-blue-700">Manager</Badge>;
+    return <Badge variant="outline">Employee</Badge>;
+  };
+
   return (
     <header className="bg-white border-b border-slate-200 z-10">
       <div className="flex items-center justify-between px-4 py-3">
-        <div className="flex items-center md:w-64">
+        <div className="flex items-center gap-4">
           <Button 
             variant="ghost" 
             size="icon" 
@@ -254,7 +265,10 @@ export function Header() {
           >
             <Menu className="h-5 w-5" />
           </Button>
-          {/* Organization name intentionally removed from header per request */}
+          <div className="flex items-center gap-3">
+            <h2 className="text-lg font-bold text-slate-800 hidden md:block">HRConnect</h2>
+            {getRoleBadge()}
+          </div>
         </div>
         
         <div className="flex items-center ml-auto">

@@ -155,13 +155,45 @@ export default function DashboardPage() {
           animate={{ opacity: 1, x: 0 }}
           transition={{ duration: 0.5 }}
         >
-          {isSuperAdmin ? "Super Admin Dashboard" : "Dashboard Overview"}
+          {isSuperAdmin ? "Super Admin Executive Dashboard" : isHRAdmin ? "HR Management Dashboard" : "Dashboard Overview"}
         </motion.h1>
         
         {/* Statistics cards */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6">
-          {isAdminRole ? (
-            // Admin/HR/Manager view - Company-wide stats
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 md:gap-6">
+          {isSuperAdmin ? (
+            // Super Admin view - High level metrics
+            <>
+              <StatCard
+                title="Total Revenue"
+                value="₹1.2M"
+                total="Target: ₹1.5M"
+                percentage={80}
+                status="present"
+              />
+              <StatCard
+                title="Monthly Payroll"
+                value="₹450K"
+                total="Budget: ₹500K"
+                percentage={90}
+                status="leave"
+              />
+              <StatCard
+                title="Active Projects"
+                value={12}
+                total={15}
+                percentage={80}
+                status="present"
+              />
+              <StatCard
+                title="System Uptime"
+                value="99.9%"
+                total="SLA: 99.5%"
+                percentage={100}
+                status="present"
+              />
+            </>
+          ) : isAdminRole ? (
+            // HR/Manager view - Employee focused stats
             <>
               <StatCard
                 title="Present Today"
@@ -184,12 +216,19 @@ export default function DashboardPage() {
                 percentage={totalEmployees > 0 ? (absentToday / totalEmployees) * 100 : 0}
                 status="absent"
               />
+              <StatCard
+                title="Total Workforce"
+                value={totalEmployees}
+                total={totalEmployees}
+                percentage={100}
+                status="present"
+              />
             </>
           ) : (
             // Employee view - Personal stats
             <>
               <StatCard
-                title="Days Present This Month"
+                title="Days Present"
                 value={personalStats.present}
                 total={personalStats.present + personalStats.absent + personalStats.late}
                 percentage={personalStats.present + personalStats.absent + personalStats.late > 0 
@@ -198,14 +237,14 @@ export default function DashboardPage() {
                 status="present"
               />
               <StatCard
-                title="Leave Requests"
-                value={pendingLeaveRequests.length}
-                total={pendingLeaveRequests.length}
-                percentage={100}
+                title="Leave Balance"
+                value={15}
+                total={24}
+                percentage={62.5}
                 status="leave"
               />
               <StatCard
-                title="Late Days This Month"
+                title="Late Days"
                 value={personalStats.late}
                 total={personalStats.present + personalStats.absent + personalStats.late}
                 percentage={personalStats.present + personalStats.absent + personalStats.late > 0 
@@ -223,33 +262,56 @@ export default function DashboardPage() {
         {isSuperAdmin ? (
           // Super Admin specific view
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-             <Card className="p-6">
-               <CardHeader>
-                 <CardTitle>Organization Performance</CardTitle>
+             <Card className="p-6 border-indigo-100 shadow-md">
+               <CardHeader className="pb-2">
+                 <CardTitle className="text-xl font-bold flex items-center gap-2">
+                   <div className="h-8 w-1 bg-indigo-600 rounded-full" />
+                   Payroll & Financials
+                 </CardTitle>
                </CardHeader>
-               <CardContent>
-                 <div className="h-[200px] flex items-center justify-center text-muted-foreground border-2 border-dashed rounded-lg">
-                   Super Admin Performance Metrics Chart
+               <CardContent className="space-y-4">
+                 <div className="grid grid-cols-2 gap-4">
+                   <div className="p-4 bg-emerald-50 rounded-lg border border-emerald-100">
+                     <p className="text-xs text-emerald-600 uppercase tracking-wider font-bold">Monthly Payout</p>
+                     <p className="text-2xl font-bold text-emerald-900">₹4.5L</p>
+                   </div>
+                   <div className="p-4 bg-blue-50 rounded-lg border border-blue-100">
+                     <p className="text-xs text-blue-600 uppercase tracking-wider font-bold">TDS Liability</p>
+                     <p className="text-2xl font-bold text-blue-900">₹45K</p>
+                   </div>
+                 </div>
+                 <div className="h-[200px] flex items-center justify-center bg-slate-50 border-2 border-dashed border-slate-200 rounded-xl">
+                   <div className="text-center">
+                     <p className="text-slate-500 font-medium italic">Payroll Distribution Chart</p>
+                   </div>
                  </div>
                </CardContent>
              </Card>
-             <Card className="p-6">
-               <CardHeader>
-                 <CardTitle>System Health</CardTitle>
+             <Card className="p-6 border-indigo-100 shadow-md">
+               <CardHeader className="pb-2">
+                 <CardTitle className="text-xl font-bold flex items-center gap-2">
+                   <div className="h-8 w-1 bg-indigo-600 rounded-full" />
+                   System Insights
+                 </CardTitle>
                </CardHeader>
                <CardContent>
-                  <div className="space-y-4">
-                    <div className="flex justify-between items-center">
-                      <span>Server Status</span>
-                      <Badge className="bg-green-500">Operational</Badge>
+                  <div className="space-y-6">
+                    <div className="p-4 bg-indigo-50 rounded-lg flex justify-between items-center border border-indigo-100">
+                      <div>
+                        <p className="font-semibold text-indigo-900">Platform Health</p>
+                        <p className="text-xs text-indigo-700">Excellent performance</p>
+                      </div>
+                      <Badge className="bg-emerald-500">Active</Badge>
                     </div>
-                    <div className="flex justify-between items-center">
-                      <span>Database Connection</span>
-                      <Badge className="bg-green-500">Connected</Badge>
-                    </div>
-                    <div className="flex justify-between items-center">
-                      <span>Last Backup</span>
-                      <span className="text-sm">2 hours ago</span>
+                    <div className="grid grid-cols-2 gap-4">
+                      <div className="p-4 bg-slate-50 rounded-lg border border-slate-100">
+                        <p className="text-xs text-slate-500 uppercase tracking-wider font-bold">Total Staff</p>
+                        <p className="text-2xl font-bold text-slate-900">{employees.length}</p>
+                      </div>
+                      <div className="p-4 bg-slate-50 rounded-lg border border-slate-100">
+                        <p className="text-xs text-slate-500 uppercase tracking-wider font-bold">Active Depts</p>
+                        <p className="text-2xl font-bold text-slate-900">{departments.length}</p>
+                      </div>
                     </div>
                   </div>
                </CardContent>
