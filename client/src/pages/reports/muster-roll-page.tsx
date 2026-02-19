@@ -194,34 +194,53 @@ export default function MusterRollPage() {
     // Fallback to salary if basicSalary is not set
     const effectiveSalary = employee.salary || 0;
     const finalBasic = proRatedBasic || Math.round((effectiveSalary * 0.5 / totalDaysInMonth) * totalDaysWorked);
-    const finalHra = proRatedHra || Math.round((effectiveSalary * 0.5 / totalDaysInMonth) * totalDaysWorked);
+    const finalHra = proRatedHra || Math.round((effectiveSalary * 0.25 / totalDaysInMonth) * totalDaysWorked);
 
     const dailyRate = (basicSalary || effectiveSalary) / 26;
     const hourlyRate = dailyRate / 8;
-    const normalWages = finalBasic;
-    const hraPayable = finalHra;
+    
+    // Additional components from payslip
+    const da = Math.round(finalBasic * 0.05); // Mocked Dearness Allowance
+    const conveyance = 1600; // Mocked Conveyance
+    const medical = 1250; // Mocked Medical
+    const special = 2500; // Mocked Special Allowance
+    const bonusIncentive = 0; // Bonus/Incentives
     const overtimePayable = Math.round(totalHoursWorked > 0 ? (overtimeHours * hourlyRate * 2) : 0);
-    const allowances = payrollData?.allowances || 0;
-    const grossWages = normalWages + hraPayable + overtimePayable + allowances;
-    const pfDeduction = payrollData?.pfContribution || Math.round(normalWages * 0.12);
-    const esiDeduction = payrollData?.esiContribution || (grossWages <= 21000 ? Math.round(grossWages * 0.0075) : 0);
+    
+    const grossEarnings = finalBasic + finalHra + da + conveyance + medical + special + bonusIncentive + overtimePayable;
+    
+    // Deductions
+    const pfDeduction = payrollData?.pfContribution || Math.round(finalBasic * 0.12);
+    const esiDeduction = payrollData?.esiContribution || (grossEarnings <= 21000 ? Math.round(grossEarnings * 0.0075) : 0);
+    const ptDeduction = grossEarnings >= 10000 ? 200 : 0;
+    const itTds = 0; // Income Tax
+    const mlwf = ([6, 12].includes(selectedMonth)) ? 25 : 0; // Half-yearly June/December
+    const loanRecovery = 0;
     const otherDeductions = payrollData?.deductions || 0;
-    const totalDeductions = pfDeduction + esiDeduction + otherDeductions;
-    const netWages = Math.max(0, payrollData?.netSalary || (grossWages - totalDeductions));
+    
+    const totalDeductions = pfDeduction + esiDeduction + ptDeduction + itTds + mlwf + loanRecovery + otherDeductions;
+    const netWages = Math.max(0, grossEarnings - totalDeductions);
 
     return {
       totalDaysWorked,
       totalHoursWorked,
       overtimeHours,
       dailyRate: Math.round(dailyRate),
-      basicSalary: normalWages,
-      normalWages,
-      hraPayable,
+      basicSalary: finalBasic,
+      da,
+      hra: finalHra,
+      conveyance,
+      medical,
+      special,
+      bonusIncentive,
       overtimePayable,
-      allowances,
-      grossWages,
+      grossEarnings,
       pfDeduction,
       esiDeduction,
+      ptDeduction,
+      itTds,
+      mlwf,
+      loanRecovery,
       otherDeductions,
       totalDeductions,
       netWages
@@ -249,7 +268,10 @@ export default function MusterRollPage() {
     ];
     
     if (viewType === "wage") {
-      header.push("Basic", "HRA", "PF", "ESI", "Gross", "Net");
+      header.push(
+        "Basic", "DA", "HRA", "Conv.", "Med.", "Spl.", "Bonus", "OT", "Gross",
+        "PF", "ESI", "PT", "TDS", "MLWF", "Loan", "Other", "Total Ded.", "Net"
+      );
     }
 
     const body = Object.values(hierarchicalData).flatMap(depts => Object.values(depts).flat()).map((emp, index) => {
@@ -270,10 +292,22 @@ export default function MusterRollPage() {
       if (viewType === "wage") {
         row.push(
           data.basicSalary,
-          data.hraPayable,
+          data.da,
+          data.hra,
+          data.conveyance,
+          data.medical,
+          data.special,
+          data.bonusIncentive,
+          data.overtimePayable,
+          data.grossEarnings,
           data.pfDeduction,
           data.esiDeduction,
-          data.grossWages,
+          data.ptDeduction,
+          data.itTds,
+          data.mlwf,
+          data.loanRecovery,
+          data.otherDeductions,
+          data.totalDeductions,
           data.netWages
         );
       }
@@ -302,10 +336,22 @@ export default function MusterRollPage() {
         "Designation": emp.position || "Worker",
         "Days Worked": data.totalDaysWorked,
         "Basic Salary": data.basicSalary,
-        "HRA": data.hraPayable,
+        "DA": data.da,
+        "HRA": data.hra,
+        "Conveyance": data.conveyance,
+        "Medical": data.medical,
+        "Special": data.special,
+        "Bonus": data.bonusIncentive,
+        "OT": data.overtimePayable,
+        "Gross Earnings": data.grossEarnings,
         "PF": data.pfDeduction,
         "ESI": data.esiDeduction,
-        "Gross Wages": data.grossWages,
+        "PT": data.ptDeduction,
+        "TDS": data.itTds,
+        "MLWF": data.mlwf,
+        "Loan Recovery": data.loanRecovery,
+        "Other Deductions": data.otherDeductions,
+        "Total Deductions": data.totalDeductions,
         "Net Wages": data.netWages
       };
     });
@@ -373,10 +419,22 @@ export default function MusterRollPage() {
                         <th rowspan="2">Days</th>
                         ${isWage ? `
                           <th rowspan="2">Basic</th>
+                          <th rowspan="2">DA</th>
                           <th rowspan="2">HRA</th>
+                          <th rowspan="2">Conv.</th>
+                          <th rowspan="2">Med.</th>
+                          <th rowspan="2">Spl.</th>
+                          <th rowspan="2">Bonus</th>
+                          <th rowspan="2">OT</th>
+                          <th rowspan="2">Gross</th>
                           <th rowspan="2">PF</th>
                           <th rowspan="2">ESI</th>
-                          <th rowspan="2">Gross</th>
+                          <th rowspan="2">PT</th>
+                          <th rowspan="2">TDS</th>
+                          <th rowspan="2">MLWF</th>
+                          <th rowspan="2">Loan</th>
+                          <th rowspan="2">Other Ded.</th>
+                          <th rowspan="2">Total Ded.</th>
                           <th rowspan="2">Net</th>
                         ` : ''}
                       </tr>
@@ -396,10 +454,22 @@ export default function MusterRollPage() {
                             <td>${data.totalDaysWorked}</td>
                             ${isWage ? `
                               <td>${data.basicSalary}</td>
-                              <td>${data.hraPayable}</td>
+                              <td>${data.da}</td>
+                              <td>${data.hra}</td>
+                              <td>${data.conveyance}</td>
+                              <td>${data.medical}</td>
+                              <td>${data.special}</td>
+                              <td>${data.bonusIncentive}</td>
+                              <td>${data.overtimePayable}</td>
+                              <td>${data.grossEarnings}</td>
                               <td>${data.pfDeduction}</td>
                               <td>${data.esiDeduction}</td>
-                              <td>${data.grossWages}</td>
+                              <td>${data.ptDeduction}</td>
+                              <td>${data.itTds}</td>
+                              <td>${data.mlwf}</td>
+                              <td>${data.loanRecovery}</td>
+                              <td>${data.otherDeductions}</td>
+                              <td>${data.totalDeductions}</td>
                               <td>${data.netWages}</td>
                             ` : ''}
                           </tr>
@@ -583,71 +653,93 @@ export default function MusterRollPage() {
                           
                           <div className="overflow-x-auto rounded-xl border border-slate-200 shadow-sm bg-white dark:bg-slate-950">
                             <Table className="text-xs">
-                              <TableHeader>
-                                <TableRow className="bg-slate-50 dark:bg-slate-900">
-                                  <TableHead className="text-center w-10 border-r" rowSpan={2}>Sl No</TableHead>
-                                  <TableHead className="min-w-[180px] border-r" rowSpan={2}>Full name of employee</TableHead>
-                                  <TableHead className="text-center w-16 border-r" rowSpan={2}>Age/Sex</TableHead>
-                                  <TableHead className="min-w-[120px] border-r" rowSpan={2}>Designation</TableHead>
-                                  <TableHead className="text-center border-b" colSpan={daysInMonth}>Attendance Details</TableHead>
-                                  <TableHead className="text-center w-12 border-l" rowSpan={2}>{viewType === "muster" ? "Total Days" : "Days"}</TableHead>
-                                  {viewType === "wage" && (
-                                    <>
-                                      <TableHead className="text-center w-24 border-l" rowSpan={2}>Basic Wages</TableHead>
-                                      <TableHead className="text-center w-20 border-l" rowSpan={2}>HRA</TableHead>
-                                      <TableHead className="text-center w-20 border-l" rowSpan={2}>PF</TableHead>
-                                      <TableHead className="text-center w-20 border-l" rowSpan={2}>ESI</TableHead>
-                                      <TableHead className="text-center w-24 border-l" rowSpan={2}>Gross</TableHead>
-                                      <TableHead className="text-center w-20 border-l" rowSpan={2}>Ded.</TableHead>
-                                      <TableHead className="text-center w-28 border-l bg-teal-50 dark:bg-teal-900/20" rowSpan={2}>Net Amount</TableHead>
-                                    </>
-                                  )}
-                                </TableRow>
-                                <TableRow className="bg-slate-50/50 dark:bg-slate-900/50">
-                                  {Array.from({ length: daysInMonth }, (_, i) => (
-                                    <TableHead key={i} className="text-center w-8 p-1 border-r text-[10px] font-bold">{i + 1}</TableHead>
-                                  ))}
-                                </TableRow>
-                              </TableHeader>
-                              <TableBody>
-                                {staff.map((emp, index) => {
-                                  const data = calculateEmployeeData(emp);
-                                  const dob = emp.dateOfBirth ? new Date(emp.dateOfBirth) : null;
-                                  const age = dob ? Math.floor((new Date().getTime() - dob.getTime()) / (365.25 * 24 * 60 * 60 * 1000)) : "-";
-
-                                  return (
-                                    <TableRow key={emp.id} data-testid={`row-employee-${emp.id}`} className="hover:bg-slate-50/50 transition-colors">
-                                      <TableCell className="text-center border-r font-medium text-slate-500">{index + 1}</TableCell>
-                                      <TableCell className="font-semibold border-r text-slate-900 dark:text-slate-100 min-w-[180px]">{emp.firstName} {emp.lastName}</TableCell>
-                                      <TableCell className="text-center border-r text-slate-600 font-medium whitespace-nowrap">{age}/{emp.gender?.[0] || "M"}</TableCell>
-                                      <TableCell className="border-r text-slate-600 font-medium">{emp.position || "Worker"}</TableCell>
-                                      {Array.from({ length: daysInMonth }, (_, i) => (
-                                        <TableCell key={i} className={cn(
-                                          "text-center p-1 border-r text-[10px] font-black",
-                                          getAttendanceForDay(emp.id, i + 1) === 'P' ? "text-emerald-600 bg-emerald-50/20" : 
-                                          getAttendanceForDay(emp.id, i + 1) === 'A' ? "text-rose-600 bg-rose-50/20" : 
-                                          getAttendanceForDay(emp.id, i + 1) === 'L' ? "text-amber-600 bg-amber-50/20" :
-                                          "text-slate-400"
-                                        )}>
-                                          {getAttendanceForDay(emp.id, i + 1)}
-                                        </TableCell>
-                                      ))}
-                                      <TableCell className="text-center font-black border-l bg-slate-50/50 text-slate-900">{data.totalDaysWorked}</TableCell>
+                                  <TableHeader>
+                                    <TableRow className="bg-slate-50 dark:bg-slate-900">
+                                      <TableHead className="text-center w-10 border-r" rowSpan={2}>Sl No</TableHead>
+                                      <TableHead className="min-w-[180px] border-r" rowSpan={2}>Full name of employee</TableHead>
+                                      <TableHead className="text-center w-16 border-r" rowSpan={2}>Age/Sex</TableHead>
+                                      <TableHead className="min-w-[120px] border-r" rowSpan={2}>Designation</TableHead>
+                                      <TableHead className="text-center border-b" colSpan={daysInMonth}>Attendance Details</TableHead>
+                                      <TableHead className="text-center w-12 border-l" rowSpan={2}>{viewType === "muster" ? "Total Days" : "Days"}</TableHead>
                                       {viewType === "wage" && (
                                         <>
-                                          <TableCell className="text-right border-l font-bold text-slate-700">₹{data.basicSalary.toLocaleString()}</TableCell>
-                                          <TableCell className="text-right border-l font-bold text-slate-700">₹{data.hraPayable.toLocaleString()}</TableCell>
-                                          <TableCell className="text-right border-l font-bold text-amber-600 bg-amber-50/10">₹{data.pfDeduction.toLocaleString()}</TableCell>
-                                          <TableCell className="text-right border-l font-bold text-amber-600 bg-amber-50/10">₹{data.esiDeduction.toLocaleString()}</TableCell>
-                                          <TableCell className="text-right border-l font-black text-slate-900 dark:text-slate-100 bg-slate-50/30">₹{data.grossWages.toLocaleString()}</TableCell>
-                                          <TableCell className="text-right border-l font-bold text-rose-600 bg-rose-50/10">₹{data.totalDeductions.toLocaleString()}</TableCell>
-                                          <TableCell className="text-right border-l font-black text-teal-700 bg-teal-50/50 dark:bg-teal-900/20 shadow-inner">{data.netWages.toLocaleString()}</TableCell>
+                                          <TableHead className="text-center w-24 border-l" rowSpan={2}>Basic</TableHead>
+                                          <TableHead className="text-center w-20 border-l" rowSpan={2}>DA</TableHead>
+                                          <TableHead className="text-center w-20 border-l" rowSpan={2}>HRA</TableHead>
+                                          <TableHead className="text-center w-20 border-l" rowSpan={2}>Conv.</TableHead>
+                                          <TableHead className="text-center w-20 border-l" rowSpan={2}>Med.</TableHead>
+                                          <TableHead className="text-center w-20 border-l" rowSpan={2}>Spl.</TableHead>
+                                          <TableHead className="text-center w-20 border-l" rowSpan={2}>Bonus</TableHead>
+                                          <TableHead className="text-center w-20 border-l" rowSpan={2}>OT</TableHead>
+                                          <TableHead className="text-center w-24 border-l" rowSpan={2}>Gross</TableHead>
+                                          <TableHead className="text-center w-20 border-l" rowSpan={2}>PF</TableHead>
+                                          <TableHead className="text-center w-20 border-l" rowSpan={2}>ESI</TableHead>
+                                          <TableHead className="text-center w-20 border-l" rowSpan={2}>PT</TableHead>
+                                          <TableHead className="text-center w-20 border-l" rowSpan={2}>TDS</TableHead>
+                                          <TableHead className="text-center w-20 border-l" rowSpan={2}>MLWF</TableHead>
+                                          <TableHead className="text-center w-20 border-l" rowSpan={2}>Loan</TableHead>
+                                          <TableHead className="text-center w-20 border-l" rowSpan={2}>Other</TableHead>
+                                          <TableHead className="text-center w-24 border-l" rowSpan={2}>Total Ded.</TableHead>
+                                          <TableHead className="text-center w-28 border-l bg-teal-50 dark:bg-teal-900/20" rowSpan={2}>Net Wages</TableHead>
                                         </>
                                       )}
                                     </TableRow>
-                                  );
-                                })}
-                              </TableBody>
+                                    <TableRow className="bg-slate-50/50 dark:bg-slate-900/50">
+                                      {Array.from({ length: daysInMonth }, (_, i) => (
+                                        <TableHead key={i} className="text-center w-8 p-1 border-r text-[10px] font-bold">{i + 1}</TableHead>
+                                      ))}
+                                    </TableRow>
+                                  </TableHeader>
+                                  <TableBody>
+                                    {staff.map((emp, index) => {
+                                      const data = calculateEmployeeData(emp);
+                                      const dob = emp.dateOfBirth ? new Date(emp.dateOfBirth) : null;
+                                      const age = dob ? Math.floor((new Date().getTime() - dob.getTime()) / (365.25 * 24 * 60 * 60 * 1000)) : "-";
+
+                                      return (
+                                        <TableRow key={emp.id} data-testid={`row-employee-${emp.id}`} className="hover:bg-slate-50/50 transition-colors">
+                                          <TableCell className="text-center border-r font-medium text-slate-500">{index + 1}</TableCell>
+                                          <TableCell className="font-semibold border-r text-slate-900 dark:text-slate-100 min-w-[180px]">{emp.firstName} {emp.lastName}</TableCell>
+                                          <TableCell className="text-center border-r text-slate-600 font-medium whitespace-nowrap">{age}/{emp.gender?.[0] || "M"}</TableCell>
+                                          <TableCell className="border-r text-slate-600 font-medium">{emp.position || "Worker"}</TableCell>
+                                          {Array.from({ length: daysInMonth }, (_, i) => (
+                                            <TableCell key={i} className={cn(
+                                              "text-center p-1 border-r text-[10px] font-black",
+                                              getAttendanceForDay(emp.id, i + 1) === 'P' ? "text-emerald-600 bg-emerald-50/20" : 
+                                              getAttendanceForDay(emp.id, i + 1) === 'A' ? "text-rose-600 bg-rose-50/20" : 
+                                              getAttendanceForDay(emp.id, i + 1) === 'L' ? "text-amber-600 bg-amber-50/20" :
+                                              "text-slate-400"
+                                            )}>
+                                              {getAttendanceForDay(emp.id, i + 1)}
+                                            </TableCell>
+                                          ))}
+                                          <TableCell className="text-center font-black border-l bg-slate-50/50 text-slate-900">{data.totalDaysWorked}</TableCell>
+                                          {viewType === "wage" && (
+                                            <>
+                                              <TableCell className="text-right border-l font-bold text-slate-700">₹{data.basicSalary.toLocaleString()}</TableCell>
+                                              <TableCell className="text-right border-l font-bold text-slate-700">₹{data.da.toLocaleString()}</TableCell>
+                                              <TableCell className="text-right border-l font-bold text-slate-700">₹{data.hra.toLocaleString()}</TableCell>
+                                              <TableCell className="text-right border-l font-bold text-slate-700">₹{data.conveyance.toLocaleString()}</TableCell>
+                                              <TableCell className="text-right border-l font-bold text-slate-700">₹{data.medical.toLocaleString()}</TableCell>
+                                              <TableCell className="text-right border-l font-bold text-slate-700">₹{data.special.toLocaleString()}</TableCell>
+                                              <TableCell className="text-right border-l font-bold text-slate-700">₹{data.bonusIncentive.toLocaleString()}</TableCell>
+                                              <TableCell className="text-right border-l font-bold text-slate-700">₹{data.overtimePayable.toLocaleString()}</TableCell>
+                                              <TableCell className="text-right border-l font-black text-slate-900 dark:text-slate-100 bg-slate-50/30">₹{data.grossEarnings.toLocaleString()}</TableCell>
+                                              <TableCell className="text-right border-l font-bold text-amber-600 bg-amber-50/10">₹{data.pfDeduction.toLocaleString()}</TableCell>
+                                              <TableCell className="text-right border-l font-bold text-amber-600 bg-amber-50/10">₹{data.esiDeduction.toLocaleString()}</TableCell>
+                                              <TableCell className="text-right border-l font-bold text-amber-600 bg-amber-50/10">₹{data.ptDeduction.toLocaleString()}</TableCell>
+                                              <TableCell className="text-right border-l font-bold text-amber-600 bg-amber-50/10">₹{data.itTds.toLocaleString()}</TableCell>
+                                              <TableCell className="text-right border-l font-bold text-amber-600 bg-amber-50/10">₹{data.mlwf.toLocaleString()}</TableCell>
+                                              <TableCell className="text-right border-l font-bold text-amber-600 bg-amber-50/10">₹{data.loanRecovery.toLocaleString()}</TableCell>
+                                              <TableCell className="text-right border-l font-bold text-amber-600 bg-amber-50/10">₹{data.otherDeductions.toLocaleString()}</TableCell>
+                                              <TableCell className="text-right border-l font-bold text-rose-600 bg-rose-50/10">₹{data.totalDeductions.toLocaleString()}</TableCell>
+                                              <TableCell className="text-right border-l font-black text-teal-700 bg-teal-50/50 dark:bg-teal-900/20 shadow-inner">{data.netWages.toLocaleString()}</TableCell>
+                                            </>
+                                          )}
+                                        </TableRow>
+                                      );
+                                    })}
+                                  </TableBody>
                             </Table>
                           </div>
                         </div>
