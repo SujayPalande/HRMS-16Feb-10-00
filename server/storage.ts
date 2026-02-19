@@ -434,13 +434,57 @@ export class MemStorage implements IStorage {
       documents: []
     });
 
+    // Super Admin - Navnath - Password: hr123
+    this.initializeUser({
+      id: 7,
+      employeeId: "SA001",
+      username: "navnath",
+      password: "4ed0c57d4e5b87cd80d3a2060e82c30e6e8cddea45e9655bd2eb471192c1e8bb6e7a15d7f8134c04dcbe56f5ee49b249f38a63ddcd4d81a64ca0c8c06aa67154.b1d6f9fdf91e77c8",
+      email: "navnath@cybaemtech.com",
+      firstName: "Navnath",
+      lastName: "Admin",
+      dateOfBirth: null,
+      gender: "male",
+      maritalStatus: "married",
+      photoUrl: null,
+      role: "admin",
+      departmentId: 1,
+      position: "Super Admin",
+      joinDate: new Date(),
+      workLocation: "Corporate Office",
+      reportingTo: null,
+      phoneNumber: "999-999-9999",
+      address: "Corporate HQ",
+      bankAccountNumber: null,
+      bankName: null,
+      bankIFSCCode: null,
+      bankAccountType: null,
+      aadhaarCard: null,
+      panCard: null,
+      salary: 150000,
+      uanNumber: null,
+      esicNumber: null,
+      employmentType: 'permanent',
+      pfApplicable: true,
+      esicApplicable: true,
+      ptApplicable: true,
+      mlwfApplicable: true,
+      incomeTaxApplicable: true,
+      overtimeApplicable: false,
+      bonusApplicable: true,
+      isActive: true,
+      status: "active",
+      customPermissions: [],
+      documents: []
+    });
+
     // HR user - Santosh Kelkar - Password: hr123 (hashed)
     this.initializeUser({
       id: 6,
       employeeId: "EMP006",
       username: "santosh",
       password: "4ed0c57d4e5b87cd80d3a2060e82c30e6e8cddea45e9655bd2eb471192c1e8bb6e7a15d7f8134c04dcbe56f5ee49b249f38a63ddcd4d81a64ca0c8c06aa67154.b1d6f9fdf91e77c8",
-      email: "santosh@hrconnect.com",
+      email: "santosh@cybaemtech.com",
       firstName: "Santosh",
       lastName: "Kelkar",
       dateOfBirth: null,

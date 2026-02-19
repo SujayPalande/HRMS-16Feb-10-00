@@ -14,7 +14,7 @@ import { DepartmentDistribution } from "@/components/dashboard/department-distri
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Calendar, DownloadIcon, RefreshCw } from "lucide-react";
+import { Calendar, DownloadIcon, RefreshCw, TrendingUp } from "lucide-react";
 import { User, Department, LeaveRequest, Holiday, Attendance } from "@shared/schema";
 import { motion } from "framer-motion";
 
@@ -104,7 +104,7 @@ export default function DashboardPage() {
              recordDate.getFullYear() === today.getFullYear();
     });
     
-    const present = thisMonth.filter(record => record.status === 'present').length;
+    const present = thisMonth.filter(record => record.status === 'present' || record.status === 'late').length;
     const absent = thisMonth.filter(record => record.status === 'absent').length;
     const late = thisMonth.filter(record => record.status === 'late').length;
     
@@ -165,30 +165,30 @@ export default function DashboardPage() {
             <>
               <StatCard
                 title="Total Revenue"
-                value="₹1.2M"
-                total="Target: ₹1.5M"
-                percentage={80}
+                value="₹12.5M"
+                total="Target: ₹15M"
+                percentage={83}
                 status="present"
               />
               <StatCard
                 title="Monthly Payroll"
-                value="₹450K"
-                total="Budget: ₹500K"
+                value="₹4.5M"
+                total="Budget: ₹5M"
                 percentage={90}
                 status="leave"
               />
               <StatCard
-                title="Active Projects"
-                value={12}
-                total={15}
-                percentage={80}
+                title="Operating Profit"
+                value="₹2.1M"
+                total="Margin: 16.8%"
+                percentage={85}
                 status="present"
               />
               <StatCard
-                title="System Uptime"
-                value="99.9%"
-                total="SLA: 99.5%"
-                percentage={100}
+                title="System Compliance"
+                value="98.5%"
+                total="Target: 100%"
+                percentage={98}
                 status="present"
               />
             </>
@@ -261,61 +261,101 @@ export default function DashboardPage() {
         
         {isSuperAdmin ? (
           // Super Admin specific view
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-             <Card className="p-6 border-indigo-100 shadow-md">
-               <CardHeader className="pb-2">
-                 <CardTitle className="text-xl font-bold flex items-center gap-2">
-                   <div className="h-8 w-1 bg-indigo-600 rounded-full" />
-                   Payroll & Financials
-                 </CardTitle>
-               </CardHeader>
-               <CardContent className="space-y-4">
-                 <div className="grid grid-cols-2 gap-4">
-                   <div className="p-4 bg-emerald-50 rounded-lg border border-emerald-100">
-                     <p className="text-xs text-emerald-600 uppercase tracking-wider font-bold">Monthly Payout</p>
-                     <p className="text-2xl font-bold text-emerald-900">₹4.5L</p>
+          <div className="space-y-6">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+               <Card className="p-6 border-indigo-100 shadow-lg bg-gradient-to-br from-white to-indigo-50/30">
+                 <CardHeader className="pb-2">
+                   <CardTitle className="text-xl font-bold flex items-center gap-2">
+                     <div className="h-8 w-1 bg-indigo-600 rounded-full" />
+                     Group Financial Summary
+                   </CardTitle>
+                 </CardHeader>
+                 <CardContent className="space-y-4">
+                   <div className="space-y-4">
+                     <div className="p-4 bg-emerald-50 rounded-lg border border-emerald-100 flex justify-between items-center">
+                       <div>
+                         <p className="text-xs text-emerald-600 uppercase tracking-wider font-bold">Total Payout (Monthly)</p>
+                         <p className="text-2xl font-bold text-emerald-900">₹45.20L</p>
+                       </div>
+                       <TrendingUp className="text-emerald-500 h-8 w-8 opacity-50" />
+                     </div>
+                     <div className="p-4 bg-blue-50 rounded-lg border border-blue-100 flex justify-between items-center">
+                       <div>
+                         <p className="text-xs text-blue-600 uppercase tracking-wider font-bold">Total Statutory Dues</p>
+                         <p className="text-2xl font-bold text-blue-900">₹8.45L</p>
+                       </div>
+                       <Badge className="bg-blue-500">PF/ESI/PT</Badge>
+                     </div>
+                     <div className="p-4 bg-purple-50 rounded-lg border border-purple-100 flex justify-between items-center">
+                       <div>
+                         <p className="text-xs text-purple-600 uppercase tracking-wider font-bold">Total TDS Liability</p>
+                         <p className="text-2xl font-bold text-purple-900">₹3.15L</p>
+                       </div>
+                       <RefreshCw className="text-purple-500 h-8 w-8 opacity-50" />
+                     </div>
                    </div>
-                   <div className="p-4 bg-blue-50 rounded-lg border border-blue-100">
-                     <p className="text-xs text-blue-600 uppercase tracking-wider font-bold">TDS Liability</p>
-                     <p className="text-2xl font-bold text-blue-900">₹45K</p>
-                   </div>
-                 </div>
-                 <div className="h-[200px] flex items-center justify-center bg-slate-50 border-2 border-dashed border-slate-200 rounded-xl">
-                   <div className="text-center">
-                     <p className="text-slate-500 font-medium italic">Payroll Distribution Chart</p>
-                   </div>
-                 </div>
-               </CardContent>
-             </Card>
-             <Card className="p-6 border-indigo-100 shadow-md">
-               <CardHeader className="pb-2">
-                 <CardTitle className="text-xl font-bold flex items-center gap-2">
-                   <div className="h-8 w-1 bg-indigo-600 rounded-full" />
-                   System Insights
-                 </CardTitle>
-               </CardHeader>
-               <CardContent>
-                  <div className="space-y-6">
-                    <div className="p-4 bg-indigo-50 rounded-lg flex justify-between items-center border border-indigo-100">
-                      <div>
-                        <p className="font-semibold text-indigo-900">Platform Health</p>
-                        <p className="text-xs text-indigo-700">Excellent performance</p>
-                      </div>
-                      <Badge className="bg-emerald-500">Active</Badge>
+                 </CardContent>
+               </Card>
+
+               <Card className="p-6 border-indigo-100 shadow-lg lg:col-span-2">
+                 <CardHeader className="pb-2 flex flex-row items-center justify-between">
+                   <CardTitle className="text-xl font-bold flex items-center gap-2">
+                     <div className="h-8 w-1 bg-indigo-600 rounded-full" />
+                     Organization Compliance & Payroll Status
+                   </CardTitle>
+                   <Button variant="outline" size="sm" className="gap-2">
+                     <DownloadIcon className="h-4 w-4" />
+                     Export Master Report
+                   </Button>
+                 </CardHeader>
+                 <CardContent>
+                    <div className="overflow-x-auto">
+                      <table className="w-full text-sm text-left">
+                        <thead className="bg-slate-50 text-slate-500 font-medium border-b">
+                          <tr>
+                            <th className="py-3 px-4">Organization</th>
+                            <th className="py-3 px-4">Employees</th>
+                            <th className="py-3 px-4">Payroll Status</th>
+                            <th className="py-3 px-4">Compliance</th>
+                            <th className="py-3 px-4">Action</th>
+                          </tr>
+                        </thead>
+                        <tbody className="divide-y">
+                          {[
+                            { name: "Cybaemtech Pvt Ltd", count: employees.length, payroll: "Processed", comp: "98%", status: "success" },
+                            { name: "Global Solutions", count: 45, payroll: "Pending", comp: "85%", status: "warning" },
+                            { name: "Tech Mahindra (Group)", count: 120, payroll: "Processing", comp: "92%", status: "info" }
+                          ].map((org, i) => (
+                            <tr key={i} className="hover:bg-slate-50/50 transition-colors">
+                              <td className="py-3 px-4 font-medium text-slate-900">{org.name}</td>
+                              <td className="py-3 px-4 text-slate-600">{org.count}</td>
+                              <td className="py-3 px-4">
+                                <Badge variant={org.payroll === "Processed" ? "default" : "outline"}>
+                                  {org.payroll}
+                                </Badge>
+                              </td>
+                              <td className="py-3 px-4">
+                                <div className="flex items-center gap-2">
+                                  <div className="w-16 h-1.5 bg-slate-100 rounded-full overflow-hidden">
+                                    <div className="h-full bg-indigo-500" style={{ width: org.comp }} />
+                                  </div>
+                                  <span className="text-xs font-semibold">{org.comp}</span>
+                                </div>
+                              </td>
+                              <td className="py-3 px-4 text-indigo-600 hover:underline cursor-pointer font-medium">View Details</td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
                     </div>
-                    <div className="grid grid-cols-2 gap-4">
-                      <div className="p-4 bg-slate-50 rounded-lg border border-slate-100">
-                        <p className="text-xs text-slate-500 uppercase tracking-wider font-bold">Total Staff</p>
-                        <p className="text-2xl font-bold text-slate-900">{employees.length}</p>
-                      </div>
-                      <div className="p-4 bg-slate-50 rounded-lg border border-slate-100">
-                        <p className="text-xs text-slate-500 uppercase tracking-wider font-bold">Active Depts</p>
-                        <p className="text-2xl font-bold text-slate-900">{departments.length}</p>
-                      </div>
-                    </div>
-                  </div>
-               </CardContent>
-             </Card>
+                 </CardContent>
+               </Card>
+            </div>
+
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              <AttendanceOverview />
+              <DepartmentDistribution employees={employees} departments={departments} />
+            </div>
           </div>
         ) : isAdminRole ? (
           // HR Admin / Manager view
