@@ -133,25 +133,16 @@ export default function MlwfPage() {
     setUploadDialogOpen(false);
   };
 
-  const generateReport = () => {
+  const generateReport = async () => {
     const doc = new jsPDF({ orientation: "portrait", unit: "mm", format: "a4" });
     addWatermark(doc);
     
-    // Header based on Screenshot 3
-    doc.setFontSize(14);
-    doc.setFont("helvetica", "bold");
-    doc.text("VAISHNAVI ENTERPRISES", 105, 15, { align: "center" });
-    doc.setFontSize(8);
-    doc.setFont("helvetica", "normal");
-    doc.text("GAT NO 4 TRIVENINAGAR CHOWK, NEAR RAM MANDIR TALWADE, PUNE 411062", 105, 20, { align: "center" });
-    
-    doc.setFontSize(10);
-    doc.setFont("helvetica", "bold");
-    doc.text(`L.W.F. SUMMARY STATEMENT FOR THE MONTH OF           ${monthsList[selectedMonth].toUpperCase()} ${selectedYear}`, 15, 30);
-    
-    doc.setFontSize(7);
-    doc.text(`Page 1 of 1`, 160, 28);
-    doc.text(`Print Date/Time : ${new Date().toLocaleString()}`, 160, 32);
+    // Header based on ASN styles
+    await addCompanyHeader(doc, { 
+      title: "L.W.F. SUMMARY STATEMENT FOR THE MONTH OF",
+      subtitle: `${monthsList[selectedMonth].toUpperCase()} ${selectedYear}`
+    });
+    addFooter(doc);
 
     const summaryData = Object.entries(hierarchicalData).flatMap(([unitName, depts]) => {
       return Object.entries(depts).map(([deptName, staff]) => {
@@ -165,7 +156,7 @@ export default function MlwfPage() {
     });
 
     autoTable(doc, {
-      startY: 35,
+      startY: 65,
       head: [['Sr.No.', 'Employee Name', 'Gross Wages', 'L.W.F. DEDUCTED', "Employer'sContr."]],
       body: summaryData.map((row, idx) => [
         idx + 1,

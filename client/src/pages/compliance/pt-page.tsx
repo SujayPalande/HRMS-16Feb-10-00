@@ -133,29 +133,20 @@ export default function PtPage() {
     setUploadDialogOpen(false);
   };
 
-  const generateReport = () => {
+  const generateReport = async () => {
     const doc = new jsPDF({ orientation: "portrait", unit: "mm", format: "a4" });
     addWatermark(doc);
     
-    // Header based on Screenshot 2
-    doc.setFontSize(14);
-    doc.setFont("helvetica", "bold");
-    doc.text("VAISHNAVI ENTERPRISES", 105, 15, { align: "center" });
-    doc.setFontSize(8);
-    doc.setFont("helvetica", "normal");
-    doc.text("GAT NO 4 TRIVENINAGAR CHOWK, NEAR RAM MANDIR TALWADE, PUNE 411062", 105, 20, { align: "center" });
-    
-    doc.setFontSize(10);
-    doc.setFont("helvetica", "bold");
-    doc.text(`PROFESSION TAX FOR THE MONTH OF           ${monthsList[selectedMonth].toUpperCase()} ${selectedYear}`, 15, 30);
-    
-    doc.setFontSize(7);
-    doc.text(`Page 1 of 1`, 160, 28);
-    doc.text(`Print Date/Time : ${new Date().toLocaleString()}`, 160, 32);
+    // Header based on ASN styles
+    await addCompanyHeader(doc, { 
+      title: "PROFESSION TAX FOR THE MONTH OF",
+      subtitle: `${monthsList[selectedMonth].toUpperCase()} ${selectedYear}`
+    });
+    addFooter(doc);
 
     const summaryData = Object.entries(ptData).flatMap(([unitName, depts]) => {
       return Object.entries(depts).map(([deptName, staff]) => {
-        const maleStaff = staff.filter(s => true); // Mocking gender for summary
+        const maleStaff = staff.filter(s => true); 
         const femaleStaff = staff.filter(s => false);
         
         return {
@@ -171,7 +162,7 @@ export default function PtPage() {
     });
 
     autoTable(doc, {
-      startY: 35,
+      startY: 65,
       head: [
         [
           { content: 'Sr.No.', rowSpan: 2 },

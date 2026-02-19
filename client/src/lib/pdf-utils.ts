@@ -32,46 +32,48 @@ const LOGIN_LOGO_URL = "/images/img.png";
 export async function addCompanyHeader(doc: jsPDF, config: PDFConfig = { title: "" }) {
   const pageWidth = doc.internal.pageSize.getWidth();
   
-  doc.setFillColor(166, 199, 199);
-  doc.rect(0, 0, pageWidth, 35, "F");
-  
-  doc.setFillColor(207, 69, 32);
-  doc.rect(0, 35, pageWidth, 3, "F");
+  // Clean header background
+  doc.setFillColor(255, 255, 255);
+  doc.rect(0, 0, pageWidth, 40, "F");
   
   try {
-    doc.addImage(LOGIN_LOGO_URL, "PNG", 10, 5, 25, 25); 
+    // ASN Logo on the left
+    doc.addImage(ASN_LOGO_BASE64, "PNG", 15, 8, 45, 25);
   } catch (e) {
-    try {
-      doc.addImage(ASN_LOGO_BASE64, "PNG", 10, 5, 40, 25);
-    } catch (e2) {
-      doc.setFontSize(16);
-      doc.setTextColor(207, 69, 32);
-      doc.setFont("helvetica", "bold");
-      doc.text("ASN", 15, 20);
-    }
+    doc.setFontSize(22);
+    doc.setTextColor(0, 51, 102);
+    doc.setFont("helvetica", "bold");
+    doc.text("ASN", 15, 25);
   }
   
+  // Company Info on the right
   doc.setFontSize(14);
   doc.setTextColor(0, 51, 102);
   doc.setFont("helvetica", "bold");
-  doc.text(COMPANY_NAME, pageWidth - 15, 15, { align: "right" });
+  doc.text(COMPANY_NAME, pageWidth - 15, 18, { align: "right" });
   
   doc.setFontSize(9);
   doc.setTextColor(80, 80, 80);
   doc.setFont("helvetica", "normal");
-  doc.text(COMPANY_TAGLINE, pageWidth - 15, 25, { align: "right" });
+  doc.text(COMPANY_TAGLINE, pageWidth - 15, 24, { align: "right" });
+  doc.text(COMPANY_ADDRESS, pageWidth - 15, 30, { align: "right" });
   
+  // Thin separator line
+  doc.setDrawColor(200, 200, 200);
+  doc.setLineWidth(0.1);
+  doc.line(15, 40, pageWidth - 15, 40);
+
   doc.setTextColor(0, 0, 0);
   
   if (config.title) {
-    doc.setFontSize(16);
+    doc.setFontSize(12);
     doc.setFont("helvetica", "bold");
     doc.text(config.title, pageWidth / 2, 50, { align: "center" });
     
     if (config.subtitle) {
-      doc.setFontSize(10);
+      doc.setFontSize(9);
       doc.setFont("helvetica", "normal");
-      doc.text(config.subtitle, pageWidth / 2, 58, { align: "center" });
+      doc.text(config.subtitle, pageWidth / 2, 56, { align: "center" });
     }
   }
 }
@@ -137,19 +139,16 @@ export function addFooter(doc: jsPDF) {
   const pageWidth = doc.internal.pageSize.getWidth();
   const pageHeight = doc.internal.pageSize.getHeight();
   
-  doc.setFillColor(166, 199, 199);
-  doc.rect(0, pageHeight - 20, pageWidth, 20, "F");
-  
-  doc.setDrawColor(207, 69, 32);
-  doc.setLineWidth(0.5);
-  doc.line(0, pageHeight - 20, pageWidth, pageHeight - 20);
+  doc.setDrawColor(200, 200, 200);
+  doc.setLineWidth(0.1);
+  doc.line(15, pageHeight - 15, pageWidth - 15, pageHeight - 15);
   
   doc.setFontSize(8);
-  doc.setTextColor(60, 60, 60);
+  doc.setTextColor(100, 100, 100);
   doc.setFont("helvetica", "normal");
   
-  doc.text(COMPANY_ADDRESS, pageWidth / 2, pageHeight - 12, { align: "center" });
-  doc.text(`Email: info@asnhrconsultancy.com | Website: ${COMPANY_WEBSITE}`, pageWidth / 2, pageHeight - 6, { align: "center" });
+  const footerText = `${COMPANY_NAME} | Email: info@asnhrconsultancy.com | Website: ${COMPANY_WEBSITE}`;
+  doc.text(footerText, pageWidth / 2, pageHeight - 10, { align: "center" });
 }
 
 export function addDocumentDate(doc: jsPDF, date?: string, yPosition: number = 68) {

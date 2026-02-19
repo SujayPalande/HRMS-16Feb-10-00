@@ -163,30 +163,20 @@ export default function EsiPage() {
     toast({ title: "Export Successful", description: "Excel report has been downloaded." });
   };
 
-  const generateReport = () => {
+  const generateReport = async () => {
     const doc = new jsPDF({ orientation: "portrait", unit: "mm", format: "a4" });
     addWatermark(doc);
     
-    // Header based on Screenshot 1
-    doc.setFontSize(14);
-    doc.setFont("helvetica", "bold");
-    doc.text("VAISHNAVI ENTERPRISES", 105, 15, { align: "center" });
-    doc.setFontSize(8);
-    doc.setFont("helvetica", "normal");
-    doc.text("GAT NO 4 TRIVENINAGAR CHOWK, NEAR RAM MANDIR TALWADE, PUNE 411062", 105, 20, { align: "center" });
-    
-    doc.setFontSize(10);
-    doc.setFont("helvetica", "bold");
-    doc.text(`E.S.I. STATEMENT FOR THE MONTH OF           ${monthsList[selectedMonth].toUpperCase()} ${selectedYear}`, 15, 30);
-    
-    // Page numbering and date/time
-    doc.setFontSize(7);
-    doc.text(`Page 1 of 1`, 160, 28);
-    doc.text(`Print Date/Time : ${new Date().toLocaleString()}`, 160, 32);
+    // Header based on ASN styles
+    await addCompanyHeader(doc, { 
+      title: "E.S.I. STATEMENT FOR THE MONTH OF",
+      subtitle: `${monthsList[selectedMonth].toUpperCase()} ${selectedYear}`
+    });
+    addFooter(doc);
 
     const flatData = Object.entries(esiData).flatMap(([unitName, depts]) => {
       const unitRows = Object.entries(depts).flatMap(([deptName, staff]) => staff);
-      const unitTotalDays = unitRows.reduce((sum, r) => sum + 26, 0); // Defaulting to 26 as per screenshot logic
+      const unitTotalDays = unitRows.reduce((sum, r) => sum + 26, 0); 
       const unitTotalWages = unitRows.reduce((sum, r) => sum + r.grossSalary, 0);
       const unitTotalAmount = unitRows.reduce((sum, r) => sum + r.employeeContrib, 0);
 
@@ -198,15 +188,15 @@ export default function EsiPage() {
     });
 
     autoTable(doc, {
-      startY: 35,
+      startY: 65,
       head: [['Sr.No.', 'E.S.I. NO.', 'Name of the Employee', 'Days', 'ESI Salary', 'ESI Amount']],
       body: flatData.map((row: any) => {
         if (row.type === 'unit_header') {
-          return [{ content: row.name, colSpan: 6, styles: { fontStyle: 'bold', fontSize: 9 } }];
+          return [{ content: row.name, colSpan: 6, styles: { fontStyle: 'bold', fontSize: 9, fillColor: [245, 245, 245] } }];
         }
         if (row.type === 'unit_footer') {
           return [
-            '', '', '', 
+            '', '', { content: 'UNIT TOTAL', styles: { fontStyle: 'bold' } }, 
             row.days.toFixed(2), 
             row.wages.toLocaleString(undefined, { minimumFractionDigits: 2 }), 
             row.amount.toFixed(2)
@@ -214,7 +204,7 @@ export default function EsiPage() {
         }
         return [
           row.index,
-          "3317" + Math.floor(Math.random() * 1000000), // Placeholder ESI No
+          "3317" + Math.floor(Math.random() * 1000000), 
           row.employee.toUpperCase(),
           "26.00",
           row.grossSalary.toLocaleString(undefined, { minimumFractionDigits: 2 }),
