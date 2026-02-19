@@ -449,7 +449,7 @@ export class MemStorage implements IStorage {
       photoUrl: null,
       role: "hr",
       departmentId: 1,
-      position: "Senior HR Specialist",
+      position: "HR Manager",
       joinDate: new Date(),
       workLocation: "Main Office",
       reportingTo: 1,
