@@ -134,50 +134,76 @@ export default function MlwfPage() {
   };
 
   const generateReport = () => {
-    const doc = new jsPDF({ orientation: "landscape" });
+    const doc = new jsPDF({ orientation: "portrait", unit: "mm", format: "a4" });
     addWatermark(doc);
-    addCompanyHeader(doc, { 
-      title: "L.W.F. SUMMARY STATEMENT FOR THE MONTH OF", 
-      subtitle: `${monthsList[selectedMonth]} ${selectedYear}` 
-    });
-    addFooter(doc);
-    const refNumber = generateReferenceNumber("MLWF");
-    addReferenceNumber(doc, refNumber, 68);
-    addDocumentDate(doc, undefined, 68);
     
-    const flatData = Object.values(hierarchicalData).flatMap(depts => Object.values(depts).flat());
-    
-    autoTable(doc, {
-      startY: 80,
-      head: [['Sr.No.', 'Employee Name', 'Gross Wages', 'L.W.F. DEDUCTED', "Employer'sContr."]],
-      body: flatData.map((row, idx) => [
-        idx + 1,
-        row.employee,
-        row.grossSalary.toLocaleString(undefined, { minimumFractionDigits: 2 }),
-        row.employeeContrib.toLocaleString(undefined, { minimumFractionDigits: 2 }),
-        row.employerContrib.toLocaleString(undefined, { minimumFractionDigits: 2 })
-      ]),
-      theme: 'grid',
-      headStyles: { fillColor: [255, 255, 255], textColor: [0, 0, 0], lineWidth: 0.1, fontSize: 9 },
-      styles: { fontSize: 8, cellPadding: 2 },
-      foot: [[
-        { content: 'TOTALS', colSpan: 2, styles: { halign: 'center', fontStyle: 'bold' } },
-        flatData.reduce((sum, r) => sum + r.grossSalary, 0).toLocaleString(undefined, { minimumFractionDigits: 2 }),
-        flatData.reduce((sum, r) => sum + r.employeeContrib, 0).toLocaleString(undefined, { minimumFractionDigits: 2 }),
-        flatData.reduce((sum, r) => sum + r.employerContrib, 0).toLocaleString(undefined, { minimumFractionDigits: 2 })
-      ]],
-      footStyles: { fillColor: [240, 240, 240], textColor: [0, 0, 0], fontStyle: 'bold' }
-    });
-
-    const finalY = (doc as any).lastAutoTable.finalY;
-    const totalLWF = flatData.reduce((sum, r) => sum + r.total, 0);
+    // Header based on Screenshot 3
+    doc.setFontSize(14);
+    doc.setFont("helvetica", "bold");
+    doc.text("VAISHNAVI ENTERPRISES", 105, 15, { align: "center" });
+    doc.setFontSize(8);
+    doc.setFont("helvetica", "normal");
+    doc.text("GAT NO 4 TRIVENINAGAR CHOWK, NEAR RAM MANDIR TALWADE, PUNE 411062", 105, 20, { align: "center" });
     
     doc.setFontSize(10);
     doc.setFont("helvetica", "bold");
-    doc.text(`Total LWF (Employee's + Employer's) :`, 100, finalY + 15);
-    doc.text(totalLWF.toLocaleString(undefined, { minimumFractionDigits: 2 }), 160, finalY + 15);
+    doc.text(`L.W.F. SUMMARY STATEMENT FOR THE MONTH OF           ${monthsList[selectedMonth].toUpperCase()} ${selectedYear}`, 15, 30);
     
-    addHRSignature(doc, finalY + 30);
+    doc.setFontSize(7);
+    doc.text(`Page 1 of 1`, 160, 28);
+    doc.text(`Print Date/Time : ${new Date().toLocaleString()}`, 160, 32);
+
+    const summaryData = Object.entries(hierarchicalData).flatMap(([unitName, depts]) => {
+      return Object.entries(depts).map(([deptName, staff]) => {
+        return {
+          name: `${unitName} - ${deptName}`.toUpperCase(),
+          grossWages: staff.reduce((sum, s) => sum + s.grossSalary, 0),
+          employeeContrib: staff.reduce((sum, s) => sum + s.employeeContrib, 0),
+          employerContrib: staff.reduce((sum, s) => sum + s.employerContrib, 0)
+        };
+      });
+    });
+
+    autoTable(doc, {
+      startY: 35,
+      head: [['Sr.No.', 'Employee Name', 'Gross Wages', 'L.W.F. DEDUCTED', "Employer'sContr."]],
+      body: summaryData.map((row, idx) => [
+        idx + 1,
+        row.name,
+        row.grossWages.toLocaleString(undefined, { minimumFractionDigits: 2 }),
+        row.employeeContrib.toLocaleString(undefined, { minimumFractionDigits: 2 }),
+        row.employerContrib.toLocaleString(undefined, { minimumFractionDigits: 2 })
+      ]),
+      theme: 'plain',
+      headStyles: { 
+        fillColor: [255, 255, 255], 
+        textColor: [0, 0, 0], 
+        fontSize: 8, 
+        fontStyle: 'bold',
+        lineWidth: { bottom: 0.1, top: 0.1 } 
+      },
+      styles: { fontSize: 7, cellPadding: 1, halign: 'right' },
+      columnStyles: {
+        0: { halign: 'center', cellWidth: 15 },
+        1: { halign: 'left', cellWidth: 80 }
+      },
+      foot: [[
+        { content: 'TOTALS', colSpan: 2, styles: { halign: 'center', fontStyle: 'bold' } },
+        summaryData.reduce((sum, r) => sum + r.grossWages, 0).toLocaleString(undefined, { minimumFractionDigits: 2 }),
+        summaryData.reduce((sum, r) => sum + r.employeeContrib, 0).toLocaleString(undefined, { minimumFractionDigits: 2 }),
+        summaryData.reduce((sum, r) => sum + r.employerContrib, 0).toLocaleString(undefined, { minimumFractionDigits: 2 })
+      ]],
+      footStyles: { fillColor: [255, 255, 255], textColor: [0, 0, 0], lineWidth: { top: 0.1, bottom: 0.1 }, fontStyle: 'bold' }
+    });
+
+    const finalY = (doc as any).lastAutoTable.finalY;
+    const totalLWF = summaryData.reduce((sum, r) => sum + r.employeeContrib + r.employerContrib, 0);
+    
+    doc.setFontSize(8);
+    doc.setFont("helvetica", "bold");
+    doc.text(`Total LWF (Employee's + Employer's) :`, 100, finalY + 10);
+    doc.text(totalLWF.toLocaleString(undefined, { minimumFractionDigits: 2 }), 180, finalY + 10, { align: 'right' });
+    
     doc.save(`MLWF-Statement-${monthsList[selectedMonth]}-${selectedYear}.pdf`);
   };
 

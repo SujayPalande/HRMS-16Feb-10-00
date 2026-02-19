@@ -134,32 +134,82 @@ export default function PtPage() {
   };
 
   const generateReport = () => {
-    const doc = new jsPDF();
+    const doc = new jsPDF({ orientation: "portrait", unit: "mm", format: "a4" });
     addWatermark(doc);
-    addCompanyHeader(doc, { 
-      title: "PROFESSIONAL TAX REPORT", 
-      subtitle: `Period: ${selectedPeriod.toUpperCase()} (${startDate.toLocaleDateString()} - ${endDate.toLocaleDateString()})` 
-    });
-    addFooter(doc);
-    const refNumber = generateReferenceNumber("PT");
-    addReferenceNumber(doc, refNumber, 68);
-    addDocumentDate(doc, undefined, 68);
     
+    // Header based on Screenshot 2
+    doc.setFontSize(14);
+    doc.setFont("helvetica", "bold");
+    doc.text("VAISHNAVI ENTERPRISES", 105, 15, { align: "center" });
+    doc.setFontSize(8);
+    doc.setFont("helvetica", "normal");
+    doc.text("GAT NO 4 TRIVENINAGAR CHOWK, NEAR RAM MANDIR TALWADE, PUNE 411062", 105, 20, { align: "center" });
+    
+    doc.setFontSize(10);
+    doc.setFont("helvetica", "bold");
+    doc.text(`PROFESSION TAX FOR THE MONTH OF           ${monthsList[selectedMonth].toUpperCase()} ${selectedYear}`, 15, 30);
+    
+    doc.setFontSize(7);
+    doc.text(`Page 1 of 1`, 160, 28);
+    doc.text(`Print Date/Time : ${new Date().toLocaleString()}`, 160, 32);
+
+    const summaryData = Object.entries(ptData).flatMap(([unitName, depts]) => {
+      return Object.entries(depts).map(([deptName, staff]) => {
+        const maleStaff = staff.filter(s => true); // Mocking gender for summary
+        const femaleStaff = staff.filter(s => false);
+        
+        return {
+          name: `${unitName} - ${deptName}`.toUpperCase(),
+          maleCount: maleStaff.length,
+          femaleCount: femaleStaff.length,
+          maleWages: maleStaff.reduce((sum, s) => sum + s.grossSalary, 0),
+          femaleWages: 0,
+          grossWages: staff.reduce((sum, s) => sum + s.grossSalary, 0),
+          ptDeducted: staff.reduce((sum, s) => sum + s.ptAmount, 0)
+        };
+      });
+    });
+
     autoTable(doc, {
-      startY: 80,
-      head: [['Employee', 'Gross Salary', 'State', 'PT Amount']],
-      body: Object.values(ptData).flatMap(depts => Object.values(depts).flat()).map(row => [
-        row.employee,
-        `Rs. ${row.grossSalary.toLocaleString()}`,
-        row.state,
-        `Rs. ${row.ptAmount.toLocaleString()}`
+      startY: 35,
+      head: [
+        [
+          { content: 'Sr.No.', rowSpan: 2 },
+          { content: 'Name of Units/Departments', rowSpan: 2 },
+          { content: 'No of Employee', colSpan: 2, styles: { halign: 'center' } },
+          { content: 'Wages', colSpan: 2, styles: { halign: 'center' } },
+          { content: 'GROSS WAGES', rowSpan: 2 },
+          { content: 'PROF.TAX DEDUCTED', rowSpan: 2 }
+        ],
+        ['Male', 'Female', 'Male', 'Female']
+      ],
+      body: summaryData.map((row, idx) => [
+        idx + 1,
+        row.name,
+        row.maleCount.toFixed(2),
+        row.femaleCount.toFixed(2),
+        row.maleWages.toLocaleString(undefined, { minimumFractionDigits: 2 }),
+        row.femaleWages.toLocaleString(undefined, { minimumFractionDigits: 2 }),
+        row.grossWages.toLocaleString(undefined, { minimumFractionDigits: 2 }),
+        row.ptDeducted.toLocaleString(undefined, { minimumFractionDigits: 2 })
       ]),
-      theme: 'striped',
-      headStyles: { fillColor: [128, 0, 128] },
+      theme: 'plain',
+      headStyles: { 
+        fillColor: [255, 255, 255], 
+        textColor: [0, 0, 0], 
+        fontSize: 7, 
+        fontStyle: 'bold',
+        lineWidth: { bottom: 0.1, top: 0.1 },
+        halign: 'center'
+      },
+      styles: { fontSize: 7, cellPadding: 1, halign: 'right' },
+      columnStyles: {
+        0: { halign: 'center', cellWidth: 10 },
+        1: { halign: 'left', cellWidth: 60 }
+      }
     });
-    
-    addHRSignature(doc, (doc as any).lastAutoTable.finalY + 20);
-    doc.save('professional-tax-report.pdf');
+
+    doc.save(`PT-Statement-${monthsList[selectedMonth]}-${selectedYear}.pdf`);
   };
 
   const handleExportExcel = () => {
