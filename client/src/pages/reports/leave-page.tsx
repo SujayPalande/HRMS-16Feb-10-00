@@ -129,7 +129,8 @@ export default function LeaveReportPage() {
       });
       const tableData = filteredEmployees.map(emp => {
         const stats = getDetailedLeaveStats(emp.id);
-        return [`EMP${String(emp.id).padStart(3, '0')}`, `${emp.firstName} ${emp.lastName}`, departments.find(d => d.id === emp.departmentId)?.name || '-', stats.approved.toString(), stats.pending.toString(), stats.remaining.toString()];
+        const empIdFormatted = `EMP${String(emp.id).padStart(3, '0')}`;
+        return [empIdFormatted, `${emp.firstName} ${emp.lastName}`, departments.find(d => d.id === emp.departmentId)?.name || '-', stats.approved.toString(), stats.pending.toString(), stats.remaining.toString()];
       });
       autoTable(doc, { 
         head: [['Emp ID', 'Name', 'Department', 'Approved', 'Pending', 'Remaining']], 
@@ -150,8 +151,9 @@ export default function LeaveReportPage() {
   const handleExportExcel = () => {
     const dataToExport = filteredEmployees.map(emp => {
       const stats = getDetailedLeaveStats(emp.id);
+      const empIdFormatted = `EMP${String(emp.id).padStart(3, '0')}`;
       return {
-        'Employee ID': `EMP${String(emp.id).padStart(3, '0')}`,
+        'Employee ID': empIdFormatted,
         'Name': `${emp.firstName} ${emp.lastName}`,
         'Department': departments.find(d => d.id === emp.departmentId)?.name || '-',
         'Approved': stats.approved,
@@ -198,6 +200,100 @@ export default function LeaveReportPage() {
             <p className="text-slate-500 font-medium">Hierarchical leave analysis</p>
           </div>
           <div className="flex gap-2 flex-wrap items-end">
+            <div className="flex flex-col gap-1">
+              <label className="text-[10px] font-black uppercase text-slate-400 ml-1 tracking-widest">Period</label>
+              <Select value={selectedPeriod} onValueChange={setSelectedPeriod}>
+                <SelectTrigger className="w-32 h-9 font-bold shadow-sm">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="day">Day wise</SelectItem>
+                  <SelectItem value="week">Week wise</SelectItem>
+                  <SelectItem value="month">Month wise</SelectItem>
+                  <SelectItem value="year">Year wise</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="flex flex-col gap-1">
+              <label className="text-[10px] font-black uppercase text-slate-400 ml-1 tracking-widest">Selection</label>
+              {selectedPeriod === 'month' ? (
+                <div className="flex gap-2">
+                  <Select 
+                    value={monthsList[selectedMonth]} 
+                    onValueChange={(v) => {
+                      const monthIndex = monthsList.indexOf(v);
+                      setSelectedMonth(monthIndex);
+                    }}
+                  >
+                    <SelectTrigger className="w-32 h-9 font-bold shadow-sm" data-testid="select-month">
+                      <Calendar className="h-4 w-4 mr-2 text-teal-600" />
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {monthsList.map(m => (
+                        <SelectItem key={m} value={m}>{m}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <Select 
+                    value={String(selectedYear)} 
+                    onValueChange={(v) => setSelectedYear(parseInt(v))}
+                  >
+                    <SelectTrigger className="w-24 h-9 font-bold shadow-sm" data-testid="select-year">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {yearsList.map(y => (
+                        <SelectItem key={y} value={String(y)}>{y}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              ) : selectedPeriod === 'week' ? (
+                 <Input
+                  type="week"
+                  value={selectedDate ? (() => {
+                    const d = new Date(selectedDate);
+                    const year = d.getFullYear();
+                    const oneJan = new Date(year, 0, 1);
+                    const numberOfDays = Math.floor((d.getTime() - oneJan.getTime()) / (24 * 60 * 60 * 1000));
+                    const result = Math.ceil((d.getDay() + 1 + numberOfDays) / 7);
+                    return `${year}-W${String(result).padStart(2, '0')}`;
+                  })() : ""}
+                  onChange={(e) => {
+                    if (!e.target.value) return;
+                    const [year, week] = e.target.value.split('-W');
+                    const d = new Date(parseInt(year), 0, 1);
+                    d.setDate(d.getDate() + (parseInt(week) - 1) * 7);
+                    setSelectedDate(d.toISOString().split('T')[0]);
+                  }}
+                  className="h-9 w-40 font-bold shadow-sm"
+                />
+              ) : selectedPeriod === 'year' ? (
+                <Select value={String(new Date(selectedDate).getFullYear())} onValueChange={(v) => {
+                  const d = new Date(selectedDate);
+                  d.setFullYear(parseInt(v));
+                  setSelectedDate(d.toISOString().split('T')[0]);
+                }}>
+                  <SelectTrigger className="w-40 h-9 font-bold shadow-sm">
+                    <Calendar className="h-4 w-4 mr-2 text-teal-600" />
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {yearsList.map(y => (
+                      <SelectItem key={y} value={String(y)}>{y}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              ) : (
+                <Input
+                  type="date"
+                  value={selectedDate}
+                  onChange={(e) => setSelectedDate(e.target.value)}
+                  className="h-9 w-40 font-bold shadow-sm"
+                />
+              )}
+            </div>
             <div className="flex bg-white dark:bg-slate-900 rounded-lg p-1 border border-slate-200 dark:border-slate-800 h-9">
               <Button variant="ghost" size="sm" className="h-7 text-xs gap-1 px-2 font-bold" onClick={handleExportPDF}>
                 <FileDown className="h-3 w-3" /> PDF

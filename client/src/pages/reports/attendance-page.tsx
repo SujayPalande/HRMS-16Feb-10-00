@@ -135,8 +135,9 @@ export default function AttendanceReportPage() {
           return r.userId === emp.id && start >= startDate && start <= endDate && r.status === 'approved';
         });
         const totalLeaves = userLeaves.length;
+        const empIdFormatted = `EMP${String(emp.id).padStart(3, '0')}`;
         return [
-          `EMP${String(emp.id).padStart(3, '0')}`,
+          empIdFormatted,
           `${emp.firstName} ${emp.lastName}`,
           departments.find(d => d.id === emp.departmentId)?.name || '-',
           stats.present.toString(),
@@ -144,7 +145,7 @@ export default function AttendanceReportPage() {
           totalLeaves.toString(),
           stats.halfday.toString(),
           stats.late.toString(),
-          (stats.present + stats.halfday - totalLeaves).toString()
+          (stats.present + stats.halfday + totalLeaves).toString()
         ];
       });
       autoTable(doc, {
@@ -193,7 +194,7 @@ export default function AttendanceReportPage() {
           ['Leaves', totalLeaves.toString()],
           ['Half Days', stats.halfday.toString()],
           ['Late Arrivals', stats.late.toString()],
-          ['Payable Days', (stats.present + stats.halfday - totalLeaves).toString()],
+          ['Payable Days', (stats.present + stats.halfday + totalLeaves).toString()],
         ],
         headStyles: { fillColor: [255, 255, 255], textColor: [0, 0, 0], fontStyle: 'bold' },
         styles: { fillColor: [255, 255, 255], textColor: [0, 0, 0] },
@@ -223,18 +224,20 @@ export default function AttendanceReportPage() {
       });
       const totalLeaves = userLeaves.length;
       const latestRecord = userRecords.length > 0 ? userRecords[userRecords.length - 1] : null;
+      const empIdFormatted = `EMP${String(emp.id).padStart(3, '0')}`;
+      
       return {
-        'Employee ID': `EMP${String(emp.id).padStart(3, '0')}`,
+        'Employee ID': empIdFormatted,
         'Name': `${emp.firstName} ${emp.lastName}`,
         'Department': departments.find(d => d.id === emp.departmentId)?.name || '-',
-        'Check-in Time': latestRecord?.checkInTime ? new Date(latestRecord.checkInTime).toLocaleTimeString() : '-',
-        'Check-out Time': latestRecord?.checkOutTime ? new Date(latestRecord.checkOutTime).toLocaleTimeString() : '-',
+        'Check-in Time': latestRecord?.checkInTime ? new Date(latestRecord.checkInTime).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' }) : '-',
+        'Check-out Time': latestRecord?.checkOutTime ? new Date(latestRecord.checkOutTime).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' }) : '-',
         'Present Days': stats.present,
         'Absent Days': stats.absent,
         'Leaves': totalLeaves,
         'Half Days': stats.halfday,
         'Late Arrivals': stats.late,
-        'Payable Days': (stats.present + stats.halfday - totalLeaves)
+        'Payable Days': (stats.present + stats.halfday + totalLeaves)
       };
     });
     const worksheet = XLSX.utils.json_to_sheet(dataToExport);
@@ -270,6 +273,100 @@ export default function AttendanceReportPage() {
             <p className="text-slate-500 font-medium">Analysis of workforce presence and patterns</p>
           </div>
           <div className="flex gap-2 flex-wrap items-end">
+            <div className="flex flex-col gap-1">
+              <label className="text-[10px] font-black uppercase text-slate-400 ml-1 tracking-widest">Period</label>
+              <Select value={selectedPeriod} onValueChange={setSelectedPeriod}>
+                <SelectTrigger className="w-32 h-9 font-bold shadow-sm">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="day">Day wise</SelectItem>
+                  <SelectItem value="week">Week wise</SelectItem>
+                  <SelectItem value="month">Month wise</SelectItem>
+                  <SelectItem value="year">Year wise</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="flex flex-col gap-1">
+              <label className="text-[10px] font-black uppercase text-slate-400 ml-1 tracking-widest">Selection</label>
+              {selectedPeriod === 'month' ? (
+                <div className="flex gap-2">
+                  <Select 
+                    value={monthsList[selectedMonth]} 
+                    onValueChange={(v) => {
+                      const monthIndex = monthsList.indexOf(v);
+                      setSelectedMonth(monthIndex);
+                    }}
+                  >
+                    <SelectTrigger className="w-32 h-9 font-bold shadow-sm" data-testid="select-month">
+                      <Calendar className="h-4 w-4 mr-2 text-teal-600" />
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {monthsList.map(m => (
+                        <SelectItem key={m} value={m}>{m}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <Select 
+                    value={String(selectedYear)} 
+                    onValueChange={(v) => setSelectedYear(parseInt(v))}
+                  >
+                    <SelectTrigger className="w-24 h-9 font-bold shadow-sm" data-testid="select-year">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {yearsList.map(y => (
+                        <SelectItem key={y} value={String(y)}>{y}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              ) : selectedPeriod === 'week' ? (
+                 <Input
+                  type="week"
+                  value={selectedDate ? (() => {
+                    const d = new Date(selectedDate);
+                    const year = d.getFullYear();
+                    const oneJan = new Date(year, 0, 1);
+                    const numberOfDays = Math.floor((d.getTime() - oneJan.getTime()) / (24 * 60 * 60 * 1000));
+                    const result = Math.ceil((d.getDay() + 1 + numberOfDays) / 7);
+                    return `${year}-W${String(result).padStart(2, '0')}`;
+                  })() : ""}
+                  onChange={(e) => {
+                    if (!e.target.value) return;
+                    const [year, week] = e.target.value.split('-W');
+                    const d = new Date(parseInt(year), 0, 1);
+                    d.setDate(d.getDate() + (parseInt(week) - 1) * 7);
+                    setSelectedDate(d.toISOString().split('T')[0]);
+                  }}
+                  className="h-9 w-40 font-bold shadow-sm"
+                />
+              ) : selectedPeriod === 'year' ? (
+                <Select value={String(new Date(selectedDate).getFullYear())} onValueChange={(v) => {
+                  const d = new Date(selectedDate);
+                  d.setFullYear(parseInt(v));
+                  setSelectedDate(d.toISOString().split('T')[0]);
+                }}>
+                  <SelectTrigger className="w-40 h-9 font-bold shadow-sm">
+                    <Calendar className="h-4 w-4 mr-2 text-teal-600" />
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {yearsList.map(y => (
+                      <SelectItem key={y} value={String(y)}>{y}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              ) : (
+                <Input
+                  type="date"
+                  value={selectedDate}
+                  onChange={(e) => setSelectedDate(e.target.value)}
+                  className="h-9 w-40 font-bold shadow-sm"
+                />
+              )}
+            </div>
             <div className="flex bg-white dark:bg-slate-900 rounded-lg p-1 border border-slate-200 dark:border-slate-800 h-9">
               <Button variant="ghost" size="sm" className="h-7 text-xs gap-1 px-2 font-bold" onClick={handleExportPDF}>
                 <FileDown className="h-3 w-3" /> PDF
