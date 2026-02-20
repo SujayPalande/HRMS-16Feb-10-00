@@ -431,6 +431,11 @@ export default function PayrollPage() {
 
   const handleDownloadPayslip = (employee: User) => {
     const breakdown = getSalaryBreakdown(employee.salary || 0);
+    // Use filtered month/year if selected, otherwise current month
+    const payslipMonth = payrollMonthFilter !== "all" 
+      ? `${payrollMonthFilter} ${payrollYearFilter}`
+      : format(new Date(), 'MMM yyyy');
+
     import("@/lib/payslip-utils").then(module => {
       module.generateProfessionalPayslip({
         employeeName: `${employee.firstName} ${employee.lastName}`,
@@ -446,26 +451,46 @@ export default function PayrollPage() {
         esiNumber: employee.esicNumber || "N/A",
         pan: employee.panCard || "N/A",
         workLocation: employee.workLocation || "Pune",
-        month: format(new Date(), 'MMM yyyy'),
+        month: payslipMonth,
         breakdown: breakdown
       });
     });
-    toast({ title: "Success", description: "Downloading recent payslip..." });
+    toast({ title: "Success", description: `Downloading payslip for ${payslipMonth}...` });
   };
 
-  // Filtered employees for the salary table
+  // Filtered employees for the salary table and summary cards
   const filteredSalaryEmployees = useMemo(() => {
     return employees.filter(emp => {
       const matchesSearch = payrollSearch === "" || 
         `${emp.firstName} ${emp.lastName}`.toLowerCase().includes(payrollSearch.toLowerCase()) ||
         (emp.employeeId || "").toLowerCase().includes(payrollSearch.toLowerCase());
-      return matchesSearch;
-    });
-  }, [employees, payrollSearch]);
+      
+      if (!matchesSearch) return false;
 
-  // Calculate payroll metrics
-  const activeEmployees = employees.length;
-  const totalSalaryBudget = employees.reduce((sum, emp) => sum + (emp.salary || 0), 0);
+      // Apply Month/Year filters based on payment records
+      if (payrollMonthFilter !== "all" || payrollYearFilter !== "") {
+        const hasMatchingPayment = paymentRecords.some(record => {
+          const isSameEmployee = record.employeeId === emp.id;
+          if (!isSameEmployee) return false;
+
+          // Record month format is "MMM yyyy" (e.g., "Jan 2024")
+          const [recMonth, recYear] = record.month.split(" ");
+          
+          const monthMatch = payrollMonthFilter === "all" || recMonth === payrollMonthFilter;
+          const yearMatch = payrollYearFilter === "" || recYear === payrollYearFilter;
+          
+          return monthMatch && yearMatch;
+        });
+        return hasMatchingPayment;
+      }
+
+      return true;
+    });
+  }, [employees, payrollSearch, payrollMonthFilter, payrollYearFilter, paymentRecords]);
+
+  // Calculate payroll metrics based on filtered data
+  const activeEmployees = filteredSalaryEmployees.length;
+  const totalSalaryBudget = filteredSalaryEmployees.reduce((sum, emp) => sum + (emp.salary || 0), 0);
   const avgSalary = activeEmployees > 0 ? totalSalaryBudget / activeEmployees : 0;
   
   // Step 4: Calculate net salary
@@ -704,7 +729,7 @@ export default function PayrollPage() {
         return;
       }
 
-      const exportData = employees.map((employee) => {
+      const exportData = filteredSalaryEmployees.map((employee) => {
         const monthlyCTC = employee.salary || 0;
         const breakdown = getSalaryBreakdown(monthlyCTC);
 
@@ -714,7 +739,7 @@ export default function PayrollPage() {
 
         return {
           'Employee Name': `${employee.firstName} ${employee.lastName}`,
-          'Employee ID': employee.id,
+          'Employee ID': employee.employeeId || `EMP${employee.id}`,
           'Position': employee.position || 'Not set',
           'Department': departmentName,
           'Monthly CTC (INR)': breakdown.monthlyCTC || 0,
@@ -2156,7 +2181,7 @@ export default function PayrollPage() {
                       </TableRow>
                     </TableHeader>
                         <TableBody>
-                          {employees.map((employee, index) => {
+                          {filteredSalaryEmployees.map((employee, index) => {
                             const monthlyCTC = employee.salary || 0;
                             const breakdown = getSalaryBreakdown(monthlyCTC);
 
@@ -2311,14 +2336,14 @@ export default function PayrollPage() {
                 </CardHeader>
                 <CardContent>
                   <div className="text-2xl font-bold">₹{Math.round(
-                    employees.reduce((sum, emp) => {
+                    filteredSalaryEmployees.reduce((sum, emp) => {
                       const monthlyCTC = emp.salary || 0;
                       const breakdown = getSalaryBreakdown(monthlyCTC);
                       return sum + breakdown.totalDeductions;
                     }, 0)
                   ).toLocaleString()}</div>
                   <p className="text-xs text-muted-foreground mt-1">
-                    EPF + ESIC + Professional Tax for all employees
+                    EPF + ESIC + Professional Tax for filtered employees
                   </p>
                 </CardContent>
               </Card>
@@ -2329,16 +2354,16 @@ export default function PayrollPage() {
                 </CardHeader>
                 <CardContent>
                   <div className="text-2xl font-bold">₹{Math.round(
-                    employees.length > 0 
-                      ? employees.reduce((sum, emp) => {
+                    filteredSalaryEmployees.length > 0 
+                      ? filteredSalaryEmployees.reduce((sum, emp) => {
                           const monthlyCTC = emp.salary || 0;
                           const breakdown = getSalaryBreakdown(monthlyCTC);
                           return sum + breakdown.netSalary;
-                        }, 0) / employees.length
+                        }, 0) / filteredSalaryEmployees.length
                       : 0
                   ).toLocaleString()}</div>
                   <p className="text-xs text-muted-foreground mt-1">
-                    Per employee average
+                    Per employee average (filtered)
                   </p>
                 </CardContent>
               </Card>
@@ -2437,7 +2462,7 @@ export default function PayrollPage() {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {employees.map((employee) => {
+                    {filteredSalaryEmployees.map((employee) => {
                       const paymentRecord = getPaymentRecord(employee.id);
                       const isPaid = paymentRecord?.paymentStatus === 'paid';
 

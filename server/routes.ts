@@ -165,9 +165,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Master Data Routes
   app.get("/api/masters/units", async (req, res, next) => {
     try {
+      if (!req.isAuthenticated()) return res.status(401).send("Unauthorized");
+      
+      // Ensure storage is initialized and has the method
+      if (typeof storage.getUnits !== 'function') {
+        throw new Error("Storage getUnits is not implemented");
+      }
+      
       const units = await storage.getUnits();
       res.json(units);
     } catch (error) {
+      console.error("Error in /api/masters/units:", error);
       next(error);
     }
   });
