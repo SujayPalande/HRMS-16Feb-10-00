@@ -47,6 +47,10 @@ export default function AttendanceReportPage() {
   const { data: departments = [] } = useQuery<Department[]>({ queryKey: ["/api/departments"] });
   const { data: attendanceRecords = [] } = useQuery<any[]>({ queryKey: ["/api/attendance"] });
   const { data: leaveRequests = [] } = useQuery<any[]>({ queryKey: ["/api/leave-requests"] });
+
+  const toggleEmployee = (empId: number) => {
+    const newSet = new Set(expandedEmployees);
+    if (newSet.has(empId)) newSet.delete(empId);
     else newSet.add(empId);
     setExpandedEmployees(newSet);
   };

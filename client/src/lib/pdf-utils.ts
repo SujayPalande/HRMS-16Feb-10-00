@@ -37,8 +37,9 @@ export async function addCompanyHeader(doc: jsPDF, config: PDFConfig = { title: 
   doc.rect(0, 0, pageWidth, 35, "F");
   
   // Simple border bottom for header
-  doc.setDrawColor(200, 200, 200);
-  doc.line(0, 35, pageWidth, 35);
+  doc.setDrawColor(220, 220, 220);
+  doc.setLineWidth(0.1);
+  doc.line(10, 35, pageWidth - 10, 35);
   
   try {
     // ASN Logo on the left
@@ -143,8 +144,9 @@ export function addFooter(doc: jsPDF) {
   doc.rect(0, pageHeight - 20, pageWidth, 20, "F");
   
   // Simple border top for footer
-  doc.setDrawColor(200, 200, 200);
-  doc.line(0, pageHeight - 20, pageWidth, pageHeight - 20);
+  doc.setDrawColor(220, 220, 220);
+  doc.setLineWidth(0.1);
+  doc.line(10, pageHeight - 20, pageWidth - 10, pageHeight - 20);
   
   doc.setFontSize(8);
   doc.setTextColor(60, 60, 60);
