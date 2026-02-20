@@ -140,20 +140,68 @@ export default function BonusReportsPage() {
 
   const exportToExcel = () => {
     const flatData = Object.values(hierarchicalBonusData).flatMap(depts => Object.values(depts).flat());
-    const dataForExport = flatData.map(item => ({
-      "Emp ID": item.employeeId,
-      "Name": item.name,
-      "Designation": item.designation,
-      "Total Wages": item.totalWages,
-      "Total Bonus": item.totalBonus,
-      "Department": item.departmentName,
-      "Unit": item.unitName
-    }));
     
-    import("@/lib/export-utils").then(module => {
-      module.exportToExcel(dataForExport, `Bonus_Report_${selectedYear}_${selectedYear + 1}`);
+    // Create workbook and worksheet
+    const wb = XLSX.utils.book_new();
+    
+    // Define headers based on the screenshot format
+    // Row 1: Headers
+    const headers = [
+      "empid", "dept", "EmployeeName", "Designation", "JoinDate", "payment_mode", "BankAC.No", "IFSC",
+      "Bonus 2024-25", "", "", "", "", "", "", "", "", "", "", "", 
+      "Total Bonus 2024-25", "Bonus 2025-26", "", "", "", "", "", "", "", "", "", "", 
+      "Total Bonus 2025-26"
+    ];
+
+    const months = ["Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec", "Jan", "Feb", "Mar"];
+    const subHeaders = [
+      "", "", "", "", "", "", "", "",
+      ...months, "",
+      ...months, ""
+    ];
+
+    const dataRows = flatData.map(item => {
+      const row = [
+        item.employeeId,
+        item.departmentName.substring(0, 4).toUpperCase(),
+        item.name,
+        item.designation,
+        "", // JoinDate placeholder
+        "BANK",
+        "", // Bank AC No placeholder
+        "", // IFSC placeholder
+      ];
+
+      // Add monthly breakdown for 2024-25 (mocking 0 for now as per current logic)
+      months.forEach(() => row.push("0"));
+      row.push("0"); // Total 24-25
+
+      // Add monthly breakdown for 2025-26 (current selected year)
+      item.monthlyBreakdown.forEach(m => row.push(String(m.bonus)));
+      row.push(String(item.totalBonus));
+
+      return row;
     });
-    toast({ title: "Bonus Report Exported", description: "Excel file generated." });
+
+    const ws = XLSX.utils.aoa_to_sheet([headers, subHeaders, ...dataRows]);
+
+    // Add styling/merging if needed (XLSX basic doesn't support much styling without xlsx-js-style)
+    // Merging headers for years
+    ws['!merges'] = [
+      { s: { r: 0, c: 8 }, e: { r: 0, c: 19 } }, // Bonus 2024-25
+      { s: { r: 0, c: 21 }, e: { r: 0, c: 32 } }  // Bonus 2025-26
+    ];
+
+    // Fix for potential typing issues with AOZ
+    const wsRef = ws as any;
+    wsRef['I1'] = { t: 's', v: 'Bonus 2024-25' };
+    wsRef['V1'] = { t: 's', v: 'Bonus 2025-26' };
+
+
+    XLSX.utils.book_append_sheet(wb, ws, "Bonus Report");
+    XLSX.writeFile(wb, `Bonus_Report_${selectedYear}.xlsx`);
+    
+    toast({ title: "Bonus Report Exported", description: "Excel file generated with enhanced format." });
   };
 
   const handleExportTxt = () => {

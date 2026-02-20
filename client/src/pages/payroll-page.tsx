@@ -2100,96 +2100,109 @@ export default function PayrollPage() {
                         <TableHead className="text-slate-800 font-bold text-sm px-6 py-4">Net Salary</TableHead>
                       </TableRow>
                     </TableHeader>
-                    <TableBody>
-                      {employees.map((employee, index) => {
-                        const monthlyCTC = employee.salary || 0;
-                        const breakdown = getSalaryBreakdown(monthlyCTC);
+                        <TableBody>
+                          {employees.map((employee, index) => {
+                            const monthlyCTC = employee.salary || 0;
+                            const breakdown = getSalaryBreakdown(monthlyCTC);
 
-                        return (
-                          <TableRow 
-                            key={employee.id}
-                            onClick={() => setLocation(`/employee/${employee.id}`)}
-                            className={cn(
-                              "cursor-pointer transition-all duration-300 border-b border-slate-100",
-                              "hover:bg-gradient-to-r hover:from-blue-50 hover:via-indigo-50/50 hover:to-purple-50",
-                              "hover:shadow-lg hover:scale-[1.01] hover:border-blue-200",
-                              "group relative",
-                              index % 2 === 0 ? "bg-white" : "bg-slate-50/30"
-                            )}
-                            data-testid={`row-employee-${employee.id}`}
-                          >
-                              <TableCell className="px-6 py-4">
-                                <div className="flex items-center space-x-3">
-                                  <div className="bg-gradient-to-br from-blue-100 to-blue-200 p-2 rounded-lg shadow-sm">
-                                    <Users className="w-5 h-5 text-blue-600" />
-                                  </div>
-                                  <div>
-                                    <div className="font-semibold text-slate-900 group-hover:text-blue-900 transition-colors">
-                                      {employee.firstName} {employee.lastName}
+                            return (
+                              <TableRow 
+                                key={employee.id}
+                                className={cn(
+                                  "cursor-pointer transition-all duration-300 border-b border-slate-100",
+                                  "hover:bg-gradient-to-r hover:from-blue-50 hover:via-indigo-50/50 hover:to-purple-50",
+                                  "hover:shadow-lg hover:scale-[1.01] hover:border-blue-200",
+                                  "group relative",
+                                  index % 2 === 0 ? "bg-white" : "bg-slate-50/30"
+                                )}
+                                data-testid={`row-employee-${employee.id}`}
+                              >
+                                  <TableCell className="px-6 py-4" onClick={() => setLocation(`/employee/${employee.id}`)}>
+                                    <div className="flex items-center space-x-3">
+                                      <div className="bg-gradient-to-br from-blue-100 to-blue-200 p-2 rounded-lg shadow-sm">
+                                        <Users className="w-5 h-5 text-blue-600" />
+                                      </div>
+                                      <div>
+                                        <div className="font-semibold text-slate-900 group-hover:text-blue-900 transition-colors">
+                                          {employee.firstName} {employee.lastName}
+                                        </div>
+                                        <div className="text-sm text-slate-500 group-hover:text-blue-600 transition-colors">
+                                          {employee.email}
+                                        </div>
+                                      </div>
                                     </div>
-                                    <div className="text-sm text-slate-500 group-hover:text-blue-600 transition-colors">
-                                      {employee.email}
+                                  </TableCell>
+                                  <TableCell className="px-6 py-4" onClick={() => setLocation(`/employee/${employee.id}`)}>
+                                    <Badge variant="outline" className="bg-gradient-to-r from-slate-50 to-slate-100 border-slate-300 text-slate-700 font-medium">
+                                      {employee.position || 'Not set'}
+                                    </Badge>
+                                  </TableCell>
+                                  <TableCell className="px-6 py-4" onClick={() => setLocation(`/employee/${employee.id}`)}>
+                                    <span className="font-bold text-lg text-slate-900 group-hover:text-indigo-700 transition-colors">
+                                      ₹{monthlyCTC.toLocaleString()}
+                                    </span>
+                                  </TableCell>
+                                  <TableCell className="px-6 py-4" onClick={() => setLocation(`/employee/${employee.id}`)}>
+                                    <span className="font-semibold text-slate-800">
+                                      ₹{Math.round(breakdown.grossSalary).toLocaleString()}
+                                    </span>
+                                  </TableCell>
+                                  <TableCell className="px-6 py-4" onClick={() => setLocation(`/employee/${employee.id}`)}>
+                                    <span className="font-semibold text-slate-800">
+                                      ₹{Math.round(breakdown.basicSalary).toLocaleString()}
+                                    </span>
+                                  </TableCell>
+                                  <TableCell className="px-6 py-4" onClick={() => setLocation(`/employee/${employee.id}`)}>
+                                    <span className="font-semibold text-slate-800">
+                                      ₹{Math.round(breakdown.hra).toLocaleString()}
+                                    </span>
+                                  </TableCell>
+                                  <TableCell className="px-6 py-4" onClick={() => setLocation(`/employee/${employee.id}`)}>
+                                    <span className="font-semibold text-slate-800">
+                                      ₹{Math.round(breakdown.specialAllowance).toLocaleString()}
+                                    </span>
+                                  </TableCell>
+                                  <TableCell className="px-6 py-4" onClick={() => setLocation(`/employee/${employee.id}`)}>
+                                    <span className="font-medium text-red-600">
+                                      ₹{Math.round(breakdown.epf).toLocaleString()}
+                                    </span>
+                                  </TableCell>
+                                  <TableCell className="px-6 py-4" onClick={() => setLocation(`/employee/${employee.id}`)}>
+                                    <span className="font-medium text-red-600">
+                                      ₹{Math.round(breakdown.esic).toLocaleString()}
+                                    </span>
+                                  </TableCell>
+                                  <TableCell className="px-6 py-4" onClick={() => setLocation(`/employee/${employee.id}`)}>
+                                    <span className="font-medium text-red-600">
+                                      ₹{breakdown.professionalTax.toLocaleString()}
+                                    </span>
+                                  </TableCell>
+                                  <TableCell className="px-6 py-4">
+                                    <div className="flex items-center justify-between">
+                                      <div className="flex items-center space-x-2" onClick={() => setLocation(`/employee/${employee.id}`)}>
+                                        <DollarSign className="w-4 h-4 text-green-600" />
+                                        <span className="font-bold text-xl text-green-600 group-hover:text-green-700 transition-colors">
+                                          ₹{Math.round(breakdown.netSalary).toLocaleString()}
+                                        </span>
+                                      </div>
+                                      <Button
+                                        variant="ghost"
+                                        size="icon"
+                                        className="h-8 w-8 text-blue-600 hover:text-blue-700 hover:bg-blue-50 ml-2"
+                                        onClick={(e) => {
+                                          e.stopPropagation();
+                                          handleDownloadPayslip(employee);
+                                        }}
+                                        title="Download Recent Payslip"
+                                      >
+                                        <Download className="h-4 w-4" />
+                                      </Button>
                                     </div>
-                                  </div>
-                                </div>
-                              </TableCell>
-                              <TableCell className="px-6 py-4">
-                                <Badge variant="outline" className="bg-gradient-to-r from-slate-50 to-slate-100 border-slate-300 text-slate-700 font-medium">
-                                  {employee.position || 'Not set'}
-                                </Badge>
-                              </TableCell>
-                              <TableCell className="px-6 py-4">
-                                <span className="font-bold text-lg text-slate-900 group-hover:text-indigo-700 transition-colors">
-                                  ₹{monthlyCTC.toLocaleString()}
-                                </span>
-                              </TableCell>
-                              <TableCell className="px-6 py-4">
-                                <span className="font-semibold text-slate-800">
-                                  ₹{Math.round(breakdown.grossSalary).toLocaleString()}
-                                </span>
-                              </TableCell>
-                              <TableCell className="px-6 py-4">
-                                <span className="font-semibold text-slate-800">
-                                  ₹{Math.round(breakdown.basicSalary).toLocaleString()}
-                                </span>
-                              </TableCell>
-                              <TableCell className="px-6 py-4">
-                                <span className="font-semibold text-slate-800">
-                                  ₹{Math.round(breakdown.hra).toLocaleString()}
-                                </span>
-                              </TableCell>
-                              <TableCell className="px-6 py-4">
-                                <span className="font-semibold text-slate-800">
-                                  ₹{Math.round(breakdown.specialAllowance).toLocaleString()}
-                                </span>
-                              </TableCell>
-                              <TableCell className="px-6 py-4">
-                                <span className="font-medium text-red-600">
-                                  ₹{Math.round(breakdown.epf).toLocaleString()}
-                                </span>
-                              </TableCell>
-                              <TableCell className="px-6 py-4">
-                                <span className="font-medium text-red-600">
-                                  ₹{Math.round(breakdown.esic).toLocaleString()}
-                                </span>
-                              </TableCell>
-                              <TableCell className="px-6 py-4">
-                                <span className="font-medium text-red-600">
-                                  ₹{breakdown.professionalTax.toLocaleString()}
-                                </span>
-                              </TableCell>
-                              <TableCell className="px-6 py-4">
-                                <div className="flex items-center space-x-2">
-                                  <DollarSign className="w-4 h-4 text-green-600" />
-                                  <span className="font-bold text-xl text-green-600 group-hover:text-green-700 transition-colors">
-                                    ₹{Math.round(breakdown.netSalary).toLocaleString()}
-                                  </span>
-                                </div>
-                              </TableCell>
-                            </TableRow>
-                        );
-                      })}
-                    </TableBody>
+                                  </TableCell>
+                                </TableRow>
+                            );
+                          })}
+                        </TableBody>
                   </Table>
                 </div>
               </CardContent>

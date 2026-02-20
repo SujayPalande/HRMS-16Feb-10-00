@@ -4654,6 +4654,15 @@
       "notes": "",
       "id": 524,
       "checkOutTime": null
+    },
+    {
+      "userId": 29,
+      "checkInTime": "2026-02-20T05:27:43.348Z",
+      "date": "2026-02-20T05:27:43.348Z",
+      "status": "present",
+      "notes": "",
+      "id": 525,
+      "checkOutTime": null
     }
   ],
   "leaveRequests": [
@@ -14087,7 +14096,7 @@
       "type": "login",
       "title": "Successful Login",
       "message": "You have successfully logged in at 2/19/2026",
-      "isRead": false,
+      "isRead": true,
       "id": 803,
       "createdAt": "2026-02-19T03:19:10.840Z",
       "relatedUserId": null,
@@ -14098,7 +14107,7 @@
       "type": "login",
       "title": "Successful Login",
       "message": "You have successfully logged in at 2/19/2026",
-      "isRead": false,
+      "isRead": true,
       "id": 804,
       "createdAt": "2026-02-19T03:37:16.514Z",
       "relatedUserId": null,
@@ -14109,7 +14118,7 @@
       "type": "login",
       "title": "Successful Login",
       "message": "You have successfully logged in at 2/19/2026",
-      "isRead": false,
+      "isRead": true,
       "id": 805,
       "createdAt": "2026-02-19T05:50:40.062Z",
       "relatedUserId": null,
@@ -14120,7 +14129,7 @@
       "type": "login",
       "title": "Successful Login",
       "message": "You have successfully logged in at 2/19/2026",
-      "isRead": false,
+      "isRead": true,
       "id": 806,
       "createdAt": "2026-02-19T05:59:13.997Z",
       "relatedUserId": null,
@@ -14131,7 +14140,7 @@
       "type": "login",
       "title": "Successful Login",
       "message": "You have successfully logged in at 2/19/2026",
-      "isRead": false,
+      "isRead": true,
       "id": 807,
       "createdAt": "2026-02-19T06:35:46.162Z",
       "relatedUserId": null,
@@ -14142,19 +14151,30 @@
       "type": "logout",
       "title": "Logged Out",
       "message": "You have successfully logged out at 2/19/2026",
-      "isRead": false,
+      "isRead": true,
       "id": 808,
       "createdAt": "2026-02-19T06:36:12.759Z",
+      "relatedUserId": null,
+      "relatedLeaveId": null
+    },
+    {
+      "userId": 29,
+      "type": "login",
+      "title": "Successful Login",
+      "message": "You have successfully logged in at 2/20/2026",
+      "isRead": true,
+      "id": 809,
+      "createdAt": "2026-02-20T05:24:30.097Z",
       "relatedUserId": null,
       "relatedLeaveId": null
     }
   ],
   "currentUserId": 40,
   "currentDepartmentId": 11,
-  "currentAttendanceId": 525,
+  "currentAttendanceId": 526,
   "currentLeaveRequestId": 41,
   "currentHolidayId": 67,
-  "currentNotificationId": 809,
+  "currentNotificationId": 810,
   "paymentRecords": [
     {
       "id": 1,
@@ -46688,9 +46708,339 @@
       "id": 3146,
       "createdAt": "2026-02-19T03:56:00.984Z",
       "paymentDate": null
+    },
+    {
+      "employeeId": 29,
+      "month": "Jan 2026",
+      "paymentStatus": "paid",
+      "amount": 12807,
+      "paymentDate": "2026-01-24T18:30:00.000Z",
+      "paymentMode": "bank_transfer",
+      "referenceNo": "TXN_JAN_29",
+      "id": 3147,
+      "createdAt": "2026-02-20T05:28:47.089Z"
+    },
+    {
+      "employeeId": 29,
+      "month": "Dec 2025",
+      "paymentStatus": "paid",
+      "amount": 12807,
+      "paymentDate": "2025-12-24T18:30:00.000Z",
+      "paymentMode": "bank_transfer",
+      "referenceNo": "TXN_DEC_29",
+      "id": 3148,
+      "createdAt": "2026-02-20T05:28:47.090Z"
+    },
+    {
+      "employeeId": 29,
+      "month": "Feb 2026",
+      "paymentStatus": "pending",
+      "amount": 12807,
+      "id": 3149,
+      "createdAt": "2026-02-20T05:28:47.091Z"
+    },
+    {
+      "employeeId": 30,
+      "month": "Dec 2025",
+      "paymentStatus": "paid",
+      "amount": 35500,
+      "paymentDate": "2025-12-24T18:30:00.000Z",
+      "paymentMode": "bank_transfer",
+      "referenceNo": "TXN_DEC_30",
+      "id": 3150,
+      "createdAt": "2026-02-20T05:28:47.142Z"
+    },
+    {
+      "employeeId": 30,
+      "month": "Jan 2026",
+      "paymentStatus": "paid",
+      "amount": 35500,
+      "paymentDate": "2026-01-24T18:30:00.000Z",
+      "paymentMode": "bank_transfer",
+      "referenceNo": "TXN_JAN_30",
+      "id": 3151,
+      "createdAt": "2026-02-20T05:28:47.144Z"
+    },
+    {
+      "employeeId": 31,
+      "month": "Dec 2025",
+      "paymentStatus": "paid",
+      "amount": 60500,
+      "paymentDate": "2025-12-24T18:30:00.000Z",
+      "paymentMode": "bank_transfer",
+      "referenceNo": "TXN_DEC_31",
+      "id": 3152,
+      "createdAt": "2026-02-20T05:28:47.474Z"
+    },
+    {
+      "employeeId": 30,
+      "month": "Feb 2026",
+      "paymentStatus": "pending",
+      "amount": 35500,
+      "id": 3153,
+      "createdAt": "2026-02-20T05:28:47.475Z"
+    },
+    {
+      "employeeId": 31,
+      "month": "Jan 2026",
+      "paymentStatus": "paid",
+      "amount": 60500,
+      "paymentDate": "2026-01-24T18:30:00.000Z",
+      "paymentMode": "bank_transfer",
+      "referenceNo": "TXN_JAN_31",
+      "id": 3154,
+      "createdAt": "2026-02-20T05:28:47.476Z"
+    },
+    {
+      "employeeId": 31,
+      "month": "Feb 2026",
+      "paymentStatus": "pending",
+      "amount": 60500,
+      "id": 3155,
+      "createdAt": "2026-02-20T05:28:47.523Z"
+    },
+    {
+      "employeeId": 32,
+      "month": "Dec 2025",
+      "paymentStatus": "paid",
+      "amount": 39667,
+      "paymentDate": "2025-12-24T18:30:00.000Z",
+      "paymentMode": "bank_transfer",
+      "referenceNo": "TXN_DEC_32",
+      "id": 3156,
+      "createdAt": "2026-02-20T05:28:47.524Z"
+    },
+    {
+      "employeeId": 32,
+      "month": "Jan 2026",
+      "paymentStatus": "paid",
+      "amount": 39667,
+      "paymentDate": "2026-01-24T18:30:00.000Z",
+      "paymentMode": "bank_transfer",
+      "referenceNo": "TXN_JAN_32",
+      "id": 3157,
+      "createdAt": "2026-02-20T05:28:47.821Z"
+    },
+    {
+      "employeeId": 32,
+      "month": "Feb 2026",
+      "paymentStatus": "pending",
+      "amount": 39667,
+      "id": 3158,
+      "createdAt": "2026-02-20T05:28:47.822Z"
+    },
+    {
+      "employeeId": 33,
+      "month": "Dec 2025",
+      "paymentStatus": "paid",
+      "amount": 98000,
+      "paymentDate": "2025-12-24T18:30:00.000Z",
+      "paymentMode": "bank_transfer",
+      "referenceNo": "TXN_DEC_33",
+      "id": 3159,
+      "createdAt": "2026-02-20T05:28:47.882Z"
+    },
+    {
+      "employeeId": 33,
+      "month": "Jan 2026",
+      "paymentStatus": "paid",
+      "amount": 98000,
+      "paymentDate": "2026-01-24T18:30:00.000Z",
+      "paymentMode": "bank_transfer",
+      "referenceNo": "TXN_JAN_33",
+      "id": 3160,
+      "createdAt": "2026-02-20T05:28:47.883Z"
+    },
+    {
+      "employeeId": 33,
+      "month": "Feb 2026",
+      "paymentStatus": "pending",
+      "amount": 98000,
+      "id": 3161,
+      "createdAt": "2026-02-20T05:28:47.884Z"
+    },
+    {
+      "employeeId": 34,
+      "month": "Jan 2026",
+      "paymentStatus": "paid",
+      "amount": 43833,
+      "paymentDate": "2026-01-24T18:30:00.000Z",
+      "paymentMode": "bank_transfer",
+      "referenceNo": "TXN_JAN_34",
+      "id": 3162,
+      "createdAt": "2026-02-20T05:28:48.211Z"
+    },
+    {
+      "employeeId": 34,
+      "month": "Dec 2025",
+      "paymentStatus": "paid",
+      "amount": 43833,
+      "paymentDate": "2025-12-24T18:30:00.000Z",
+      "paymentMode": "bank_transfer",
+      "referenceNo": "TXN_DEC_34",
+      "id": 3163,
+      "createdAt": "2026-02-20T05:28:48.212Z"
+    },
+    {
+      "employeeId": 35,
+      "month": "Dec 2025",
+      "paymentStatus": "paid",
+      "amount": 52167,
+      "paymentDate": "2025-12-24T18:30:00.000Z",
+      "paymentMode": "bank_transfer",
+      "referenceNo": "TXN_DEC_35",
+      "id": 3164,
+      "createdAt": "2026-02-20T05:28:48.328Z"
+    },
+    {
+      "employeeId": 34,
+      "month": "Feb 2026",
+      "paymentStatus": "pending",
+      "amount": 43833,
+      "id": 3165,
+      "createdAt": "2026-02-20T05:28:48.332Z"
+    },
+    {
+      "employeeId": 35,
+      "month": "Jan 2026",
+      "paymentStatus": "paid",
+      "amount": 52167,
+      "paymentDate": "2026-01-24T18:30:00.000Z",
+      "paymentMode": "bank_transfer",
+      "referenceNo": "TXN_JAN_35",
+      "id": 3166,
+      "createdAt": "2026-02-20T05:28:48.332Z"
+    },
+    {
+      "employeeId": 35,
+      "month": "Feb 2026",
+      "paymentStatus": "pending",
+      "amount": 52167,
+      "id": 3167,
+      "createdAt": "2026-02-20T05:28:48.601Z"
+    },
+    {
+      "employeeId": 36,
+      "month": "Jan 2026",
+      "paymentStatus": "paid",
+      "amount": 68833,
+      "paymentDate": "2026-01-24T18:30:00.000Z",
+      "paymentMode": "bank_transfer",
+      "referenceNo": "TXN_JAN_36",
+      "id": 3168,
+      "createdAt": "2026-02-20T05:28:48.674Z"
+    },
+    {
+      "employeeId": 36,
+      "month": "Dec 2025",
+      "paymentStatus": "paid",
+      "amount": 68833,
+      "paymentDate": "2025-12-24T18:30:00.000Z",
+      "paymentMode": "bank_transfer",
+      "referenceNo": "TXN_DEC_36",
+      "id": 3169,
+      "createdAt": "2026-02-20T05:28:48.674Z"
+    },
+    {
+      "employeeId": 37,
+      "month": "Dec 2025",
+      "paymentStatus": "paid",
+      "amount": 48000,
+      "paymentDate": "2025-12-24T18:30:00.000Z",
+      "paymentMode": "bank_transfer",
+      "referenceNo": "TXN_DEC_37",
+      "id": 3170,
+      "createdAt": "2026-02-20T05:28:48.706Z"
+    },
+    {
+      "employeeId": 37,
+      "month": "Jan 2026",
+      "paymentStatus": "paid",
+      "amount": 48000,
+      "paymentDate": "2026-01-24T18:30:00.000Z",
+      "paymentMode": "bank_transfer",
+      "referenceNo": "TXN_JAN_37",
+      "id": 3171,
+      "createdAt": "2026-02-20T05:28:48.707Z"
+    },
+    {
+      "employeeId": 36,
+      "month": "Feb 2026",
+      "paymentStatus": "pending",
+      "amount": 68833,
+      "id": 3172,
+      "createdAt": "2026-02-20T05:28:48.707Z"
+    },
+    {
+      "employeeId": 37,
+      "month": "Feb 2026",
+      "paymentStatus": "pending",
+      "amount": 48000,
+      "id": 3173,
+      "createdAt": "2026-02-20T05:28:48.897Z"
+    },
+    {
+      "employeeId": 38,
+      "month": "Dec 2025",
+      "paymentStatus": "paid",
+      "amount": 39667,
+      "paymentDate": "2025-12-24T18:30:00.000Z",
+      "paymentMode": "bank_transfer",
+      "referenceNo": "TXN_DEC_38",
+      "id": 3174,
+      "createdAt": "2026-02-20T05:28:49.013Z"
+    },
+    {
+      "employeeId": 39,
+      "month": "Jan 2026",
+      "paymentStatus": "paid",
+      "amount": 56333,
+      "paymentDate": "2026-01-24T18:30:00.000Z",
+      "paymentMode": "bank_transfer",
+      "referenceNo": "TXN_JAN_39",
+      "id": 3175,
+      "createdAt": "2026-02-20T05:28:49.014Z"
+    },
+    {
+      "employeeId": 39,
+      "month": "Dec 2025",
+      "paymentStatus": "paid",
+      "amount": 56333,
+      "paymentDate": "2025-12-24T18:30:00.000Z",
+      "paymentMode": "bank_transfer",
+      "referenceNo": "TXN_DEC_39",
+      "id": 3176,
+      "createdAt": "2026-02-20T05:28:49.015Z"
+    },
+    {
+      "employeeId": 38,
+      "month": "Feb 2026",
+      "paymentStatus": "pending",
+      "amount": 39667,
+      "id": 3177,
+      "createdAt": "2026-02-20T05:28:49.063Z"
+    },
+    {
+      "employeeId": 38,
+      "month": "Jan 2026",
+      "paymentStatus": "paid",
+      "amount": 39667,
+      "paymentDate": "2026-01-24T18:30:00.000Z",
+      "paymentMode": "bank_transfer",
+      "referenceNo": "TXN_JAN_38",
+      "id": 3178,
+      "createdAt": "2026-02-20T05:28:49.080Z"
+    },
+    {
+      "employeeId": 39,
+      "month": "Feb 2026",
+      "paymentStatus": "pending",
+      "amount": 56333,
+      "id": 3179,
+      "createdAt": "2026-02-20T05:28:49.184Z"
     }
   ],
-  "currentPaymentRecordId": 3147,
+  "currentPaymentRecordId": 3180,
   "employeeInvitations": [
     {
       "token": "af370991-d450-426f-934f-89038d1a09c0",
