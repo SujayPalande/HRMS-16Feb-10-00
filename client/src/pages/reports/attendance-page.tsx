@@ -134,7 +134,14 @@ export default function AttendanceReportPage() {
           const start = new Date(r.startDate);
           return r.userId === emp.id && start >= startDate && start <= endDate && r.status === 'approved';
         });
-        const totalLeaves = userLeaves.length;
+        const totalLeaves = userLeaves.reduce((acc: number, curr: any) => {
+          // Calculate days between startDate and endDate
+          const s = new Date(curr.startDate);
+          const e = new Date(curr.endDate);
+          const diffTime = Math.abs(e.getTime() - s.getTime());
+          const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1;
+          return acc + diffDays;
+        }, 0);
         const empIdFormatted = `EMP${String(emp.id).padStart(3, '0')}`;
         return [
           empIdFormatted,
@@ -145,7 +152,7 @@ export default function AttendanceReportPage() {
           totalLeaves.toString(),
           stats.halfday.toString(),
           stats.late.toString(),
-          (stats.present + stats.halfday + totalLeaves).toString()
+          (stats.present + (stats.halfday * 0.5) + totalLeaves).toString()
         ];
       });
       autoTable(doc, {
@@ -181,7 +188,13 @@ export default function AttendanceReportPage() {
         const start = new Date(r.startDate);
         return r.userId === emp.id && start >= startDate && start <= endDate && r.status === 'approved';
       });
-      const totalLeaves = userLeaves.length;
+      const totalLeaves = userLeaves.reduce((acc: number, curr: any) => {
+        const s = new Date(curr.startDate);
+        const e = new Date(curr.endDate);
+        const diffTime = Math.abs(e.getTime() - s.getTime());
+        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1;
+        return acc + diffDays;
+      }, 0);
       autoTable(doc, {
         startY: 70,
         head: [['Field', 'Details']],
@@ -194,7 +207,7 @@ export default function AttendanceReportPage() {
           ['Leaves', totalLeaves.toString()],
           ['Half Days', stats.halfday.toString()],
           ['Late Arrivals', stats.late.toString()],
-          ['Payable Days', (stats.present + stats.halfday + totalLeaves).toString()],
+          ['Payable Days', (stats.present + (stats.halfday * 0.5) + totalLeaves).toString()],
         ],
         headStyles: { fillColor: [255, 255, 255], textColor: [0, 0, 0], fontStyle: 'bold' },
         styles: { fillColor: [255, 255, 255], textColor: [0, 0, 0] },
@@ -222,7 +235,15 @@ export default function AttendanceReportPage() {
         const start = new Date(r.startDate);
         return r.userId === emp.id && start >= startDate && start <= endDate && r.status === 'approved';
       });
-      const totalLeaves = userLeaves.length;
+      const totalLeaves = userLeaves.reduce((acc: number, curr: any) => {
+        const s = new Date(curr.startDate);
+        const e = new Date(curr.endDate);
+        const diffTime = Math.abs(e.getTime() - s.getTime());
+        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1;
+        return acc + diffDays;
+      }, 0);
+      
+      // Get the most recent record for check-in/out times
       const latestRecord = userRecords.length > 0 ? userRecords[userRecords.length - 1] : null;
       const empIdFormatted = `EMP${String(emp.id).padStart(3, '0')}`;
       
@@ -237,7 +258,7 @@ export default function AttendanceReportPage() {
         'Leaves': totalLeaves,
         'Half Days': stats.halfday,
         'Late Arrivals': stats.late,
-        'Payable Days': (stats.present + stats.halfday + totalLeaves)
+        'Payable Days': (stats.present + (stats.halfday * 0.5) + totalLeaves)
       };
     });
     const worksheet = XLSX.utils.json_to_sheet(dataToExport);
