@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useAuth } from "@/hooks/use-auth";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { AppLayout } from "@/components/layout/app-layout";
@@ -407,6 +407,61 @@ export default function PayrollPage() {
   const isMlwfMonth = mlwfMonthNum === 6 || mlwfMonthNum === 12;
   const calculateMLWFEmployee = () => isMlwfMonth ? 25 : 0;
   const calculateMLWFEmployer = () => isMlwfMonth ? 75 : 0;
+
+  const [payrollSearch, setPayrollSearch] = useState("");
+  const [payrollMonthFilter, setPayrollMonthFilter] = useState("all");
+  const [payrollYearFilter, setPayrollYearFilter] = useState(new Date().getFullYear().toString());
+
+  const yearsList = Array.from({ length: 5 }, (_, i) => (new Date().getFullYear() - 2 + i).toString());
+  const monthsList = [
+    { value: "all", label: "All Months" },
+    { value: "Jan", label: "January" },
+    { value: "Feb", label: "February" },
+    { value: "Mar", label: "March" },
+    { value: "Apr", label: "April" },
+    { value: "May", label: "May" },
+    { value: "Jun", label: "June" },
+    { value: "Jul", label: "July" },
+    { value: "Aug", label: "August" },
+    { value: "Sep", label: "September" },
+    { value: "Oct", label: "October" },
+    { value: "Nov", label: "November" },
+    { value: "Dec", label: "December" }
+  ];
+
+  const handleDownloadPayslip = (employee: User) => {
+    const breakdown = getSalaryBreakdown(employee.salary || 0);
+    import("@/lib/payslip-utils").then(module => {
+      module.generateProfessionalPayslip({
+        employeeName: `${employee.firstName} ${employee.lastName}`,
+        employeeId: employee.employeeId || `EMP${employee.id}`,
+        designation: employee.position || "N/A",
+        department: departments.find(d => d.id === employee.departmentId)?.name || "N/A",
+        dateOfJoining: employee.joinDate || new Date(),
+        bankAccountNo: employee.bankAccountNumber || "N/A",
+        paidDays: 25,
+        lopDays: 0,
+        pfAccountNumber: "PU/PUN/" + (employee.employeeId || employee.id),
+        uan: employee.uanNumber || "N/A",
+        esiNumber: employee.esicNumber || "N/A",
+        pan: employee.panCard || "N/A",
+        workLocation: employee.workLocation || "Pune",
+        month: format(new Date(), 'MMM yyyy'),
+        breakdown: breakdown
+      });
+    });
+    toast({ title: "Success", description: "Downloading recent payslip..." });
+  };
+
+  // Filtered employees for the salary table
+  const filteredSalaryEmployees = useMemo(() => {
+    return employees.filter(emp => {
+      const matchesSearch = payrollSearch === "" || 
+        `${emp.firstName} ${emp.lastName}`.toLowerCase().includes(payrollSearch.toLowerCase()) ||
+        (emp.employeeId || "").toLowerCase().includes(payrollSearch.toLowerCase());
+      return matchesSearch;
+    });
+  }, [employees, payrollSearch]);
 
   // Calculate payroll metrics
   const activeEmployees = employees.length;
@@ -2211,19 +2266,41 @@ export default function PayrollPage() {
             {/* Salary Summary Cards */}
             <div className="grid gap-4 md:grid-cols-3">
               <Card>
-                <CardHeader className="pb-3">
-                  <CardTitle className="text-base">Total Monthly Payroll</CardTitle>
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 gap-2">
+                  <CardTitle className="text-base font-medium">Total Monthly Payroll</CardTitle>
+                  <div className="flex items-center gap-2">
+                    <Select value={payrollMonthFilter} onValueChange={setPayrollMonthFilter}>
+                      <SelectTrigger className="h-7 w-[100px] text-[10px] font-bold">
+                        <SelectValue placeholder="Month" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {monthsList.map(m => (
+                          <SelectItem key={m.value} value={m.value}>{m.label}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    <Select value={payrollYearFilter} onValueChange={setPayrollYearFilter}>
+                      <SelectTrigger className="h-7 w-[80px] text-[10px] font-bold">
+                        <SelectValue placeholder="Year" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {yearsList.map(y => (
+                          <SelectItem key={y} value={y}>{y}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
                 </CardHeader>
                 <CardContent>
                   <div className="text-2xl font-bold">₹{Math.round(
-                    employees.reduce((sum, emp) => {
+                    filteredSalaryEmployees.reduce((sum, emp) => {
                       const monthlyCTC = emp.salary || 0;
                       const breakdown = getSalaryBreakdown(monthlyCTC);
                       return sum + breakdown.netSalary;
                     }, 0)
                   ).toLocaleString()}</div>
                   <p className="text-xs text-muted-foreground mt-1">
-                    Net salary for all employees
+                    Net salary for {payrollMonthFilter === 'all' ? 'all months' : monthsList.find(m => m.value === payrollMonthFilter)?.label} {payrollYearFilter}
                   </p>
                 </CardContent>
               </Card>
