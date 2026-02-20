@@ -14,7 +14,6 @@ import {
   ChevronRight, 
   ChevronDown, 
   FileSpreadsheet,
-  FileText,
   FileDown
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
@@ -78,17 +77,13 @@ export default function LeaveReportPage() {
       const dept = departments.find(d => d.id === emp.departmentId);
       const matchesUnit = selectedUnit === 'all' || (dept && dept.unitId === parseInt(selectedUnit));
       const matchesDept = selectedDept === 'all' || emp.departmentId === parseInt(selectedDept);
+      const empIdFormatted = `EMP${String(emp.id).padStart(3, '0')}`;
       const matchesSearch = searchQuery === "" || 
         `${emp.firstName} ${emp.lastName}`.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        (`EMP${String(emp.id).padStart(3, '0')}` || "").toLowerCase().includes(searchQuery.toLowerCase());
-      
-      // Filter by period activity (joined before end of period)
-      const joinDate = emp.joinDate ? new Date(emp.joinDate) : null;
-      const isJoinedBeforeEnd = !joinDate || joinDate <= endDate;
-
-      return matchesUnit && matchesDept && matchesSearch && isJoinedBeforeEnd;
+        empIdFormatted.toLowerCase().includes(searchQuery.toLowerCase());
+      return matchesUnit && matchesDept && matchesSearch;
     });
-  }, [employees, departments, selectedUnit, selectedDept, searchQuery, startDate, endDate]);
+  }, [employees, departments, selectedUnit, selectedDept, searchQuery]);
 
   const filteredDepartments = departments.filter((dept: Department) => 
     (selectedUnit === "all" || dept.unitId === parseInt(selectedUnit)) &&
@@ -112,22 +107,16 @@ export default function LeaveReportPage() {
       total: userLeaves.length,
       approved: approved.length,
       pending: userLeaves.filter(r => r.status === 'pending').length,
-      rejected: userLeaves.filter(r => r.status === 'rejected').length,
       accrued: 24,
-      remaining: 24 - approved.length,
-      byType: {
-        annual: approved.filter(r => r.type === 'annual').length,
-        sick: approved.filter(r => r.type === 'sick').length,
-        personal: approved.filter(r => r.type === 'personal').length,
-      }
+      remaining: 24 - approved.length
     };
   };
 
   const leaveStats = [
-    { title: "Approved Leaves", value: leaveRequests.filter((r: any) => r.status === 'approved').length.toString(), icon: <CalendarDays className="h-6 w-6" />, color: "bg-teal-50 text-teal-600 dark:bg-teal-900/30 dark:text-teal-400" },
-    { title: "Pending Requests", value: leaveRequests.filter((r: any) => r.status === 'pending').length.toString(), icon: <Clock className="h-6 w-6" />, color: "bg-amber-50 text-amber-600 dark:bg-amber-900/30 dark:text-amber-400" },
-    { title: "Units", value: units.length.toString(), icon: <Building2 className="h-6 w-6" />, color: "bg-blue-50 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400" },
-    { title: "Departments", value: departments.length.toString(), icon: <Users className="h-6 w-6" />, color: "bg-indigo-50 text-indigo-600 dark:bg-indigo-900/30 dark:text-indigo-400" },
+    { title: "Approved Leaves", value: leaveRequests.filter((r: any) => r.status === 'approved').length.toString(), icon: <CalendarDays className="h-6 w-6" />, color: "bg-teal-50 text-teal-600" },
+    { title: "Pending Requests", value: leaveRequests.filter((r: any) => r.status === 'pending').length.toString(), icon: <Clock className="h-6 w-6" />, color: "bg-amber-50 text-amber-600" },
+    { title: "Units", value: units.length.toString(), icon: <Building2 className="h-6 w-6" />, color: "bg-blue-50 text-blue-600" },
+    { title: "Departments", value: departments.length.toString(), icon: <Users className="h-6 w-6" />, color: "bg-indigo-50 text-indigo-600" },
   ];
 
   const handleExportPDF = () => {
@@ -140,8 +129,7 @@ export default function LeaveReportPage() {
       });
       const tableData = filteredEmployees.map(emp => {
         const stats = getDetailedLeaveStats(emp.id);
-        const empIdFormatted = `EMP${String(emp.id).padStart(3, '0')}` || `EMP${String(emp.id).padStart(3, '0')}`;
-        return [empIdFormatted, `${emp.firstName} ${emp.lastName}`, departments.find(d => d.id === emp.departmentId)?.name || '-', stats.approved.toString(), stats.pending.toString(), stats.remaining.toString()];
+        return [`EMP${String(emp.id).padStart(3, '0')}`, `${emp.firstName} ${emp.lastName}`, departments.find(d => d.id === emp.departmentId)?.name || '-', stats.approved.toString(), stats.pending.toString(), stats.remaining.toString()];
       });
       autoTable(doc, { 
         head: [['Emp ID', 'Name', 'Department', 'Approved', 'Pending', 'Remaining']], 
@@ -149,24 +137,21 @@ export default function LeaveReportPage() {
         startY: 70,
         headStyles: { fillColor: [255, 255, 255], textColor: [0, 0, 0], fontStyle: 'bold', lineWidth: 0.1 },
         alternateRowStyles: { fillColor: [255, 255, 255] },
-        styles: { fillColor: [255, 255, 255], textColor: [0, 0, 0] },
-        margin: { top: 70 }
+        styles: { fillColor: [255, 255, 255], textColor: [0, 0, 0] }
       });
       addFooter(doc);
       const refNumber = generateReferenceNumber("LEV");
       addReferenceNumber(doc, refNumber, 68);
       addDocumentDate(doc, undefined, 68);
       doc.save(`leave_report_${monthsList[selectedMonth]}_${selectedYear}.pdf`);
-      toast({ title: "PDF Exported Successfully" });
     } catch (error) { toast({ title: "Export Failed", variant: "destructive" }); }
   };
 
   const handleExportExcel = () => {
     const dataToExport = filteredEmployees.map(emp => {
       const stats = getDetailedLeaveStats(emp.id);
-      const empIdFormatted = `EMP${String(emp.id).padStart(3, '0')}` || `EMP${String(emp.id).padStart(3, '0')}`;
       return {
-        'Employee ID': empIdFormatted,
+        'Employee ID': `EMP${String(emp.id).padStart(3, '0')}`,
         'Name': `${emp.firstName} ${emp.lastName}`,
         'Department': departments.find(d => d.id === emp.departmentId)?.name || '-',
         'Approved': stats.approved,
@@ -181,38 +166,16 @@ export default function LeaveReportPage() {
     toast({ title: "Excel Exported Successfully" });
   };
 
-    const dataToExport = filteredEmployees.map(emp => {
-      const stats = getDetailedLeaveStats(emp.id);
-      return `${`EMP${String(emp.id).padStart(3, '0')}` || '-'}\t${emp.firstName} ${emp.lastName}\t${stats.approved}\t${stats.pending}\t${stats.remaining}\n`;
-    });
-    const blob = new Blob([dataToExport.join("")], { type: "text/plain" });
-    const url = window.URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = `leave_report_${monthsList[selectedMonth]}_${selectedYear}.txt`;
-    a.click();
-    toast({ title: "Text Exported Successfully" });
-  };
-
   const handleDownloadIndividualPDF = (emp: User) => {
     try {
       const doc = new jsPDF() as any;
       addWatermark(doc);
       addCompanyHeader(doc, { title: "INDIVIDUAL LEAVE REPORT", subtitle: `${emp.firstName} ${emp.lastName}` });
       const stats = getDetailedLeaveStats(emp.id);
-      const empIdFormatted = `EMP${String(emp.id).padStart(3, '0')}` || `EMP${String(emp.id).padStart(3, '0')}`;
-      
       autoTable(doc, {
         startY: 70,
         head: [['Metric', 'Value']],
-        body: [
-          ['Employee Name', `${emp.firstName} ${emp.lastName}`],
-          ['Employee ID', empIdFormatted],
-          ['Accrued', stats.accrued], 
-          ['Approved', stats.approved], 
-          ['Pending', stats.pending], 
-          ['Remaining', stats.remaining]
-        ],
+        body: [['Employee ID', `EMP${String(emp.id).padStart(3, '0')}`], ['Accrued', stats.accrued], ['Approved', stats.approved], ['Pending', stats.pending], ['Remaining', stats.remaining]],
         headStyles: { fillColor: [255, 255, 255], textColor: [0, 0, 0], fontStyle: 'bold' },
         styles: { fillColor: [255, 255, 255], textColor: [0, 0, 0] },
         theme: 'plain'
@@ -226,139 +189,15 @@ export default function LeaveReportPage() {
     } catch (e) {}
   };
 
-  const handleExportIndividualExcel = (emp: User) => {
-    const stats = getDetailedLeaveStats(emp.id);
-    const empIdFormatted = `EMP${String(emp.id).padStart(3, '0')}` || `EMP${String(emp.id).padStart(3, '0')}`;
-    const data = [{ 
-      'Employee Name': `${emp.firstName} ${emp.lastName}`,
-      'Employee ID': empIdFormatted,
-      'Metric': 'Accrued', 
-      'Value': stats.accrued 
-    }, { 
-      'Employee Name': `${emp.firstName} ${emp.lastName}`,
-      'Employee ID': empIdFormatted,
-      'Metric': 'Approved', 
-      'Value': stats.approved 
-    }, { 
-      'Employee Name': `${emp.firstName} ${emp.lastName}`,
-      'Employee ID': empIdFormatted,
-      'Metric': 'Pending', 
-      'Value': stats.pending 
-    }, { 
-      'Employee Name': `${emp.firstName} ${emp.lastName}`,
-      'Employee ID': empIdFormatted,
-      'Metric': 'Remaining', 
-      'Value': stats.remaining 
-    }];
-    const worksheet = XLSX.utils.json_to_sheet(data);
-    const workbook = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(workbook, worksheet, "LeaveStats");
-    XLSX.writeFile(workbook, `leave_${emp.firstName}_${emp.lastName}_stats.xlsx`);
-  };
-
   return (
     <AppLayout>
       <div className="space-y-6">
         <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
           <div>
-            <h1 className="text-2xl font-bold text-slate-900 dark:text-white">Unit-wise Leave Reports</h1>
-            <p className="text-slate-500">Hierarchical leave analysis</p>
+            <h1 className="text-2xl font-bold text-slate-900 dark:text-white">Leave Reports</h1>
+            <p className="text-slate-500 font-medium">Hierarchical leave analysis</p>
           </div>
           <div className="flex gap-2 flex-wrap items-end">
-            <div className="flex flex-col gap-1">
-              <label className="text-[10px] font-bold uppercase text-slate-400 ml-1">Period</label>
-              <Select value={selectedPeriod} onValueChange={setSelectedPeriod}>
-                <SelectTrigger className="w-32 h-9">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="day">Day wise</SelectItem>
-                  <SelectItem value="week">Week wise</SelectItem>
-                  <SelectItem value="month">Month wise</SelectItem>
-                  <SelectItem value="year">Year wise</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="flex flex-col gap-1">
-              <label className="text-[10px] font-black uppercase text-slate-400 ml-1 tracking-widest">Selection</label>
-              {selectedPeriod === 'month' ? (
-                <div className="flex gap-2">
-                  <Select 
-                    value={monthsList[selectedMonth]} 
-                    onValueChange={(v) => {
-                      const monthIndex = monthsList.indexOf(v);
-                      setSelectedMonth(monthIndex);
-                    }}
-                  >
-                    <SelectTrigger className="w-32 h-9 font-bold shadow-sm" data-testid="select-month">
-                      <Calendar className="h-4 w-4 mr-2 text-teal-600" />
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {monthsList.map(m => (
-                        <SelectItem key={m} value={m}>{m}</SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                  <Select 
-                    value={String(selectedYear)} 
-                    onValueChange={(v) => setSelectedYear(parseInt(v))}
-                  >
-                    <SelectTrigger className="w-24 h-9 font-bold shadow-sm" data-testid="select-year">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {yearsList.map(y => (
-                        <SelectItem key={y} value={String(y)}>{y}</SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-              ) : selectedPeriod === 'week' ? (
-                 <Input
-                  type="week"
-                  value={selectedDate ? (() => {
-                    const d = new Date(selectedDate);
-                    const year = d.getFullYear();
-                    const oneJan = new Date(year, 0, 1);
-                    const numberOfDays = Math.floor((d.getTime() - oneJan.getTime()) / (24 * 60 * 60 * 1000));
-                    const result = Math.ceil((d.getDay() + 1 + numberOfDays) / 7);
-                    return `${year}-W${String(result).padStart(2, '0')}`;
-                  })() : ""}
-                  onChange={(e) => {
-                    if (!e.target.value) return;
-                    const [year, week] = e.target.value.split('-W');
-                    const d = new Date(parseInt(year), 0, 1);
-                    d.setDate(d.getDate() + (parseInt(week) - 1) * 7);
-                    setSelectedDate(d.toISOString().split('T')[0]);
-                  }}
-                  className="h-9 w-40 font-bold shadow-sm"
-                />
-              ) : selectedPeriod === 'year' ? (
-                <Select value={String(new Date(selectedDate).getFullYear())} onValueChange={(v) => {
-                  const d = new Date(selectedDate);
-                  d.setFullYear(parseInt(v));
-                  setSelectedDate(d.toISOString().split('T')[0]);
-                }}>
-                  <SelectTrigger className="w-40 h-9 font-bold shadow-sm">
-                    <Calendar className="h-4 w-4 mr-2 text-teal-600" />
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {yearsList.map(y => (
-                      <SelectItem key={y} value={String(y)}>{y}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              ) : (
-                <Input
-                  type="date"
-                  value={selectedDate}
-                  onChange={(e) => setSelectedDate(e.target.value)}
-                  className="h-9 w-40 font-bold shadow-sm"
-                />
-              )}
-            </div>
             <div className="flex bg-white dark:bg-slate-900 rounded-lg p-1 border border-slate-200 dark:border-slate-800 h-9">
               <Button variant="ghost" size="sm" className="h-7 text-xs gap-1 px-2 font-bold" onClick={handleExportPDF}>
                 <FileDown className="h-3 w-3" /> PDF
@@ -370,33 +209,14 @@ export default function LeaveReportPage() {
           </div>
         </div>
 
-        <div className="flex gap-4 mb-6">
-          <div className="w-64">
-            <Select value={selectedUnit} onValueChange={setSelectedUnit}>
-              <SelectTrigger><SelectValue placeholder="All Units" /></SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Units</SelectItem>
-                {units.map(u => <SelectItem key={u.id} value={u.id.toString()}>{u.name}</SelectItem>)}
-              </SelectContent>
-            </Select>
-          </div>
-          <div className="w-64">
-            <Select value={selectedDept} onValueChange={setSelectedDept}>
-              <SelectTrigger><SelectValue placeholder="All Departments" /></SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Departments</SelectItem>
-                {departments.filter(d => selectedUnit === 'all' || d.unitId === parseInt(selectedUnit)).map(d => <SelectItem key={d.id} value={d.id.toString()}>{d.name}</SelectItem>)}
-              </SelectContent>
-            </Select>
-          </div>
-        </div>
-
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
           {leaveStats.map((stat) => (
-            <Card key={stat.title} className="hover-elevate"><CardContent className="p-6 flex items-center gap-4">
-              <div className={`p-3 rounded-xl ${stat.color}`}>{stat.icon}</div>
-              <div><p className="text-2xl font-bold">{stat.value}</p><p className="text-sm text-slate-500 uppercase tracking-wider">{stat.title}</p></div>
-            </CardContent></Card>
+            <Card key={stat.title}>
+              <CardContent className="p-6 flex items-center gap-4">
+                <div className={`p-3 rounded-xl ${stat.color}`}>{stat.icon}</div>
+                <div><p className="text-2xl font-bold">{stat.value}</p><p className="text-sm text-slate-500 uppercase tracking-wider">{stat.title}</p></div>
+              </CardContent>
+            </Card>
           ))}
         </div>
 
@@ -415,7 +235,7 @@ export default function LeaveReportPage() {
               const deptEmployees = filteredEmployees.filter(e => e.departmentId === dept.id);
               if (deptEmployees.length === 0) return null;
               return (
-                <div key={dept.id} className="border rounded-lg overflow-hidden transition-all hover:border-teal-200">
+                <div key={dept.id} className="border rounded-lg overflow-hidden">
                   <div className="p-4 bg-slate-50 dark:bg-slate-900 border-b flex justify-between items-center">
                     <span className="font-semibold">{dept.name}</span>
                     <Badge variant="secondary">{deptEmployees.length} Employees</Badge>
@@ -424,43 +244,31 @@ export default function LeaveReportPage() {
                     {deptEmployees.map(emp => {
                       const stats = getDetailedLeaveStats(emp.id);
                       const isExpanded = expandedEmployees.has(emp.id);
+                      const empIdFormatted = `EMP${String(emp.id).padStart(3, '0')}`;
                       return (
                         <div key={emp.id}>
-                          <button onClick={() => toggleEmployee(emp.id)} className="w-full p-4 flex items-center justify-between hover:bg-slate-50 transition-all">
+                          <button onClick={() => toggleEmployee(emp.id)} className="w-full p-4 flex items-center justify-between hover:bg-slate-50">
                             <div className="flex items-center gap-3">
                               {isExpanded ? <ChevronDown className="h-4 w-4 text-teal-600" /> : <ChevronRight className="h-4 w-4" />}
-                              <div className="text-left"><p className="font-semibold">{emp.firstName} {emp.lastName}</p><p className="text-xs text-slate-500 uppercase">{`EMP${String(emp.id).padStart(3, '0')}`} • {emp.position}</p></div>
+                              <div className="text-left"><p className="font-semibold">{emp.firstName} {emp.lastName}</p><p className="text-xs text-slate-500 uppercase">{empIdFormatted} • {emp.position}</p></div>
                             </div>
-                            <div className="flex gap-2">
-                              <Badge variant="outline" className="text-teal-600 font-bold">Used: {stats.approved}</Badge>
-                              <Badge variant="outline" className="font-bold">Rem: {stats.remaining}</Badge>
-                            </div>
+                            <Badge variant="outline" className="text-teal-600 font-bold">Used: {stats.approved}</Badge>
                           </button>
                           <AnimatePresence>
                             {isExpanded && (
                               <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} exit={{ height: 0, opacity: 0 }} className="p-5 bg-slate-50/40 border-t overflow-hidden">
                                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-5">
                                   <div className="p-4 bg-white border rounded-xl shadow-sm">
-                                    <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest">Accrued</p>
-                                    <p className="text-xl font-black">{stats.accrued}</p>
-                                  </div>
-                                  <div className="p-4 bg-white border rounded-xl shadow-sm text-teal-600">
                                     <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest">Approved</p>
-                                    <p className="text-xl font-black">{stats.approved}</p>
+                                    <p className="text-xl font-black text-teal-600">{stats.approved}</p>
                                   </div>
-                                  <div className="p-4 bg-white border rounded-xl shadow-sm text-amber-600">
-                                    <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest">Pending</p>
-                                    <p className="text-xl font-black">{stats.pending}</p>
-                                  </div>
-                                  <div className="p-4 bg-white border rounded-xl shadow-sm text-rose-600">
-                                    <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest">Rejected</p>
-                                    <p className="text-xl font-black">{stats.rejected}</p>
+                                  <div className="p-4 bg-white border rounded-xl shadow-sm">
+                                    <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest">Remaining</p>
+                                    <p className="text-xl font-black text-amber-600">{stats.remaining}</p>
                                   </div>
                                 </div>
-                                <div className="flex justify-end gap-3 flex-wrap">
-                                  <Button variant="outline" size="sm" className="h-8 rounded-lg font-bold gap-2 hover-elevate" onClick={() => handleDownloadIndividualPDF(emp)}><FileDown className="h-3.5 w-3.5" /> PDF</Button>
-                                  <Button variant="outline" size="sm" className="h-8 rounded-lg font-bold gap-2 hover-elevate" onClick={() => handleExportIndividualExcel(emp)}><FileSpreadsheet className="h-3.5 w-3.5" /> Excel</Button>
-                                  <Button variant="outline" size="sm" className="h-8 rounded-lg font-bold hover-elevate" onClick={() => window.location.href=`/employee/${emp.id}?tab=leave`}>Full Profile</Button>
+                                <div className="flex justify-end gap-3">
+                                  <Button variant="outline" size="sm" className="h-8 rounded-lg font-bold gap-2" onClick={() => handleDownloadIndividualPDF(emp)}><FileDown className="h-3.5 w-3.5" /> PDF</Button>
                                 </div>
                               </motion.div>
                             )}

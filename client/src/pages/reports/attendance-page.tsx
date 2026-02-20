@@ -14,7 +14,6 @@ import {
   Building2, 
   ChevronRight, 
   ChevronDown, 
-  FileText,
   FileDown
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
@@ -28,7 +27,7 @@ import { addCompanyHeader, addWatermark, addHRSignature, addFooter, addDocumentD
 import { User, Department, Unit } from "@shared/schema";
 
 export default function AttendanceReportPage() {
-  const [selectedPeriod, setSelectedPeriod] = useState("month"); // day, week, month, year
+  const [selectedPeriod, setSelectedPeriod] = useState("month");
   const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0]);
   const [selectedMonth, setSelectedMonth] = useState(new Date().getMonth());
   const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
@@ -73,7 +72,7 @@ export default function AttendanceReportPage() {
     } else if (selectedPeriod === "month") {
       startDate = new Date(selectedYear, selectedMonth, 1);
       endDate = new Date(selectedYear, selectedMonth + 1, 0, 23, 59, 59, 999);
-    } else { // year
+    } else {
       startDate = new Date(date.getFullYear(), 0, 1);
       endDate = new Date(date.getFullYear(), 11, 31, 23, 59, 59, 999);
     }
@@ -87,12 +86,10 @@ export default function AttendanceReportPage() {
       const dept = departments.find(d => d.id === emp.departmentId);
       const matchesUnit = selectedUnit === 'all' || (dept && dept.unitId === parseInt(selectedUnit));
       const matchesDept = selectedDept === 'all' || emp.departmentId === parseInt(selectedDept);
-      
       const empIdFormatted = `EMP${String(emp.id).padStart(3, '0')}`;
       const matchesSearch = searchQuery === "" || 
         `${emp.firstName} ${emp.lastName}`.toLowerCase().includes(searchQuery.toLowerCase()) ||
         empIdFormatted.toLowerCase().includes(searchQuery.toLowerCase());
-        
       return matchesUnit && matchesDept && matchesSearch;
     });
   }, [employees, departments, selectedUnit, selectedDept, searchQuery]);
@@ -107,7 +104,6 @@ export default function AttendanceReportPage() {
       const d = new Date(r.date);
       return r.userId === userId && d >= startDate && d <= endDate;
     });
-    
     return {
       present: userRecords.filter(r => r.status === 'present').length,
       absent: userRecords.filter(r => r.status === 'absent').length,
@@ -130,9 +126,8 @@ export default function AttendanceReportPage() {
       addWatermark(doc);
       addCompanyHeader(doc, { 
         title: "UNIT-WISE ATTENDANCE REPORT", 
-        subtitle: `Period: MONTH (${startDate.toLocaleDateString('en-GB')} - ${endDate.toLocaleDateString('en-GB')}) | Unit: ${selectedUnit === 'all' ? 'All Units' : units.find(u => u.id === parseInt(selectedUnit))?.name}` 
+        subtitle: `Period: MONTH (${startDate.toLocaleDateString('en-GB')} - ${endDate.toLocaleDateString('en-GB')})` 
       });
-      
       const tableData = filteredEmployees.map(emp => {
         const stats = getDetailedAttendance(emp.id);
         const userLeaves = leaveRequests.filter((r: any) => {
@@ -140,11 +135,8 @@ export default function AttendanceReportPage() {
           return r.userId === emp.id && start >= startDate && start <= endDate && r.status === 'approved';
         });
         const totalLeaves = userLeaves.length;
-
-        const empIdFormatted = `EMP${String(emp.id).padStart(3, '0')}`;
-
         return [
-          empIdFormatted,
+          `EMP${String(emp.id).padStart(3, '0')}`,
           `${emp.firstName} ${emp.lastName}`,
           departments.find(d => d.id === emp.departmentId)?.name || '-',
           stats.present.toString(),
@@ -155,7 +147,6 @@ export default function AttendanceReportPage() {
           (stats.present + stats.halfday - totalLeaves).toString()
         ];
       });
-
       autoTable(doc, {
         head: [['Emp ID', 'Name', 'Department', 'Present', 'Absent', 'Leaves', 'Half Day', 'Late', 'Payable Days']],
         body: tableData,
@@ -165,7 +156,6 @@ export default function AttendanceReportPage() {
         styles: { fillColor: [255, 255, 255], textColor: [0, 0, 0] },
         margin: { top: 70 }
       });
-
       addFooter(doc);
       const refNumber = generateReferenceNumber("ATT");
       addReferenceNumber(doc, refNumber, 68);
@@ -173,7 +163,6 @@ export default function AttendanceReportPage() {
       doc.save(`attendance_report_${monthsList[selectedMonth]}_${selectedYear}.pdf`);
       toast({ title: "PDF Exported Successfully" });
     } catch (error) {
-      console.error("PDF Export Error:", error);
       toast({ title: "Export Failed", variant: "destructive" });
     }
   };
@@ -186,24 +175,19 @@ export default function AttendanceReportPage() {
         title: "INDIVIDUAL ATTENDANCE REPORT", 
         subtitle: `${emp.firstName} ${emp.lastName} | ${monthsList[selectedMonth]} ${selectedYear}` 
       });
-
       const stats = getDetailedAttendance(emp.id);
       const userLeaves = leaveRequests.filter((r: any) => {
         const start = new Date(r.startDate);
         return r.userId === emp.id && start >= startDate && start <= endDate && r.status === 'approved';
       });
       const totalLeaves = userLeaves.length;
-      const dept = departments.find(d => d.id === emp.departmentId);
-      const empIdFormatted = `EMP${String(emp.id).padStart(3, '0')}`;
-
       autoTable(doc, {
         startY: 70,
         head: [['Field', 'Details']],
         body: [
           ['Employee Name', `${emp.firstName} ${emp.lastName}`],
-          ['Employee ID', empIdFormatted],
-          ['Department', dept?.name || '-'],
-          ['Position', emp.position || '-'],
+          ['Employee ID', `EMP${String(emp.id).padStart(3, '0')}`],
+          ['Department', departments.find(d => d.id === emp.departmentId)?.name || '-'],
           ['Present Days', stats.present.toString()],
           ['Absent Days', stats.absent.toString()],
           ['Leaves', totalLeaves.toString()],
@@ -215,16 +199,13 @@ export default function AttendanceReportPage() {
         styles: { fillColor: [255, 255, 255], textColor: [0, 0, 0] },
         theme: 'plain'
       });
-
       addFooter(doc);
       addHRSignature(doc, (doc as any).lastAutoTable?.finalY || 170);
       const refNumber = generateReferenceNumber("IND-ATT");
       addReferenceNumber(doc, refNumber, 68);
       addDocumentDate(doc, undefined, 68);
-      doc.save(`attendance_${emp.firstName}_${emp.lastName}_${monthsList[selectedMonth]}_${selectedYear}.pdf`);
-      toast({ title: "Individual Report Exported" });
+      doc.save(`attendance_${emp.firstName}_${emp.lastName}.pdf`);
     } catch (error) {
-      console.error("Individual PDF Export Error:", error);
       toast({ title: "Export Failed", variant: "destructive" });
     }
   };
@@ -236,18 +217,14 @@ export default function AttendanceReportPage() {
         const d = new Date(r.date);
         return r.userId === emp.id && d >= startDate && d <= endDate;
       });
-      
       const userLeaves = leaveRequests.filter((r: any) => {
         const start = new Date(r.startDate);
         return r.userId === emp.id && start >= startDate && start <= endDate && r.status === 'approved';
       });
       const totalLeaves = userLeaves.length;
-      
       const latestRecord = userRecords.length > 0 ? userRecords[userRecords.length - 1] : null;
-      const empIdFormatted = `EMP${String(emp.id).padStart(3, '0')}`;
-
       return {
-        'Employee ID': empIdFormatted,
+        'Employee ID': `EMP${String(emp.id).padStart(3, '0')}`,
         'Name': `${emp.firstName} ${emp.lastName}`,
         'Department': departments.find(d => d.id === emp.departmentId)?.name || '-',
         'Check-in Time': latestRecord?.checkInTime ? new Date(latestRecord.checkInTime).toLocaleTimeString() : '-',
@@ -260,7 +237,6 @@ export default function AttendanceReportPage() {
         'Payable Days': (stats.present + stats.halfday - totalLeaves)
       };
     });
-
     const worksheet = XLSX.utils.json_to_sheet(dataToExport);
     const workbook = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(workbook, worksheet, "Attendance");
@@ -268,179 +244,32 @@ export default function AttendanceReportPage() {
     toast({ title: "Excel Exported Successfully" });
   };
 
-    const dataToExport = filteredEmployees.map(emp => {
-      const stats = getDetailedAttendance(emp.id);
-      return `${`EMP${String(emp.id).padStart(3, '0')}` || '-'}\t${emp.firstName} ${emp.lastName}\t${departments.find(d => d.id === emp.departmentId)?.name || '-'}\t${stats.present}\t${stats.absent}\t${stats.total}\n`;
-    });
-
-    let textContent = `ATTENDANCE REPORT - ${monthsList[selectedMonth]} ${selectedYear}\n`;
-    textContent += `Unit: ${selectedUnit === 'all' ? 'All' : selectedUnit}\n`;
-    textContent += "=".repeat(80) + "\n";
-    textContent += `Emp ID\tName\tDepartment\tPresent\tAbsent\tTotal\n`;
-    textContent += "-".repeat(80) + "\n";
-    textContent += dataToExport.join("");
-
-    const blob = new Blob([textContent], { type: "text/plain" });
-    const url = window.URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = `attendance_report_${monthsList[selectedMonth]}_${selectedYear}.txt`;
-    a.click();
-    toast({ title: "Text File Exported" });
-  };
-
   const handleExportIndividualExcel = (emp: User) => {
     const stats = getDetailedAttendance(emp.id);
-    const dept = departments.find(d => d.id === emp.departmentId);
-    
     const data = [{
       'Employee Name': `${emp.firstName} ${emp.lastName}`,
-      'Employee ID': `EMP${String(emp.id).padStart(3, '0')}` || '-',
-      'Department': dept?.name || '-',
-      'Position': emp.position || '-',
+      'Employee ID': `EMP${String(emp.id).padStart(3, '0')}`,
+      'Department': departments.find(d => d.id === emp.departmentId)?.name || '-',
       'Present Days': stats.present,
       'Absent Days': stats.absent,
-      'Half Days': stats.halfday,
-      'Late Arrivals': stats.late,
-      'Total Recorded Days': stats.total
+      'Payable Days': stats.present + stats.halfday
     }];
-
     const worksheet = XLSX.utils.json_to_sheet(data);
     const workbook = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(workbook, worksheet, "Attendance");
-    XLSX.writeFile(workbook, `attendance_${emp.firstName}_${emp.lastName}_${monthsList[selectedMonth]}_${selectedYear}.xlsx`);
+    XLSX.writeFile(workbook, `attendance_${emp.firstName}_${emp.lastName}.xlsx`);
     toast({ title: "Individual Excel Exported" });
-  };
-
-    const stats = getDetailedAttendance(emp.id);
-    const dept = departments.find(d => d.id === emp.departmentId);
-    
-    let textContent = `ATTENDANCE STATEMENT - ${monthsList[selectedMonth]} ${selectedYear}\n`;
-    textContent += `Employee: ${emp.firstName} ${emp.lastName} (${`EMP${String(emp.id).padStart(3, '0')}`})\n`;
-    textContent += `Department: ${dept?.name || '-'}\n`;
-    textContent += "=".repeat(50) + "\n";
-    textContent += `Present Days: ${stats.present}\n`;
-    textContent += `Absent Days: ${stats.absent}\n`;
-    textContent += `Half Days: ${stats.halfday}\n`;
-    textContent += `Late Arrivals: ${stats.late}\n`;
-    textContent += `Total Days: ${stats.total}\n`;
-    
-    const blob = new Blob([textContent], { type: "text/plain" });
-    const url = window.URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = `attendance_${emp.firstName}_${emp.lastName}.txt`;
-    a.click();
-    toast({ title: "Individual Text Exported" });
   };
 
   return (
     <AppLayout>
       <div className="space-y-6">
-        <motion.div
-          initial={{ opacity: 0, y: -20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="flex flex-col md:flex-row md:items-center md:justify-between gap-4"
-        >
+        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
           <div>
-            <h1 className="text-3xl font-bold tracking-tight text-slate-900 dark:text-white" data-testid="text-page-title">Attendance Report</h1>
+            <h1 className="text-3xl font-bold tracking-tight text-slate-900 dark:text-white">Attendance Report</h1>
             <p className="text-slate-500 font-medium">Analysis of workforce presence and patterns</p>
           </div>
           <div className="flex gap-2 flex-wrap items-end">
-            <div className="flex flex-col gap-1">
-              <label className="text-[10px] font-black uppercase text-slate-400 ml-1 tracking-widest">Period</label>
-              <Select value={selectedPeriod} onValueChange={setSelectedPeriod}>
-                <SelectTrigger className="w-32 h-9 font-bold shadow-sm">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="day">Day wise</SelectItem>
-                  <SelectItem value="week">Week wise</SelectItem>
-                  <SelectItem value="month">Month wise</SelectItem>
-                  <SelectItem value="year">Year wise</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="flex flex-col gap-1">
-              <label className="text-[10px] font-black uppercase text-slate-400 ml-1 tracking-widest">Selection</label>
-              {selectedPeriod === 'month' ? (
-                <div className="flex gap-2">
-                  <Select 
-                    value={monthsList[selectedMonth]} 
-                    onValueChange={(v) => {
-                      const monthIndex = monthsList.indexOf(v);
-                      setSelectedMonth(monthIndex);
-                    }}
-                  >
-                    <SelectTrigger className="w-32 h-9 font-bold shadow-sm" data-testid="select-month">
-                      <Calendar className="h-4 w-4 mr-2 text-teal-600" />
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {monthsList.map(m => (
-                        <SelectItem key={m} value={m}>{m}</SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                  <Select 
-                    value={String(selectedYear)} 
-                    onValueChange={(v) => setSelectedYear(parseInt(v))}
-                  >
-                    <SelectTrigger className="w-24 h-9 font-bold shadow-sm" data-testid="select-year">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {yearsList.map(y => (
-                        <SelectItem key={y} value={String(y)}>{y}</SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-              ) : selectedPeriod === 'week' ? (
-                 <Input
-                  type="week"
-                  value={selectedDate ? (() => {
-                    const d = new Date(selectedDate);
-                    const year = d.getFullYear();
-                    const oneJan = new Date(year, 0, 1);
-                    const numberOfDays = Math.floor((d.getTime() - oneJan.getTime()) / (24 * 60 * 60 * 1000));
-                    const result = Math.ceil((d.getDay() + 1 + numberOfDays) / 7);
-                    return `${year}-W${String(result).padStart(2, '0')}`;
-                  })() : ""}
-                  onChange={(e) => {
-                    if (!e.target.value) return;
-                    const [year, week] = e.target.value.split('-W');
-                    const d = new Date(parseInt(year), 0, 1);
-                    d.setDate(d.getDate() + (parseInt(week) - 1) * 7);
-                    setSelectedDate(d.toISOString().split('T')[0]);
-                  }}
-                  className="h-9 w-40 font-bold shadow-sm"
-                />
-              ) : selectedPeriod === 'year' ? (
-                <Select value={String(new Date(selectedDate).getFullYear())} onValueChange={(v) => {
-                  const d = new Date(selectedDate);
-                  d.setFullYear(parseInt(v));
-                  setSelectedDate(d.toISOString().split('T')[0]);
-                }}>
-                  <SelectTrigger className="w-40 h-9 font-bold shadow-sm">
-                    <Calendar className="h-4 w-4 mr-2 text-teal-600" />
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {yearsList.map(y => (
-                      <SelectItem key={y} value={String(y)}>{y}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              ) : (
-                <Input
-                  type="date"
-                  value={selectedDate}
-                  onChange={(e) => setSelectedDate(e.target.value)}
-                  className="h-9 w-40 font-bold shadow-sm"
-                />
-              )}
-            </div>
             <div className="flex bg-white dark:bg-slate-900 rounded-lg p-1 border border-slate-200 dark:border-slate-800 h-9">
               <Button variant="ghost" size="sm" className="h-7 text-xs gap-1 px-2 font-bold" onClick={handleExportPDF}>
                 <FileDown className="h-3 w-3" /> PDF
@@ -450,50 +279,16 @@ export default function AttendanceReportPage() {
               </Button>
             </div>
           </div>
-        </motion.div>
-
-        <div className="flex gap-4 mb-6">
-          <div className="w-64">
-            <label className="text-xs font-semibold uppercase text-slate-500 mb-1 block">Unit</label>
-            <Select value={selectedUnit} onValueChange={setSelectedUnit}>
-              <SelectTrigger>
-                <SelectValue placeholder="All Units" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Units</SelectItem>
-                {units.map(u => (
-                  <SelectItem key={u.id} value={u.id.toString()}>{u.name}</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-          <div className="w-64">
-            <label className="text-xs font-semibold uppercase text-slate-500 mb-1 block">Department</label>
-            <Select value={selectedDept} onValueChange={setSelectedDept}>
-              <SelectTrigger>
-                <SelectValue placeholder="All Departments" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Departments</SelectItem>
-                {departments
-                  .filter(d => selectedUnit === 'all' || d.unitId === parseInt(selectedUnit))
-                  .map(d => (
-                    <SelectItem key={d.id} value={d.id.toString()}>{d.name}</SelectItem>
-                  ))
-                }
-              </SelectContent>
-            </Select>
-          </div>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
           {reportStats.map((stat, index) => (
-            <Card key={stat.title} data-testid={`card-stat-${index}`} className="hover-elevate transition-all duration-300">
+            <Card key={stat.title}>
               <CardContent className="p-6">
                 <div className="flex items-center gap-4">
                   <div className={`p-3 rounded-xl ${stat.color} shadow-sm`}>{stat.icon}</div>
                   <div>
-                    <p className="text-2xl font-bold text-slate-900 dark:text-white">{stat.value}</p>
+                    <p className="text-2xl font-bold">{stat.value}</p>
                     <p className="text-sm font-medium text-slate-500 uppercase tracking-wider">{stat.title}</p>
                   </div>
                 </div>
@@ -504,120 +299,77 @@ export default function AttendanceReportPage() {
 
         <Card>
           <CardHeader>
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <div className="flex items-center justify-between">
               <CardTitle className="flex items-center gap-2">
-                <Building2 className="h-5 w-5 text-teal-600" />
-                Unit Hierarchy View
+                <Building2 className="h-5 w-5 text-teal-600" /> Unit Hierarchy View
               </CardTitle>
-              <div className="relative w-full md:w-64">
+              <div className="relative w-64">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
-                <Input
-                  placeholder="Search employees..."
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="pl-9"
-                />
+                <Input placeholder="Search employees..." value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} className="pl-9" />
               </div>
             </div>
           </CardHeader>
           <CardContent className="space-y-4">
             {filteredDepartments.map((dept) => {
               const deptEmployees = filteredEmployees.filter(e => e.departmentId === dept.id);
-              const deptAttendance = attendanceRecords.filter(r => deptEmployees.some(e => e.id === r.userId));
-              
               if (deptEmployees.length === 0) return null;
-
               return (
-                <div key={dept.id} className="border rounded-lg overflow-hidden transition-all duration-300 hover:border-teal-200">
-                  <div className="w-full flex items-center justify-between p-4 bg-slate-50 dark:bg-slate-900 border-b">
-                    <div className="flex items-center gap-3">
-                      <ChevronDown className="h-4 w-4 text-teal-600" />
-                      <span className="font-semibold text-slate-800 dark:text-slate-100">{dept.name}</span>
-                      <Badge variant="secondary" className="ml-2 font-medium bg-teal-50 text-teal-700 dark:bg-teal-900/30 dark:text-teal-400">
-                        {deptEmployees.length} Employees
-                      </Badge>
-                      <Badge variant="outline" className="ml-2 border-teal-200 text-teal-600">
-                        {deptAttendance.length} Total Records
-                      </Badge>
-                    </div>
+                <div key={dept.id} className="border rounded-lg overflow-hidden">
+                  <div className="p-4 bg-slate-50 dark:bg-slate-900 border-b flex justify-between items-center">
+                    <span className="font-semibold">{dept.name}</span>
+                    <Badge variant="secondary">{deptEmployees.length} Employees</Badge>
                   </div>
-                  <div className="p-0 bg-white dark:bg-slate-950 divide-y">
-                    {deptEmployees
-                      .map(emp => {
-                        const stats = getDetailedAttendance(emp.id);
-                        const isExpanded = expandedEmployees.has(emp.id);
-                        const empIdFormatted = `EMP${String(emp.id).padStart(3, '0')}`;
-                        
-                        return (
-                          <div key={emp.id} className="flex flex-col">
-                            <button
-                              onClick={() => toggleEmployee(emp.id)}
-                              className="p-4 flex items-center justify-between hover:bg-slate-50/80 dark:hover:bg-slate-900/80 transition-all w-full text-left"
-                            >
-                              <div className="flex items-center gap-4">
-                                <div className="p-2 rounded-lg bg-slate-100 dark:bg-slate-800 transition-transform duration-200">
-                                  {isExpanded ? <ChevronDown className="h-4 w-4 text-teal-600" /> : <ChevronRight className="h-4 w-4" />}
-                                </div>
-                                <div>
-                                  <p className="font-semibold text-slate-900 dark:text-slate-100">{emp.firstName} {emp.lastName}</p>
-                                  <p className="text-xs font-medium text-slate-500 uppercase tracking-tighter">{empIdFormatted} • {emp.position}</p>
-                                </div>
+                  <div className="divide-y">
+                    {deptEmployees.map(emp => {
+                      const stats = getDetailedAttendance(emp.id);
+                      const isExpanded = expandedEmployees.has(emp.id);
+                      const empIdFormatted = `EMP${String(emp.id).padStart(3, '0')}`;
+                      return (
+                        <div key={emp.id}>
+                          <button onClick={() => toggleEmployee(emp.id)} className="w-full p-4 flex items-center justify-between hover:bg-slate-50">
+                            <div className="flex items-center gap-3">
+                              {isExpanded ? <ChevronDown className="h-4 w-4 text-teal-600" /> : <ChevronRight className="h-4 w-4" />}
+                              <div className="text-left">
+                                <p className="font-semibold">{emp.firstName} {emp.lastName}</p>
+                                <p className="text-xs text-slate-500 uppercase tracking-widest">{empIdFormatted} • {emp.position}</p>
                               </div>
-                              <div className="flex gap-3">
-                                <Badge variant="outline" className="text-emerald-600 bg-emerald-50 border-emerald-100 dark:bg-emerald-950/30 font-bold px-2 py-0.5">Present: {stats.present}</Badge>
-                                <Badge variant="outline" className="text-rose-600 bg-rose-50 border-rose-100 dark:bg-rose-950/30 font-bold px-2 py-0.5">Absent: {stats.absent}</Badge>
-                              </div>
-                            </button>
-                            
-                            <AnimatePresence>
-                              {isExpanded && (
-                                <motion.div
-                                  initial={{ height: 0, opacity: 0 }}
-                                  animate={{ height: "auto", opacity: 1 }}
-                                  exit={{ height: 0, opacity: 0 }}
-                                  className="bg-slate-50/40 dark:bg-slate-900/40 p-5 border-t border-slate-100 dark:border-slate-800"
-                                >
-                                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-5">
-                                    <div className="bg-white dark:bg-slate-950 p-4 rounded-xl border shadow-sm transition-transform hover:scale-[1.02]">
-                                      <p className="text-[10px] text-slate-400 uppercase font-bold tracking-widest mb-1">Present</p>
-                                      <p className="text-xl font-black text-emerald-600">{stats.present}</p>
-                                    </div>
-                                    <div className="bg-white dark:bg-slate-950 p-4 rounded-xl border shadow-sm transition-transform hover:scale-[1.02]">
-                                      <p className="text-[10px] text-slate-400 uppercase font-bold tracking-widest mb-1">Absent</p>
-                                      <p className="text-xl font-black text-rose-600">{stats.absent}</p>
-                                    </div>
-                                    <div className="bg-white dark:bg-slate-950 p-4 rounded-xl border shadow-sm transition-transform hover:scale-[1.02]">
-                                      <p className="text-[10px] text-slate-400 uppercase font-bold tracking-widest mb-1">Half Day</p>
-                                      <p className="text-xl font-black text-amber-600">{stats.halfday}</p>
-                                    </div>
-                                    <div className="bg-white dark:bg-slate-950 p-4 rounded-xl border shadow-sm transition-transform hover:scale-[1.02]">
-                                      <p className="text-[10px] text-slate-400 uppercase font-bold tracking-widest mb-1">Late Arrivals</p>
-                                      <p className="text-xl font-black text-blue-600">{stats.late}</p>
-                                    </div>
+                            </div>
+                            <div className="flex gap-2">
+                              <Badge variant="outline" className="text-emerald-600 border-emerald-100 font-bold">Present: {stats.present}</Badge>
+                              <Badge variant="outline" className="text-rose-600 border-rose-100 font-bold">Absent: {stats.absent}</Badge>
+                            </div>
+                          </button>
+                          <AnimatePresence>
+                            {isExpanded && (
+                              <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: "auto", opacity: 1 }} exit={{ height: 0, opacity: 0 }} className="bg-slate-50/40 p-5 border-t">
+                                <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-5">
+                                  <div className="bg-white p-4 rounded-xl border shadow-sm">
+                                    <p className="text-[10px] text-slate-400 uppercase font-bold tracking-widest mb-1">Present</p>
+                                    <p className="text-xl font-black text-emerald-600">{stats.present}</p>
                                   </div>
-                                  
-                                  <div className="flex justify-end gap-3 flex-wrap">
-                                    <Button variant="outline" size="sm" className="h-8 rounded-lg text-xs font-bold gap-2 hover-elevate" onClick={() => handleDownloadIndividualPDF(emp)}>
-                                      <FileDown className="h-3.5 w-3.5" /> PDF
-                                    </Button>
-                                    <Button variant="outline" size="sm" className="h-8 rounded-lg text-xs font-bold gap-2 hover-elevate" onClick={() => handleExportIndividualExcel(emp)}>
-                                      <FileSpreadsheet className="h-3.5 w-3.5" /> Excel
-                                    </Button>
-                                    <Button 
-                                      variant="outline" 
-                                      size="sm" 
-                                      className="h-8 rounded-lg text-xs font-bold gap-2 hover-elevate" 
-                                      onClick={() => window.location.href=`/employee/${emp.id}?tab=attendance`}
-                                    >
-                                      Full Profile
-                                    </Button>
+                                  <div className="bg-white p-4 rounded-xl border shadow-sm">
+                                    <p className="text-[10px] text-slate-400 uppercase font-bold tracking-widest mb-1">Absent</p>
+                                    <p className="text-xl font-black text-rose-600">{stats.absent}</p>
                                   </div>
-                                </motion.div>
-                              )}
-                            </AnimatePresence>
-                          </div>
-                        );
-                      })}
+                                  <div className="bg-white p-4 rounded-xl border shadow-sm">
+                                    <p className="text-[10px] text-slate-400 uppercase font-bold tracking-widest mb-1">Half Day</p>
+                                    <p className="text-xl font-black text-amber-600">{stats.halfday}</p>
+                                  </div>
+                                  <div className="bg-white p-4 rounded-xl border shadow-sm">
+                                    <p className="text-[10px] text-slate-400 uppercase font-bold tracking-widest mb-1">Late</p>
+                                    <p className="text-xl font-black text-blue-600">{stats.late}</p>
+                                  </div>
+                                </div>
+                                <div className="flex justify-end gap-3">
+                                  <Button variant="outline" size="sm" className="h-8 font-bold gap-2" onClick={() => handleDownloadIndividualPDF(emp)}><FileDown className="h-3.5 w-3.5" /> PDF</Button>
+                                  <Button variant="outline" size="sm" className="h-8 font-bold gap-2" onClick={() => handleExportIndividualExcel(emp)}><FileSpreadsheet className="h-3.5 w-3.5" /> Excel</Button>
+                                </div>
+                              </motion.div>
+                            )}
+                          </AnimatePresence>
+                        </div>
+                      );
+                    })}
                   </div>
                 </div>
               );
