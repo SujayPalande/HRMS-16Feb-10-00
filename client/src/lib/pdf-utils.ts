@@ -32,13 +32,13 @@ const LOGIN_LOGO_URL = "/images/img.png";
 export async function addCompanyHeader(doc: jsPDF, config: PDFConfig = { title: "" }) {
   const pageWidth = doc.internal.pageSize.getWidth();
   
-  // Header background color (Aero Blue/Gray from screenshot)
-  doc.setFillColor(166, 199, 199);
+  // Header background color (White as requested)
+  doc.setFillColor(255, 255, 255);
   doc.rect(0, 0, pageWidth, 35, "F");
   
-  // Orange accent line
-  doc.setFillColor(207, 69, 32);
-  doc.rect(0, 35, pageWidth, 3, "F");
+  // Simple border bottom for header
+  doc.setDrawColor(200, 200, 200);
+  doc.line(0, 35, pageWidth, 35);
   
   try {
     // ASN Logo on the left
@@ -60,19 +60,19 @@ export async function addCompanyHeader(doc: jsPDF, config: PDFConfig = { title: 
   doc.setFontSize(9);
   doc.setTextColor(80, 80, 80);
   doc.setFont("helvetica", "normal");
-  doc.text(COMPANY_TAGLINE, pageWidth - 15, 25, { align: "right" });
+  doc.text(COMPANY_TAGLINE, pageWidth - 15, 22, { align: "right" });
   
   doc.setTextColor(0, 0, 0);
   
   if (config.title) {
     doc.setFontSize(16);
     doc.setFont("helvetica", "bold");
-    doc.text(config.title, pageWidth / 2, 55, { align: "center" });
+    doc.text(config.title, pageWidth / 2, 50, { align: "center" });
     
     if (config.subtitle) {
       doc.setFontSize(10);
       doc.setFont("helvetica", "normal");
-      doc.text(config.subtitle, pageWidth / 2, 63, { align: "center" });
+      doc.text(config.subtitle, pageWidth / 2, 58, { align: "center" });
     }
   }
 }
@@ -138,13 +138,13 @@ export function addFooter(doc: jsPDF) {
   const pageWidth = doc.internal.pageSize.getWidth();
   const pageHeight = doc.internal.pageSize.getHeight();
   
-  // Footer background color
-  doc.setFillColor(166, 199, 199);
+  // Footer background color (White)
+  doc.setFillColor(255, 255, 255);
   doc.rect(0, pageHeight - 20, pageWidth, 20, "F");
   
-  // Orange accent line for footer
-  doc.setFillColor(207, 69, 32);
-  doc.rect(0, pageHeight - 20, pageWidth, 0.5, "F");
+  // Simple border top for footer
+  doc.setDrawColor(200, 200, 200);
+  doc.line(0, pageHeight - 20, pageWidth, pageHeight - 20);
   
   doc.setFontSize(8);
   doc.setTextColor(60, 60, 60);

@@ -80,7 +80,7 @@ export default function LeaveReportPage() {
       const matchesDept = selectedDept === 'all' || emp.departmentId === parseInt(selectedDept);
       const matchesSearch = searchQuery === "" || 
         `${emp.firstName} ${emp.lastName}`.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        (emp.employeeId || "").toLowerCase().includes(searchQuery.toLowerCase());
+        (`EMP${String(emp.id).padStart(3, '0')}` || "").toLowerCase().includes(searchQuery.toLowerCase());
       
       // Filter by period activity (joined before end of period)
       const joinDate = emp.joinDate ? new Date(emp.joinDate) : null;
@@ -124,8 +124,8 @@ export default function LeaveReportPage() {
   };
 
   const leaveStats = [
-    { title: "Approved Leaves", value: leaveRequests.filter(r => r.status === 'approved').length.toString(), icon: <CalendarDays className="h-6 w-6" />, color: "bg-teal-50 text-teal-600 dark:bg-teal-900/30 dark:text-teal-400" },
-    { title: "Pending Requests", value: leaveRequests.filter(r => r.status === 'pending').length.toString(), icon: <Clock className="h-6 w-6" />, color: "bg-amber-50 text-amber-600 dark:bg-amber-900/30 dark:text-amber-400" },
+    { title: "Approved Leaves", value: leaveRequests.filter((r: any) => r.status === 'approved').length.toString(), icon: <CalendarDays className="h-6 w-6" />, color: "bg-teal-50 text-teal-600 dark:bg-teal-900/30 dark:text-teal-400" },
+    { title: "Pending Requests", value: leaveRequests.filter((r: any) => r.status === 'pending').length.toString(), icon: <Clock className="h-6 w-6" />, color: "bg-amber-50 text-amber-600 dark:bg-amber-900/30 dark:text-amber-400" },
     { title: "Units", value: units.length.toString(), icon: <Building2 className="h-6 w-6" />, color: "bg-blue-50 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400" },
     { title: "Departments", value: departments.length.toString(), icon: <Users className="h-6 w-6" />, color: "bg-indigo-50 text-indigo-600 dark:bg-indigo-900/30 dark:text-indigo-400" },
   ];
@@ -136,14 +136,26 @@ export default function LeaveReportPage() {
       addWatermark(doc);
       addCompanyHeader(doc, { 
         title: "UNIT-WISE LEAVE REPORT", 
-        subtitle: `Period: ${selectedPeriod.toUpperCase()} (${startDate.toLocaleDateString()} - ${endDate.toLocaleDateString()})` 
+        subtitle: `Period: ${selectedPeriod.toUpperCase()} (${startDate.toLocaleDateString('en-GB')} - ${endDate.toLocaleDateString('en-GB')})` 
       });
       const tableData = filteredEmployees.map(emp => {
         const stats = getDetailedLeaveStats(emp.id);
-        return [emp.employeeId || '-', `${emp.firstName} ${emp.lastName}`, departments.find(d => d.id === emp.departmentId)?.name || '-', stats.approved.toString(), stats.pending.toString(), stats.remaining.toString()];
+        const empIdFormatted = `EMP${String(emp.id).padStart(3, '0')}` || `EMP${String(emp.id).padStart(3, '0')}`;
+        return [empIdFormatted, `${emp.firstName} ${emp.lastName}`, departments.find(d => d.id === emp.departmentId)?.name || '-', stats.approved.toString(), stats.pending.toString(), stats.remaining.toString()];
       });
-      autoTable(doc, { head: [['Emp ID', 'Name', 'Department', 'Approved', 'Pending', 'Remaining']], body: tableData, startY: 70 });
+      autoTable(doc, { 
+        head: [['Emp ID', 'Name', 'Department', 'Approved', 'Pending', 'Remaining']], 
+        body: tableData, 
+        startY: 70,
+        headStyles: { fillColor: [255, 255, 255], textColor: [0, 0, 0], fontStyle: 'bold', lineWidth: 0.1 },
+        alternateRowStyles: { fillColor: [255, 255, 255] },
+        styles: { fillColor: [255, 255, 255], textColor: [0, 0, 0] },
+        margin: { top: 70 }
+      });
       addFooter(doc);
+      const refNumber = generateReferenceNumber("LEV");
+      addReferenceNumber(doc, refNumber, 68);
+      addDocumentDate(doc, undefined, 68);
       doc.save(`leave_report_${monthsList[selectedMonth]}_${selectedYear}.pdf`);
       toast({ title: "PDF Exported Successfully" });
     } catch (error) { toast({ title: "Export Failed", variant: "destructive" }); }
@@ -152,8 +164,9 @@ export default function LeaveReportPage() {
   const handleExportExcel = () => {
     const dataToExport = filteredEmployees.map(emp => {
       const stats = getDetailedLeaveStats(emp.id);
+      const empIdFormatted = `EMP${String(emp.id).padStart(3, '0')}` || `EMP${String(emp.id).padStart(3, '0')}`;
       return {
-        'Employee ID': emp.employeeId || '-',
+        'Employee ID': empIdFormatted,
         'Name': `${emp.firstName} ${emp.lastName}`,
         'Department': departments.find(d => d.id === emp.departmentId)?.name || '-',
         'Approved': stats.approved,
@@ -168,10 +181,9 @@ export default function LeaveReportPage() {
     toast({ title: "Excel Exported Successfully" });
   };
 
-  const handleExportText = () => {
     const dataToExport = filteredEmployees.map(emp => {
       const stats = getDetailedLeaveStats(emp.id);
-      return `${emp.employeeId || '-'}\t${emp.firstName} ${emp.lastName}\t${stats.approved}\t${stats.pending}\t${stats.remaining}\n`;
+      return `${`EMP${String(emp.id).padStart(3, '0')}` || '-'}\t${emp.firstName} ${emp.lastName}\t${stats.approved}\t${stats.pending}\t${stats.remaining}\n`;
     });
     const blob = new Blob([dataToExport.join("")], { type: "text/plain" });
     const url = window.URL.createObjectURL(blob);
@@ -188,23 +200,60 @@ export default function LeaveReportPage() {
       addWatermark(doc);
       addCompanyHeader(doc, { title: "INDIVIDUAL LEAVE REPORT", subtitle: `${emp.firstName} ${emp.lastName}` });
       const stats = getDetailedLeaveStats(emp.id);
+      const empIdFormatted = `EMP${String(emp.id).padStart(3, '0')}` || `EMP${String(emp.id).padStart(3, '0')}`;
+      
       autoTable(doc, {
         startY: 70,
         head: [['Metric', 'Value']],
-        body: [['Accrued', stats.accrued], ['Approved', stats.approved], ['Pending', stats.pending], ['Remaining', stats.remaining]]
+        body: [
+          ['Employee Name', `${emp.firstName} ${emp.lastName}`],
+          ['Employee ID', empIdFormatted],
+          ['Accrued', stats.accrued], 
+          ['Approved', stats.approved], 
+          ['Pending', stats.pending], 
+          ['Remaining', stats.remaining]
+        ],
+        headStyles: { fillColor: [255, 255, 255], textColor: [0, 0, 0], fontStyle: 'bold' },
+        styles: { fillColor: [255, 255, 255], textColor: [0, 0, 0] },
+        theme: 'plain'
       });
-      addHRSignature(doc, 150);
-      doc.save(`leave_${emp.firstName}.pdf`);
+      addFooter(doc);
+      addHRSignature(doc, (doc as any).lastAutoTable?.finalY || 150);
+      const refNumber = generateReferenceNumber("IND-LEV");
+      addReferenceNumber(doc, refNumber, 68);
+      addDocumentDate(doc, undefined, 68);
+      doc.save(`leave_${emp.firstName}_${emp.lastName}.pdf`);
     } catch (e) {}
   };
 
   const handleExportIndividualExcel = (emp: User) => {
     const stats = getDetailedLeaveStats(emp.id);
-    const data = [{ 'Metric': 'Accrued', 'Value': stats.accrued }, { 'Metric': 'Approved', 'Value': stats.approved }, { 'Metric': 'Pending', 'Value': stats.pending }, { 'Metric': 'Remaining', 'Value': stats.remaining }];
+    const empIdFormatted = `EMP${String(emp.id).padStart(3, '0')}` || `EMP${String(emp.id).padStart(3, '0')}`;
+    const data = [{ 
+      'Employee Name': `${emp.firstName} ${emp.lastName}`,
+      'Employee ID': empIdFormatted,
+      'Metric': 'Accrued', 
+      'Value': stats.accrued 
+    }, { 
+      'Employee Name': `${emp.firstName} ${emp.lastName}`,
+      'Employee ID': empIdFormatted,
+      'Metric': 'Approved', 
+      'Value': stats.approved 
+    }, { 
+      'Employee Name': `${emp.firstName} ${emp.lastName}`,
+      'Employee ID': empIdFormatted,
+      'Metric': 'Pending', 
+      'Value': stats.pending 
+    }, { 
+      'Employee Name': `${emp.firstName} ${emp.lastName}`,
+      'Employee ID': empIdFormatted,
+      'Metric': 'Remaining', 
+      'Value': stats.remaining 
+    }];
     const worksheet = XLSX.utils.json_to_sheet(data);
     const workbook = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(workbook, worksheet, "LeaveStats");
-    XLSX.writeFile(workbook, `leave_${emp.firstName}_stats.xlsx`);
+    XLSX.writeFile(workbook, `leave_${emp.firstName}_${emp.lastName}_stats.xlsx`);
   };
 
   return (
@@ -310,15 +359,12 @@ export default function LeaveReportPage() {
                 />
               )}
             </div>
-            <div className="flex bg-slate-100 dark:bg-slate-900 rounded-lg p-1 border border-slate-200 dark:border-slate-800 h-9">
-              <Button variant="ghost" size="sm" className="h-7 text-xs gap-1 hover-elevate px-2" onClick={handleExportPDF}>
+            <div className="flex bg-white dark:bg-slate-900 rounded-lg p-1 border border-slate-200 dark:border-slate-800 h-9">
+              <Button variant="ghost" size="sm" className="h-7 text-xs gap-1 px-2 font-bold" onClick={handleExportPDF}>
                 <FileDown className="h-3 w-3" /> PDF
               </Button>
-              <Button variant="ghost" size="sm" className="h-7 text-xs gap-1 hover-elevate px-2" onClick={handleExportExcel}>
+              <Button variant="ghost" size="sm" className="h-7 text-xs gap-1 px-2 font-bold" onClick={handleExportExcel}>
                 <FileSpreadsheet className="h-3 w-3" /> Excel
-              </Button>
-              <Button variant="ghost" size="sm" className="h-7 text-xs gap-1 hover-elevate px-2" onClick={handleExportText}>
-                <FileText className="h-3 w-3" /> Text
               </Button>
             </div>
           </div>
@@ -383,7 +429,7 @@ export default function LeaveReportPage() {
                           <button onClick={() => toggleEmployee(emp.id)} className="w-full p-4 flex items-center justify-between hover:bg-slate-50 transition-all">
                             <div className="flex items-center gap-3">
                               {isExpanded ? <ChevronDown className="h-4 w-4 text-teal-600" /> : <ChevronRight className="h-4 w-4" />}
-                              <div className="text-left"><p className="font-semibold">{emp.firstName} {emp.lastName}</p><p className="text-xs text-slate-500 uppercase">{emp.employeeId} • {emp.position}</p></div>
+                              <div className="text-left"><p className="font-semibold">{emp.firstName} {emp.lastName}</p><p className="text-xs text-slate-500 uppercase">{`EMP${String(emp.id).padStart(3, '0')}`} • {emp.position}</p></div>
                             </div>
                             <div className="flex gap-2">
                               <Badge variant="outline" className="text-teal-600 font-bold">Used: {stats.approved}</Badge>
