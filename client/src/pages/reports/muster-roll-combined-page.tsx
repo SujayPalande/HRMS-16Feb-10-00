@@ -14,6 +14,7 @@ import { useToast } from "@/hooks/use-toast";
 import * as XLSX from "xlsx";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
+import { addCompanyHeader, addWatermark, addFooter } from "@/lib/pdf-utils";
 
 interface Employee {
   id: number;
@@ -343,20 +344,20 @@ export default function MusterRollCombinedPage() {
   };
 
   const exportFormIIToPDF = () => {
-    const doc = new jsPDF({ orientation: 'landscape', unit: 'mm', format: 'a3' });
+    const doc = new jsPDF({ orientation: 'landscape', unit: 'mm', format: 'a3' }) as any;
+    const pageWidth = doc.internal.pageSize.getWidth();
     
-    doc.setFontSize(14);
-    doc.setFont("helvetica", "bold");
-    doc.text("Form II - Muster Roll cum Wage Register", doc.internal.pageSize.width / 2, 15, { align: "center" });
-    
-    doc.setFontSize(10);
-    doc.setFont("helvetica", "normal");
-    doc.text("[See Rule 27(1)]", doc.internal.pageSize.width / 2, 22, { align: "center" });
+    addWatermark(doc);
+    addCompanyHeader(doc, { 
+      title: "Form II - Muster Roll cum Wage Register",
+      subtitle: "[See Rule 27(1)]"
+    });
     
     doc.setFontSize(9);
-    doc.text(`Name of the Establishment: ${establishmentName}`, 14, 32);
-    doc.text(`Name of the Employer: ${employerName}`, 14, 38);
-    doc.text(`For the month of: ${months.find(m => m.value === selectedMonth)?.label} ${selectedYear}`, 14, 44);
+    doc.setFont("helvetica", "normal");
+    doc.text(`Name of the Establishment: ${establishmentName}`, 14, 65);
+    doc.text(`Name of the Employer: ${employerName}`, 14, 71);
+    doc.text(`For the month of: ${months.find(m => m.value === selectedMonth)?.label} ${selectedYear}`, 14, 77);
 
     const dayColumns = Array.from({ length: daysInMonth }, (_, i) => String(i + 1));
     const headers = [
@@ -398,7 +399,7 @@ export default function MusterRollCombinedPage() {
     autoTable(doc, {
       head: [headers],
       body: tableData,
-      startY: 50,
+      startY: 82,
       styles: { fontSize: 6, cellPadding: 1 },
       headStyles: { fillColor: [0, 128, 128], textColor: 255, fontSize: 5 },
       columnStyles: {
@@ -501,26 +502,21 @@ export default function MusterRollCombinedPage() {
   };
 
   const exportForm20ToPDF = () => {
-    const doc = new jsPDF({ orientation: 'landscape', unit: 'mm', format: 'a3' });
+    const doc = new jsPDF({ orientation: 'landscape', unit: 'mm', format: 'a3' }) as any;
+    const pageWidth = doc.internal.pageSize.getWidth();
     
-    doc.setFontSize(12);
-    doc.setFont("helvetica", "normal");
-    doc.text("The Maharashtra Factories Rules", doc.internal.pageSize.width / 2, 15, { align: "center" });
-    
-    doc.setFontSize(16);
-    doc.setFont("helvetica", "bold");
-    doc.text("FORM 20", doc.internal.pageSize.width / 2, 24, { align: "center" });
-    
-    doc.setFontSize(10);
-    doc.setFont("helvetica", "normal");
-    doc.text("(See Rules 105 and 106)", doc.internal.pageSize.width / 2, 31, { align: "center" });
-    doc.text("Register of leave with wages", doc.internal.pageSize.width / 2, 38, { align: "center" });
+    addWatermark(doc);
+    addCompanyHeader(doc, { 
+      title: "FORM 20 - Register of Leave with Wages",
+      subtitle: "The Maharashtra Factories Rules (See Rules 105 and 106)"
+    });
     
     doc.setFontSize(9);
-    doc.text(`Factory: ${factoryName}`, 14, 48);
-    doc.text(`Department: ${departmentName}`, 14, 54);
-    doc.text(`Part I - Adults`, doc.internal.pageSize.width - 60, 48);
-    doc.text(`Calendar Year: ${selectedYear}`, doc.internal.pageSize.width - 60, 54);
+    doc.setFont("helvetica", "normal");
+    doc.text(`Factory: ${factoryName}`, 14, 65);
+    doc.text(`Department: ${departmentName}`, 14, 71);
+    doc.text(`Part I - Adults`, pageWidth - 60, 65);
+    doc.text(`Calendar Year: ${selectedYear}`, pageWidth - 60, 71);
 
     const headers = [
       "Sr. No.", "Emp ID", "Name", "DOJ", "Days Worked", "Lay-off", "Maternity",
@@ -554,7 +550,7 @@ export default function MusterRollCombinedPage() {
     autoTable(doc, {
       head: [headers],
       body: tableData,
-      startY: 62,
+      startY: 78,
       styles: { fontSize: 8, cellPadding: 2 },
       headStyles: { fillColor: [0, 128, 128], textColor: 255, fontSize: 7 },
       margin: { left: 10, right: 10 }
@@ -565,6 +561,7 @@ export default function MusterRollCombinedPage() {
     doc.setFont("helvetica", "italic");
     doc.text("Note: Separate page will be allotted to each worker as per Form 20 requirements.", 14, finalY);
 
+    addFooter(doc);
     doc.save(`Leave_Register_Form_20_${selectedYear}.pdf`);
   };
 

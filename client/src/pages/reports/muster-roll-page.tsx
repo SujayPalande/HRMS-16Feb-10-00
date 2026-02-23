@@ -17,6 +17,7 @@ import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { Department, Unit, User } from "@shared/schema";
+import { addCompanyHeader, addWatermark, addFooter } from "@/lib/pdf-utils";
 
 interface Employee {
   id: number;
@@ -248,17 +249,21 @@ export default function MusterRollPage() {
   };
 
   const exportToPDF = () => {
-    const doc = new jsPDF({ orientation: "landscape", unit: "mm", format: "a4" });
+    const doc = new jsPDF({ orientation: "landscape", unit: "mm", format: "a4" }) as any;
     const monthName = months.find(m => m.value === selectedMonth)?.label || "";
+    const pageWidth = doc.internal.pageSize.getWidth();
     
-    doc.setFontSize(16);
-    doc.text(viewType === "muster" ? "FORM II - MUSTER ROLL" : "FORM II - WAGE REGISTER", doc.internal.pageSize.width / 2, 15, { align: "center" });
-    doc.setFontSize(10);
-    doc.text(`[See Rule 27(1)]`, doc.internal.pageSize.width / 2, 22, { align: "center" });
+    addWatermark(doc);
+    addCompanyHeader(doc, { 
+      title: viewType === "muster" ? "FORM II - MUSTER ROLL" : "FORM II - WAGE REGISTER",
+      subtitle: `[See Rule 27(1)]`
+    });
     
-    doc.text(`Establishment: ${establishmentName}`, 14, 32);
-    doc.text(`Employer: ${employerName}`, 14, 38);
-    doc.text(`Month: ${monthName} ${selectedYear}`, doc.internal.pageSize.width - 60, 32);
+    doc.setFontSize(9);
+    doc.setFont("helvetica", "normal");
+    doc.text(`Establishment: ${establishmentName}`, 14, 65);
+    doc.text(`Employer: ${employerName}`, 14, 70);
+    doc.text(`Month: ${monthName} ${selectedYear}`, pageWidth - 60, 65);
 
     const dayColumns = Array.from({ length: daysInMonth }, (_, i) => String(i + 1));
     const header = [
@@ -315,7 +320,7 @@ export default function MusterRollPage() {
     });
 
     autoTable(doc, {
-      startY: 45,
+      startY: 75,
       head: [header],
       body: body,
       theme: 'grid',
@@ -324,6 +329,7 @@ export default function MusterRollPage() {
       margin: { left: 5, right: 5 }
     });
 
+    addFooter(doc);
     doc.save(`${viewType}_report_${monthName}_${selectedYear}.pdf`);
   };
 
