@@ -14420,6 +14420,28 @@
       "createdAt": "2026-02-23T10:23:20.904Z",
       "relatedUserId": null,
       "relatedLeaveId": null
+    },
+    {
+      "userId": 29,
+      "type": "login",
+      "title": "Successful Login",
+      "message": "You have successfully logged in at 2/23/2026",
+      "isRead": false,
+      "id": 833,
+      "createdAt": "2026-02-23T10:49:21.263Z",
+      "relatedUserId": null,
+      "relatedLeaveId": null
+    },
+    {
+      "userId": 29,
+      "type": "login",
+      "title": "Successful Login",
+      "message": "You have successfully logged in at 2/23/2026",
+      "isRead": false,
+      "id": 834,
+      "createdAt": "2026-02-23T10:53:04.341Z",
+      "relatedUserId": null,
+      "relatedLeaveId": null
     }
   ],
   "currentUserId": 40,
@@ -14427,7 +14449,7 @@
   "currentAttendanceId": 526,
   "currentLeaveRequestId": 41,
   "currentHolidayId": 67,
-  "currentNotificationId": 833,
+  "currentNotificationId": 835,
   "paymentRecords": [
     {
       "id": 1,

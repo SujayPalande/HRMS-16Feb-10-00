@@ -245,7 +245,7 @@ export default function LeaveReportPage() {
         head: [['Emp ID', 'Emp Name', 'Department', 'Total Accrued', 'Total Used', 'Pending', 'Remaining Balance', 'Accrued This Year', 'Used This Year', 'Accrual Rate', 'Next Accrual']], 
         body: tableData, 
         startY: 70,
-        headStyles: { fillColor: [0, 128, 128], textColor: [255, 255, 255], fontStyle: 'bold', fontSize: 7 },
+        headStyles: { fillColor: [255, 255, 255], textColor: [0, 0, 0], fontStyle: 'bold', fontSize: 7, lineWidth: 0.1, lineColor: [0, 0, 0] },
         styles: { fontSize: 7, cellPadding: 2 },
         columnStyles: {
           0: { cellWidth: 18 },
@@ -290,7 +290,7 @@ export default function LeaveReportPage() {
             head: [['Emp ID', 'Name', 'Type', 'From', 'To', 'Days', 'Status', 'Reason']],
             body: detailData,
             startY: finalY + 20,
-            headStyles: { fillColor: [100, 100, 100], textColor: [255, 255, 255], fontStyle: 'bold', fontSize: 7 },
+            headStyles: { fillColor: [255, 255, 255], textColor: [0, 0, 0], fontStyle: 'bold', fontSize: 7, lineWidth: 0.1, lineColor: [0, 0, 0] },
             styles: { fontSize: 7, cellPadding: 2 }
           });
         }
@@ -385,9 +385,9 @@ export default function LeaveReportPage() {
           ['Accrual Rate', balance.accrualRate],
           ['Next Accrual Date', balance.nextAccrualDate]
         ],
-        headStyles: { fillColor: [0, 128, 128], textColor: [255, 255, 255], fontStyle: 'bold' },
+        headStyles: { fillColor: [255, 255, 255], textColor: [0, 0, 0], fontStyle: 'bold', lineWidth: 0.1, lineColor: [0, 0, 0] },
         styles: { fontSize: 9 },
-        theme: 'striped'
+        theme: 'grid'
       });
 
       const userLeaves = getEmployeeLeaveRequests(emp.id);
@@ -408,7 +408,7 @@ export default function LeaveReportPage() {
             (leave.status || 'pending').toUpperCase(),
             leave.reason || '-'
           ]),
-          headStyles: { fillColor: [100, 100, 100], textColor: [255, 255, 255], fontStyle: 'bold', fontSize: 8 },
+          headStyles: { fillColor: [255, 255, 255], textColor: [0, 0, 0], fontStyle: 'bold', fontSize: 8, lineWidth: 0.1, lineColor: [0, 0, 0] },
           styles: { fontSize: 8 }
         });
       }
@@ -425,7 +425,7 @@ export default function LeaveReportPage() {
           startY: monthY + 5,
           head: [['Month', 'Days Used']],
           body: monthlyEntries.map(([month, days]) => [month, days.toString()]),
-          headStyles: { fillColor: [0, 128, 128], textColor: [255, 255, 255], fontStyle: 'bold', fontSize: 8 },
+          headStyles: { fillColor: [255, 255, 255], textColor: [0, 0, 0], fontStyle: 'bold', fontSize: 8, lineWidth: 0.1, lineColor: [0, 0, 0] },
           styles: { fontSize: 8 }
         });
       }

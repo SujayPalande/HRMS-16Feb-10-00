@@ -401,7 +401,7 @@ export default function MusterRollCombinedPage() {
       body: tableData,
       startY: 82,
       styles: { fontSize: 6, cellPadding: 1 },
-      headStyles: { fillColor: [0, 128, 128], textColor: 255, fontSize: 5 },
+      headStyles: { fillColor: [255, 255, 255], textColor: [0, 0, 0], fontSize: 5, fontStyle: 'bold', lineWidth: 0.1, lineColor: [0, 0, 0] },
       columnStyles: {
         0: { cellWidth: 8 },
         1: { cellWidth: 28 },
@@ -552,7 +552,7 @@ export default function MusterRollCombinedPage() {
       body: tableData,
       startY: 78,
       styles: { fontSize: 8, cellPadding: 2 },
-      headStyles: { fillColor: [0, 128, 128], textColor: 255, fontSize: 7 },
+      headStyles: { fillColor: [255, 255, 255], textColor: [0, 0, 0], fontSize: 7, fontStyle: 'bold', lineWidth: 0.1, lineColor: [0, 0, 0] },
       margin: { left: 10, right: 10 }
     });
 

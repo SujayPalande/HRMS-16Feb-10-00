@@ -78,7 +78,7 @@ export default function PerformanceReportsPage() {
       head: [["Department", "Employees", "Avg Rating", "Goal Completion", "Top Performer"]],
       body: tableData,
       theme: "striped",
-      headStyles: { fillColor: [0, 128, 128] },
+      headStyles: { fillColor: [255, 255, 255], textColor: [0, 0, 0], fontStyle: 'bold', lineWidth: 0.1, lineColor: [0, 0, 0] },
       styles: { fontSize: 10 }
     });
     

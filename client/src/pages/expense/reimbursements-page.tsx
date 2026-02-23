@@ -144,7 +144,7 @@ export default function ReimbursementsPage() {
       body: tableData,
       startY: 42,
       theme: "striped",
-      headStyles: { fillColor: [0, 128, 128], textColor: 255 },
+      headStyles: { fillColor: [255, 255, 255], textColor: [0, 0, 0], fontStyle: 'bold', lineWidth: 0.1, lineColor: [0, 0, 0] },
       styles: { fontSize: 9 },
     });
     

@@ -310,7 +310,7 @@ export default function Form16TdsPage() {
         ['6. Tax Deducted at Source', `Rs.${employee.tdsDeducted.toLocaleString()}`],
       ],
       theme: 'striped',
-      headStyles: { fillColor: [80, 80, 80] },
+      headStyles: { fillColor: [255, 255, 255], textColor: [0, 0, 0], fontStyle: 'bold', lineWidth: 0.1, lineColor: [0, 0, 0] },
       styles: { fontSize: 9 },
     });
     
@@ -413,7 +413,7 @@ export default function Form16TdsPage() {
         ['6. Tax Deducted at Source', `Rs.${tdsDeducted.toLocaleString()}`],
       ],
       theme: 'striped',
-      headStyles: { fillColor: [80, 80, 80] },
+      headStyles: { fillColor: [255, 255, 255], textColor: [0, 0, 0], fontStyle: 'bold', lineWidth: 0.1, lineColor: [0, 0, 0] },
       styles: { fontSize: 9 },
     });
     

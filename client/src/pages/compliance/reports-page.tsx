@@ -137,7 +137,7 @@ export default function ComplianceReportsPage() {
           ['Total', '₹1,24,500', '₹2,21,400', '₹3,45,900'],
         ],
         theme: 'striped',
-        headStyles: { fillColor: [0, 128, 128] },
+        headStyles: { fillColor: [255, 255, 255], textColor: [0, 0, 0], fontStyle: 'bold', lineWidth: 0.1, lineColor: [0, 0, 0] },
         styles: { fontSize: 10 },
       });
     } else if (report.type === "ESI Challan") {
@@ -150,7 +150,7 @@ export default function ComplianceReportsPage() {
           ['Total Wages', '₹11,50,000', '-', '-'],
         ],
         theme: 'striped',
-        headStyles: { fillColor: [0, 128, 128] },
+        headStyles: { fillColor: [255, 255, 255], textColor: [0, 0, 0], fontStyle: 'bold', lineWidth: 0.1, lineColor: [0, 0, 0] },
         styles: { fontSize: 10 },
       });
     } else if (report.type === "PT Challan") {
@@ -164,7 +164,7 @@ export default function ComplianceReportsPage() {
           ['Total', '145', '₹26,800'],
         ],
         theme: 'striped',
-        headStyles: { fillColor: [0, 128, 128] },
+        headStyles: { fillColor: [255, 255, 255], textColor: [0, 0, 0], fontStyle: 'bold', lineWidth: 0.1, lineColor: [0, 0, 0] },
         styles: { fontSize: 10 },
       });
     } else if (report.type === "24Q") {
@@ -178,7 +178,7 @@ export default function ComplianceReportsPage() {
           ['Total', '-', '₹40,15,000'],
         ],
         theme: 'striped',
-        headStyles: { fillColor: [0, 128, 128] },
+        headStyles: { fillColor: [255, 255, 255], textColor: [0, 0, 0], fontStyle: 'bold', lineWidth: 0.1, lineColor: [0, 0, 0] },
         styles: { fontSize: 10 },
       });
     } else if (report.type === "MLWF") {
@@ -191,7 +191,7 @@ export default function ComplianceReportsPage() {
           ['Annual Total (per employee)', '₹50', '₹150', '₹200'],
         ],
         theme: 'striped',
-        headStyles: { fillColor: [0, 128, 128] },
+        headStyles: { fillColor: [255, 255, 255], textColor: [0, 0, 0], fontStyle: 'bold', lineWidth: 0.1, lineColor: [0, 0, 0] },
         styles: { fontSize: 10 },
       });
     } else {
@@ -206,7 +206,7 @@ export default function ComplianceReportsPage() {
           ['Last Generated', report.lastGenerated],
         ],
         theme: 'striped',
-        headStyles: { fillColor: [0, 128, 128] },
+        headStyles: { fillColor: [255, 255, 255], textColor: [0, 0, 0], fontStyle: 'bold', lineWidth: 0.1, lineColor: [0, 0, 0] },
         styles: { fontSize: 10 },
       });
     }
