@@ -50,6 +50,32 @@ export default function PayrollReportPage() {
   const { data: employees = [] } = useQuery<User[]>({ queryKey: ["/api/employees"] });
   const { data: departments = [] } = useQuery<Department[]>({ queryKey: ["/api/departments"] });
   const { data: paymentRecords = [] } = useQuery<any[]>({ queryKey: ["/api/payroll/payments"] });
+  const { data: attendanceRecords = [] } = useQuery<any[]>({ queryKey: ["/api/attendance"] });
+
+  const calculateGrossSalary = (monthlyCTC: number, daysWorked: number = 25, totalDaysInMonth: number = 30) =>
+    (monthlyCTC / totalDaysInMonth) * daysWorked;
+
+  const calculateBasicSalary = (grossSalary: number) => (grossSalary || 0) * 0.5;
+
+  const calculateEPF = (basicSalary: number) => Math.min(basicSalary || 0, 15000) * 0.12;
+  const calculateESIC = (grossSalary: number) => (grossSalary || 0) <= 21000 ? Math.round((grossSalary || 0) * 0.0075) : 0;
+  const calculateProfessionalTax = () => 200;
+
+  const mlwfMonthNum = new Date().getMonth() + 1;
+  const isMlwfMonth = mlwfMonthNum === 6 || mlwfMonthNum === 12;
+  const calculateMLWFEmployee = () => isMlwfMonth ? 25 : 0;
+
+  const getSalaryBreakdown = (monthlyCTC: number, daysWorked: number = 25, totalDaysInMonth: number = 30) => {
+    const grossSalary = calculateGrossSalary(monthlyCTC, daysWorked, totalDaysInMonth);
+    const basicSalary = calculateBasicSalary(grossSalary);
+    const epf = calculateEPF(basicSalary);
+    const esic = calculateESIC(grossSalary);
+    const professionalTax = calculateProfessionalTax();
+    const mlwf = calculateMLWFEmployee();
+    const totalDeductions = epf + esic + professionalTax + mlwf;
+    const netSalary = grossSalary - totalDeductions;
+    return { grossSalary, totalDeductions, netSalary, epf, esic, professionalTax, mlwf, daysWorked, totalDaysInMonth };
+  };
 
   const getReportPeriod = () => {
     const date = new Date(selectedDate);
@@ -101,35 +127,74 @@ export default function PayrollReportPage() {
     setExpandedEmployees(newSet);
   };
 
+  const getPresentDays = (userId: number) => {
+    const empAttendance = attendanceRecords.filter((a: any) => {
+      if (a.userId !== userId) return false;
+      const aDate = new Date(a.date);
+      return aDate >= startDate && aDate <= endDate;
+    });
+    const presentDays = empAttendance.filter((a: any) =>
+      a.status === 'present' || a.status === 'P'
+    ).length;
+    const halfDays = empAttendance.filter((a: any) =>
+      a.status === 'half-day' || a.status === 'HD'
+    ).length;
+    return presentDays + (halfDays * 0.5);
+  };
+
+  const getDaysInPeriod = () => {
+    if (selectedPeriod === "month") {
+      return new Date(selectedYear, selectedMonth + 1, 0).getDate();
+    }
+    return 30;
+  };
+
   const getDetailedPayroll = (userId: number) => {
-    const records = paymentRecords.filter(r => {
+    const records = paymentRecords.filter((r: any) => {
       const paymentDate = new Date(r.paymentDate);
       return r.employeeId === userId && paymentDate >= startDate && paymentDate <= endDate;
     });
     const emp = employees.find(e => e.id === userId);
     const baseAmount = emp?.salary || 0;
-    
+    const presentDays = getPresentDays(userId);
+    const totalDaysInMonth = getDaysInPeriod();
+    const effectiveDays = presentDays > 0 ? presentDays : 25;
+
     if (records.length > 0) {
-      const totalAmount = records.reduce((sum, r) => sum + (r.amount || 0), 0);
-      const lastPayment = records.sort((a, b) => new Date(b.paymentDate).getTime() - new Date(a.paymentDate).getTime())[0];
+      const totalAmount = records.reduce((sum: number, r: any) => sum + (r.amount || 0), 0);
+      const lastPayment = records.sort((a: any, b: any) => new Date(b.paymentDate).getTime() - new Date(a.paymentDate).getTime())[0];
+      const breakdown = getSalaryBreakdown(totalAmount, effectiveDays, totalDaysInMonth);
       return { 
         totalAmount, 
         count: records.length,
         lastPaymentDate: lastPayment?.paymentDate,
         lastPaymentMode: lastPayment?.paymentMode,
         lastRefNo: lastPayment?.referenceNo,
-        isSynced: true
+        isSynced: true,
+        presentDays: effectiveDays,
+        ...breakdown
       };
     }
 
+    const breakdown = getSalaryBreakdown(baseAmount, effectiveDays, totalDaysInMonth);
     return {
       totalAmount: baseAmount,
       count: 0,
       lastPaymentDate: null,
       lastPaymentMode: null,
       lastRefNo: null,
-      isSynced: false
+      isSynced: false,
+      presentDays: effectiveDays,
+      ...breakdown
     };
+  };
+
+  const getBankDetails = (emp: User) => {
+    const parts = [];
+    if (emp.bankName) parts.push(emp.bankName);
+    if (emp.bankAccountNumber) parts.push(`A/C: ${emp.bankAccountNumber}`);
+    if (emp.bankIFSCCode) parts.push(`IFSC: ${emp.bankIFSCCode}`);
+    return parts.length > 0 ? parts.join(', ') : 'N/A';
   };
 
   const totalMonthlyPayroll = filteredEmployees.reduce((sum: number, emp: User) => sum + getDetailedPayroll(emp.id).totalAmount, 0);
@@ -147,29 +212,120 @@ export default function PayrollReportPage() {
       const doc = new jsPDF({ orientation: 'landscape' }) as any;
       addWatermark(doc);
       addCompanyHeader(doc, { 
-        title: "UNIT-WISE PAYROLL REPORT", 
-        subtitle: `Period: ${selectedPeriod.toUpperCase()} (${startDate.toLocaleDateString()} - ${endDate.toLocaleDateString()})` 
+        title: "PAYROLL REPORT", 
+        subtitle: `Period: ${selectedPeriod.toUpperCase()} (${startDate.toLocaleDateString('en-GB')} - ${endDate.toLocaleDateString('en-GB')})` 
       });
       const tableData = filteredEmployees.map(emp => {
         const payroll = getDetailedPayroll(emp.id);
-        return [emp.employeeId || '-', `${emp.firstName} ${emp.lastName}`, departments.find(d => d.id === emp.departmentId)?.name || '-', `₹${payroll.totalAmount.toLocaleString()}`];
+        const deptName = departments.find(d => d.id === emp.departmentId)?.name || '-';
+        return [
+          emp.employeeId || `EMP${String(emp.id).padStart(3, '0')}`,
+          `${emp.firstName} ${emp.lastName}`,
+          deptName,
+          getBankDetails(emp),
+          `${payroll.presentDays}/${payroll.totalDaysInMonth}`,
+          `₹${Math.round(payroll.grossSalary).toLocaleString()}`,
+          `₹${Math.round(payroll.totalDeductions).toLocaleString()}`,
+          `₹${Math.round(payroll.netSalary).toLocaleString()}`
+        ];
       });
-      autoTable(doc, { head: [['Emp ID', 'Name', 'Department', 'Amount']], body: tableData, startY: 70 });
+
+      const totalGross = filteredEmployees.reduce((s, e) => s + getDetailedPayroll(e.id).grossSalary, 0);
+      const totalDed = filteredEmployees.reduce((s, e) => s + getDetailedPayroll(e.id).totalDeductions, 0);
+      const totalNet = filteredEmployees.reduce((s, e) => s + getDetailedPayroll(e.id).netSalary, 0);
+
+      tableData.push([
+        '', 'TOTAL', '', '', '',
+        `₹${Math.round(totalGross).toLocaleString()}`,
+        `₹${Math.round(totalDed).toLocaleString()}`,
+        `₹${Math.round(totalNet).toLocaleString()}`
+      ]);
+
+      autoTable(doc, { 
+        head: [['Emp ID', 'Emp Name', 'Department', 'Bank Details', 'Present Days', 'Gross Salary', 'Deductions', 'Net Salary']], 
+        body: tableData, 
+        startY: 70,
+        headStyles: { fillColor: [0, 128, 128], textColor: [255, 255, 255], fontStyle: 'bold', fontSize: 8 },
+        styles: { fontSize: 7, cellPadding: 3 },
+        columnStyles: {
+          0: { cellWidth: 22 },
+          1: { cellWidth: 35 },
+          2: { cellWidth: 30 },
+          3: { cellWidth: 55 },
+          4: { cellWidth: 20, halign: 'center' },
+          5: { cellWidth: 28, halign: 'right' },
+          6: { cellWidth: 28, halign: 'right' },
+          7: { cellWidth: 28, halign: 'right' }
+        },
+        foot: [],
+        didParseCell: function(data: any) {
+          if (data.row.index === tableData.length - 1) {
+            data.cell.styles.fontStyle = 'bold';
+            data.cell.styles.fillColor = [240, 240, 240];
+          }
+        }
+      });
       addFooter(doc);
+      const refNumber = generateReferenceNumber("PAY");
+      addReferenceNumber(doc, refNumber, 68);
+      addDocumentDate(doc, undefined, 68);
       doc.save(`payroll_report_${monthsList[selectedMonth]}_${selectedYear}.pdf`);
       toast({ title: "PDF Exported Successfully" });
-    } catch (e) { toast({ title: "Export Failed", variant: "destructive" }); }
+    } catch (e) { 
+      console.error(e);
+      toast({ title: "Export Failed", variant: "destructive" }); 
+    }
   };
 
   const handleExportExcel = () => {
     const data = filteredEmployees.map(emp => {
       const payroll = getDetailedPayroll(emp.id);
-      return { 'Emp ID': emp.employeeId, 'Name': `${emp.firstName} ${emp.lastName}`, 'Department': departments.find(d => d.id === emp.departmentId)?.name || '-', 'Amount': payroll.totalAmount };
+      const deptName = departments.find(d => d.id === emp.departmentId)?.name || '-';
+      return { 
+        'Emp ID': emp.employeeId || `EMP${String(emp.id).padStart(3, '0')}`,
+        'Emp Name': `${emp.firstName} ${emp.lastName}`,
+        'Department': deptName,
+        'Bank Name': emp.bankName || 'N/A',
+        'Account Number': emp.bankAccountNumber || 'N/A',
+        'IFSC Code': emp.bankIFSCCode || 'N/A',
+        'Present Days': payroll.presentDays,
+        'Total Days in Month': payroll.totalDaysInMonth,
+        'Gross Salary (₹)': Math.round(payroll.grossSalary),
+        'EPF (₹)': Math.round(payroll.epf),
+        'ESIC (₹)': Math.round(payroll.esic),
+        'Prof. Tax (₹)': Math.round(payroll.professionalTax),
+        'MLWF (₹)': Math.round(payroll.mlwf),
+        'Total Deductions (₹)': Math.round(payroll.totalDeductions),
+        'Net Salary (₹)': Math.round(payroll.netSalary)
+      };
     });
+
+    const totalRow = {
+      'Emp ID': '',
+      'Emp Name': 'TOTAL',
+      'Department': '',
+      'Bank Name': '',
+      'Account Number': '',
+      'IFSC Code': '',
+      'Present Days': '',
+      'Total Days in Month': '',
+      'Gross Salary (₹)': Math.round(data.reduce((s, r) => s + (r['Gross Salary (₹)'] || 0), 0)),
+      'EPF (₹)': Math.round(data.reduce((s, r) => s + (r['EPF (₹)'] || 0), 0)),
+      'ESIC (₹)': Math.round(data.reduce((s, r) => s + (r['ESIC (₹)'] || 0), 0)),
+      'Prof. Tax (₹)': Math.round(data.reduce((s, r) => s + (r['Prof. Tax (₹)'] || 0), 0)),
+      'MLWF (₹)': Math.round(data.reduce((s, r) => s + (r['MLWF (₹)'] || 0), 0)),
+      'Total Deductions (₹)': Math.round(data.reduce((s, r) => s + (r['Total Deductions (₹)'] || 0), 0)),
+      'Net Salary (₹)': Math.round(data.reduce((s, r) => s + (r['Net Salary (₹)'] || 0), 0))
+    };
+    data.push(totalRow as any);
+
     const worksheet = XLSX.utils.json_to_sheet(data);
+    const colWidths = [12, 25, 20, 20, 20, 15, 12, 12, 15, 12, 12, 12, 10, 15, 15];
+    worksheet['!cols'] = colWidths.map(w => ({ wch: w }));
     const workbook = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(workbook, worksheet, "Payroll");
+    XLSX.utils.book_append_sheet(workbook, worksheet, "Payroll Report");
     XLSX.writeFile(workbook, `payroll_report_${monthsList[selectedMonth]}_${selectedYear}.xlsx`);
+    toast({ title: "Excel Exported Successfully" });
   };
 
   const handleDownloadIndividualPDF = (emp: User) => {
@@ -178,21 +334,30 @@ export default function PayrollReportPage() {
       addWatermark(doc);
       addCompanyHeader(doc, { title: "INDIVIDUAL PAYROLL STATEMENT", subtitle: `${emp.firstName} ${emp.lastName}` });
       const payroll = getDetailedPayroll(emp.id);
-      autoTable(doc, { startY: 70, head: [['Detail', 'Value']], body: [['Amount', `₹${payroll.totalAmount.toLocaleString()}`], ['Status', payroll.count > 0 ? 'Paid' : 'Pending']] });
+      autoTable(doc, { 
+        startY: 70, 
+        head: [['Detail', 'Value']], 
+        body: [
+          ['Employee ID', emp.employeeId || `EMP${String(emp.id).padStart(3, '0')}`],
+          ['Department', departments.find(d => d.id === emp.departmentId)?.name || '-'],
+          ['Bank Details', getBankDetails(emp)],
+          ['Present Days', `${payroll.presentDays} / ${payroll.totalDaysInMonth}`],
+          ['Gross Salary', `₹${Math.round(payroll.grossSalary).toLocaleString()}`],
+          ['EPF', `₹${Math.round(payroll.epf).toLocaleString()}`],
+          ['ESIC', `₹${Math.round(payroll.esic).toLocaleString()}`],
+          ['Professional Tax', `₹${Math.round(payroll.professionalTax).toLocaleString()}`],
+          ['MLWF', `₹${Math.round(payroll.mlwf).toLocaleString()}`],
+          ['Total Deductions', `₹${Math.round(payroll.totalDeductions).toLocaleString()}`],
+          ['Net Salary', `₹${Math.round(payroll.netSalary).toLocaleString()}`],
+          ['Status', payroll.count > 0 ? 'Paid' : 'Pending']
+        ],
+        headStyles: { fillColor: [0, 128, 128], textColor: [255, 255, 255], fontStyle: 'bold' },
+        styles: { fontSize: 9 }
+      });
       addFooter(doc);
-      doc.save(`payroll_${emp.firstName}.pdf`);
-    } catch (e) {}
-  };
-
-  const handleExportIndividualText = (emp: User) => {
-    const payroll = getDetailedPayroll(emp.id);
-    const text = `PAYROLL STATEMENT - ${monthsList[selectedMonth]} ${selectedYear}\nEmployee: ${emp.firstName} ${emp.lastName}\nAmount: ₹${payroll.totalAmount.toLocaleString()}\nStatus: ${payroll.count > 0 ? 'Paid' : 'Pending'}\n`;
-    const blob = new Blob([text], { type: "text/plain" });
-    const url = window.URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = `payroll_${emp.firstName}.txt`;
-    a.click();
+      doc.save(`payroll_${emp.firstName}_${emp.lastName}.pdf`);
+      toast({ title: "PDF Downloaded" });
+    } catch (e) { console.error(e); }
   };
 
   return (
@@ -200,14 +365,14 @@ export default function PayrollReportPage() {
       <div className="space-y-6">
         <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
           <div>
-            <h1 className="text-2xl font-bold text-slate-900 dark:text-white">Unit-wise Payroll Reports</h1>
-            <p className="text-slate-500">Hierarchical payroll analysis</p>
+            <h1 className="text-2xl font-bold text-slate-900 dark:text-white" data-testid="text-payroll-report-title">Payroll Reports</h1>
+            <p className="text-slate-500">Comprehensive payroll analysis with salary breakdown</p>
           </div>
           <div className="flex gap-2 flex-wrap items-end">
             <div className="flex flex-col gap-1">
               <label className="text-[10px] font-bold uppercase text-slate-400 ml-1">Period</label>
               <Select value={selectedPeriod} onValueChange={setSelectedPeriod}>
-                <SelectTrigger className="w-32 h-9">
+                <SelectTrigger className="w-32 h-9" data-testid="select-period">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
@@ -299,8 +464,8 @@ export default function PayrollReportPage() {
               )}
             </div>
             <div className="flex bg-slate-100 dark:bg-slate-900 rounded-lg p-1 border border-slate-200 dark:border-slate-800 h-9">
-              <Button variant="ghost" size="sm" className="h-7 text-xs gap-1 hover-elevate px-2" onClick={handleExportPDF}><FileDown className="h-3 w-3" /> PDF</Button>
-              <Button variant="ghost" size="sm" className="h-7 text-xs gap-1 hover-elevate px-2" onClick={handleExportExcel}><FileSpreadsheet className="h-3 w-3" /> Excel</Button>
+              <Button variant="ghost" size="sm" className="h-7 text-xs gap-1 hover-elevate px-2" onClick={handleExportPDF} data-testid="button-export-pdf"><FileDown className="h-3 w-3" /> PDF</Button>
+              <Button variant="ghost" size="sm" className="h-7 text-xs gap-1 hover-elevate px-2" onClick={handleExportExcel} data-testid="button-export-excel"><FileSpreadsheet className="h-3 w-3" /> Excel</Button>
             </div>
           </div>
         </div>
@@ -338,10 +503,10 @@ export default function PayrollReportPage() {
         <Card>
           <CardHeader>
             <div className="flex items-center justify-between">
-              <CardTitle className="flex items-center gap-2"><Building2 className="h-5 w-5 text-teal-600" /> Unit Hierarchy</CardTitle>
+              <CardTitle className="flex items-center gap-2"><Building2 className="h-5 w-5 text-teal-600" /> Employee Payroll Details</CardTitle>
               <div className="relative w-64">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
-                <Input placeholder="Search..." value={searchQuery} onChange={e => setSearchQuery(e.target.value)} className="pl-9" />
+                <Input placeholder="Search..." value={searchQuery} onChange={e => setSearchQuery(e.target.value)} className="pl-9" data-testid="input-search" />
               </div>
             </div>
           </CardHeader>
@@ -361,35 +526,45 @@ export default function PayrollReportPage() {
                       const isExpanded = expandedEmployees.has(emp.id);
                       return (
                         <div key={emp.id}>
-                          <button onClick={() => toggleEmployee(emp.id)} className="w-full p-4 flex items-center justify-between hover:bg-slate-50 transition-all">
+                          <button onClick={() => toggleEmployee(emp.id)} className="w-full p-4 flex items-center justify-between hover:bg-slate-50 transition-all" data-testid={`button-toggle-emp-${emp.id}`}>
                             <div className="flex items-center gap-3">
                               {isExpanded ? <ChevronDown className="h-4 w-4 text-teal-600" /> : <ChevronRight className="h-4 w-4" />}
-                              <div className="text-left"><p className="font-semibold">{emp.firstName} {emp.lastName}</p><p className="text-xs text-slate-500 uppercase">{emp.employeeId} • {emp.position}</p></div>
+                              <div className="text-left"><p className="font-semibold">{emp.firstName} {emp.lastName}</p><p className="text-xs text-slate-500 uppercase">{emp.employeeId || `EMP${String(emp.id).padStart(3, '0')}`} • {emp.position}</p></div>
                             </div>
-                            <div className="flex gap-2">
-                              <Badge variant="outline" className="text-teal-600 font-black">₹{payroll.totalAmount.toLocaleString()}</Badge>
+                            <div className="flex gap-2 items-center">
+                              <Badge variant="outline" className="text-xs">Days: {payroll.presentDays}/{payroll.totalDaysInMonth}</Badge>
+                              <Badge variant="outline" className="text-teal-600 font-black">Net: ₹{Math.round(payroll.netSalary).toLocaleString()}</Badge>
                             </div>
                           </button>
                           <AnimatePresence>
                             {isExpanded && (
                               <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} exit={{ height: 0, opacity: 0 }} className="p-5 bg-slate-50/40 border-t overflow-hidden">
-                                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-5">
-                                  <div className="p-4 bg-white border rounded-xl shadow-sm">
-                                    <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest">Base Salary</p>
-                                    <p className="text-xl font-black">₹{(emp.salary || 0).toLocaleString()}</p>
+                                <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-5">
+                                  <div className="p-4 bg-white dark:bg-slate-800 border rounded-xl shadow-sm">
+                                    <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest">Bank Details</p>
+                                    <p className="text-sm font-semibold mt-1">{emp.bankName || 'N/A'}</p>
+                                    <p className="text-xs text-slate-500">{emp.bankAccountNumber || 'N/A'}</p>
+                                    <p className="text-xs text-slate-500">{emp.bankIFSCCode || 'N/A'}</p>
                                   </div>
-                                  <div className="p-4 bg-white border rounded-xl shadow-sm">
-                                    <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest">Status</p>
-                                    <p className="text-xl font-black text-teal-600">{payroll.count > 0 ? 'Disbursed' : 'In Progress'}</p>
+                                  <div className="p-4 bg-white dark:bg-slate-800 border rounded-xl shadow-sm">
+                                    <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest">Gross Salary</p>
+                                    <p className="text-xl font-black text-teal-600">₹{Math.round(payroll.grossSalary).toLocaleString()}</p>
+                                    <p className="text-xs text-slate-500">{payroll.presentDays} days payable</p>
                                   </div>
-                                  <div className="p-4 bg-white border rounded-xl shadow-sm">
-                                    <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest">Ref No</p>
-                                    <p className="text-xl font-black">{payroll.lastRefNo || 'N/A'}</p>
+                                  <div className="p-4 bg-white dark:bg-slate-800 border rounded-xl shadow-sm">
+                                    <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest">Deductions</p>
+                                    <p className="text-xl font-black text-red-500">₹{Math.round(payroll.totalDeductions).toLocaleString()}</p>
+                                    <p className="text-xs text-slate-500">EPF + ESIC + PT + MLWF</p>
+                                  </div>
+                                  <div className="p-4 bg-white dark:bg-slate-800 border rounded-xl shadow-sm">
+                                    <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest">Net Salary</p>
+                                    <p className="text-xl font-black text-emerald-600">₹{Math.round(payroll.netSalary).toLocaleString()}</p>
+                                    <p className="text-xs text-slate-500">{payroll.count > 0 ? 'Disbursed' : 'In Progress'}</p>
                                   </div>
                                 </div>
                                 <div className="flex justify-end gap-3 flex-wrap">
-                                  <Button variant="outline" size="sm" className="h-8 rounded-lg font-bold gap-2 hover-elevate" onClick={() => handleDownloadIndividualPDF(emp)}><FileDown className="h-3.5 w-3.5" /> PDF</Button>
-                                  <Button variant="outline" size="sm" className="h-8 rounded-lg font-bold hover-elevate" onClick={() => window.location.href=`/employee/${emp.id}?tab=payroll`}>Full Profile</Button>
+                                  <Button variant="outline" size="sm" className="h-8 rounded-lg font-bold gap-2 hover-elevate" onClick={() => handleDownloadIndividualPDF(emp)} data-testid={`button-pdf-emp-${emp.id}`}><FileDown className="h-3.5 w-3.5" /> PDF</Button>
+                                  <Button variant="outline" size="sm" className="h-8 rounded-lg font-bold hover-elevate" onClick={() => window.location.href=`/employee/${emp.id}?tab=payroll`} data-testid={`button-profile-emp-${emp.id}`}>Full Profile</Button>
                                 </div>
                               </motion.div>
                             )}

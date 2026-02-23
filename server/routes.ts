@@ -707,6 +707,35 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  app.get("/api/employees/leave-balances", async (req, res, next) => {
+    try {
+      if (!req.isAuthenticated()) {
+        return res.status(401).json({ message: "Unauthorized" });
+      }
+      const requestingUser = req.user;
+      if (requestingUser?.role !== 'admin' && requestingUser?.role !== 'hr' && requestingUser?.role !== 'developer') {
+        return res.status(403).json({ message: "Insufficient permissions" });
+      }
+      const allEmployees = await storage.getAllUsers();
+      const activeEmployees = allEmployees.filter(u => u.isActive && u.role !== 'developer');
+      const balances: Record<number, any> = {};
+      for (const emp of activeEmployees) {
+        try {
+          const balance = await storage.calculateLeaveBalance(emp.id);
+          balances[emp.id] = balance;
+        } catch (e) {
+          balances[emp.id] = {
+            totalAccrued: 0, totalTaken: 0, pendingRequests: 0,
+            remainingBalance: 0, accruedThisYear: 0, takenThisYear: 0
+          };
+        }
+      }
+      res.json(balances);
+    } catch (error) {
+      next(error);
+    }
+  });
+
   // Leave balance endpoint
   app.get("/api/employees/:id/leave-balance", async (req, res, next) => {
     try {
