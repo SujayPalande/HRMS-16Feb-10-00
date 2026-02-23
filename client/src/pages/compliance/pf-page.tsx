@@ -210,7 +210,7 @@ export default function PfPage() {
       startY: 80,
       head: [['Employee', 'Unit', 'Department', 'Basic Salary', 'Employee (12%)', 'Employer (12%)', 'EDLI (0.5%)', 'Admin (0.5%)', 'Total']],
       body: tableBody,
-      theme: 'striped',
+      theme: 'grid',
       headStyles: { fillColor: [255, 255, 255], textColor: [0, 0, 0], fontStyle: 'bold', fontSize: 8, lineWidth: 0.1, lineColor: [0, 0, 0] },
       styles: { fontSize: 8 },
     });

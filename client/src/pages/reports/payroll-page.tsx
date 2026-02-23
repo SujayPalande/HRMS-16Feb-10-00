@@ -245,6 +245,7 @@ export default function PayrollReportPage() {
         head: [['Emp ID', 'Emp Name', 'Department', 'Bank Details', 'Present Days', 'Gross Salary', 'Deductions', 'Net Salary']], 
         body: tableData, 
         startY: 70,
+        theme: 'grid',
         headStyles: { fillColor: [255, 255, 255], textColor: [0, 0, 0], fontStyle: 'bold', fontSize: 8, lineWidth: 0.1, lineColor: [0, 0, 0] },
         styles: { fontSize: 7, cellPadding: 3 },
         columnStyles: {
@@ -351,6 +352,7 @@ export default function PayrollReportPage() {
           ['Net Salary', Math.round(payroll.netSalary).toLocaleString()],
           ['Status', payroll.count > 0 ? 'Paid' : 'Pending']
         ],
+        theme: 'grid',
         headStyles: { fillColor: [255, 255, 255], textColor: [0, 0, 0], fontStyle: 'bold', lineWidth: 0.1, lineColor: [0, 0, 0] },
         styles: { fontSize: 9 }
       });

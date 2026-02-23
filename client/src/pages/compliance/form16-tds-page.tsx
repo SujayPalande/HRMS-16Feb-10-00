@@ -309,7 +309,7 @@ export default function Form16TdsPage() {
         ['5. Less: Rebate u/s 87A', 'Rs.0'],
         ['6. Tax Deducted at Source', `Rs.${employee.tdsDeducted.toLocaleString()}`],
       ],
-      theme: 'striped',
+      theme: 'grid',
       headStyles: { fillColor: [255, 255, 255], textColor: [0, 0, 0], fontStyle: 'bold', lineWidth: 0.1, lineColor: [0, 0, 0] },
       styles: { fontSize: 9 },
     });
@@ -412,7 +412,7 @@ export default function Form16TdsPage() {
         ['5. Net Taxable Income', `Rs.${taxableIncome.toLocaleString()}`],
         ['6. Tax Deducted at Source', `Rs.${tdsDeducted.toLocaleString()}`],
       ],
-      theme: 'striped',
+      theme: 'grid',
       headStyles: { fillColor: [255, 255, 255], textColor: [0, 0, 0], fontStyle: 'bold', lineWidth: 0.1, lineColor: [0, 0, 0] },
       styles: { fontSize: 9 },
     });

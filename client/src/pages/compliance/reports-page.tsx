@@ -136,7 +136,7 @@ export default function ComplianceReportsPage() {
           ['Admin Charges (0.5%)', '-', '₹5,200', '₹5,200'],
           ['Total', '₹1,24,500', '₹2,21,400', '₹3,45,900'],
         ],
-        theme: 'striped',
+        theme: 'grid',
         headStyles: { fillColor: [255, 255, 255], textColor: [0, 0, 0], fontStyle: 'bold', lineWidth: 0.1, lineColor: [0, 0, 0] },
         styles: { fontSize: 10 },
       });
@@ -149,7 +149,7 @@ export default function ComplianceReportsPage() {
           ['No. of Employees', '23', '23', '-'],
           ['Total Wages', '₹11,50,000', '-', '-'],
         ],
-        theme: 'striped',
+        theme: 'grid',
         headStyles: { fillColor: [255, 255, 255], textColor: [0, 0, 0], fontStyle: 'bold', lineWidth: 0.1, lineColor: [0, 0, 0] },
         styles: { fontSize: 10 },
       });
@@ -163,7 +163,7 @@ export default function ComplianceReportsPage() {
           ['Gujarat', '28', '₹4,200'],
           ['Total', '145', '₹26,800'],
         ],
-        theme: 'striped',
+        theme: 'grid',
         headStyles: { fillColor: [255, 255, 255], textColor: [0, 0, 0], fontStyle: 'bold', lineWidth: 0.1, lineColor: [0, 0, 0] },
         styles: { fontSize: 10 },
       });
@@ -177,7 +177,7 @@ export default function ComplianceReportsPage() {
           ['Q3 (Oct-Dec)', '156', '₹14,50,000'],
           ['Total', '-', '₹40,15,000'],
         ],
-        theme: 'striped',
+        theme: 'grid',
         headStyles: { fillColor: [255, 255, 255], textColor: [0, 0, 0], fontStyle: 'bold', lineWidth: 0.1, lineColor: [0, 0, 0] },
         styles: { fontSize: 10 },
       });
@@ -190,7 +190,7 @@ export default function ComplianceReportsPage() {
           ['December (Half-yearly)', '₹25 per employee', '₹75 per employee', '₹100 per employee'],
           ['Annual Total (per employee)', '₹50', '₹150', '₹200'],
         ],
-        theme: 'striped',
+        theme: 'grid',
         headStyles: { fillColor: [255, 255, 255], textColor: [0, 0, 0], fontStyle: 'bold', lineWidth: 0.1, lineColor: [0, 0, 0] },
         styles: { fontSize: 10 },
       });
@@ -205,7 +205,7 @@ export default function ComplianceReportsPage() {
           ['Status', report.status],
           ['Last Generated', report.lastGenerated],
         ],
-        theme: 'striped',
+        theme: 'grid',
         headStyles: { fillColor: [255, 255, 255], textColor: [0, 0, 0], fontStyle: 'bold', lineWidth: 0.1, lineColor: [0, 0, 0] },
         styles: { fontSize: 10 },
       });

@@ -324,7 +324,7 @@ export default function MusterRollPage() {
       head: [header],
       body: body,
       theme: 'grid',
-      headStyles: { fillColor: [0, 121, 107], fontSize: 5 },
+      headStyles: { fillColor: [255, 255, 255], textColor: [0, 0, 0], fontStyle: 'bold', fontSize: 5, lineWidth: 0.1, lineColor: [0, 0, 0] },
       styles: { fontSize: 5, cellPadding: 1 },
       margin: { left: 5, right: 5 }
     });

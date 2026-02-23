@@ -143,7 +143,7 @@ export default function ReimbursementsPage() {
       head: [["Employee", "Category", "Claim Amount", "Approved Amount", "Status", "Date"]],
       body: tableData,
       startY: 42,
-      theme: "striped",
+      theme: "grid",
       headStyles: { fillColor: [255, 255, 255], textColor: [0, 0, 0], fontStyle: 'bold', lineWidth: 0.1, lineColor: [0, 0, 0] },
       styles: { fontSize: 9 },
     });

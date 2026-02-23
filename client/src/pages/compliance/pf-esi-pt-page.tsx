@@ -264,8 +264,8 @@ export default function PfEsiPtPage() {
         `Rs. ${row.adminCharges.toLocaleString()}`,
         `Rs. ${row.total.toLocaleString()}`
       ]),
-      theme: 'striped',
-      headStyles: { fillColor: [0, 98, 179] },
+      theme: 'grid',
+      headStyles: { fillColor: [255, 255, 255], textColor: [0, 0, 0], fontStyle: 'bold', lineWidth: 0.1, lineColor: [0, 0, 0] },
       styles: { fontSize: 8 },
     });
     
@@ -285,8 +285,8 @@ export default function PfEsiPtPage() {
         `Rs. ${row.employerContrib.toLocaleString()}`,
         `Rs. ${row.total.toLocaleString()}`
       ]),
-      theme: 'striped',
-      headStyles: { fillColor: [0, 98, 179] },
+      theme: 'grid',
+      headStyles: { fillColor: [255, 255, 255], textColor: [0, 0, 0], fontStyle: 'bold', lineWidth: 0.1, lineColor: [0, 0, 0] },
       styles: { fontSize: 8 },
     });
     
@@ -310,8 +310,8 @@ export default function PfEsiPtPage() {
         `Rs. ${row.ptAmount.toLocaleString()}`,
         row.state
       ]),
-      theme: 'striped',
-      headStyles: { fillColor: [0, 98, 179] },
+      theme: 'grid',
+      headStyles: { fillColor: [255, 255, 255], textColor: [0, 0, 0], fontStyle: 'bold', lineWidth: 0.1, lineColor: [0, 0, 0] },
       styles: { fontSize: 9 },
     });
     

@@ -159,8 +159,8 @@ export default function AttendanceReportPage() {
         head: [['Emp ID', 'Name', 'Department', 'Present', 'Absent', 'Leaves', 'Half Day', 'Late', 'Payable Days']],
         body: tableData,
         startY: 70,
-        headStyles: { fillColor: [255, 255, 255], textColor: [0, 0, 0], fontStyle: 'bold', lineWidth: 0.1 },
-        alternateRowStyles: { fillColor: [255, 255, 255] },
+        theme: 'grid',
+        headStyles: { fillColor: [255, 255, 255], textColor: [0, 0, 0], fontStyle: 'bold', lineWidth: 0.1, lineColor: [0, 0, 0] },
         styles: { fillColor: [255, 255, 255], textColor: [0, 0, 0] },
         margin: { top: 70 }
       });
@@ -209,9 +209,9 @@ export default function AttendanceReportPage() {
           ['Late Arrivals', stats.late.toString()],
           ['Payable Days', (stats.present + (stats.halfday * 0.5) + totalLeaves).toString()],
         ],
-        headStyles: { fillColor: [255, 255, 255], textColor: [0, 0, 0], fontStyle: 'bold' },
-        styles: { fillColor: [255, 255, 255], textColor: [0, 0, 0] },
-        theme: 'plain'
+        theme: 'grid',
+        headStyles: { fillColor: [255, 255, 255], textColor: [0, 0, 0], fontStyle: 'bold', lineWidth: 0.1, lineColor: [0, 0, 0] },
+        styles: { fillColor: [255, 255, 255], textColor: [0, 0, 0] }
       });
       addFooter(doc);
       addHRSignature(doc, (doc as any).lastAutoTable?.finalY || 170);

@@ -231,7 +231,7 @@ export default function LeaveRegisterPage() {
       body: tableData,
       theme: "grid",
       styles: { fontSize: 7, cellPadding: 1.5 },
-      headStyles: { fillColor: [34, 139, 34], textColor: 255, fontSize: 7 },
+      headStyles: { fillColor: [255, 255, 255], textColor: [0, 0, 0], fontStyle: 'bold', fontSize: 7, lineWidth: 0.1, lineColor: [0, 0, 0] },
       columnStyles: {
         0: { cellWidth: 10 },
         1: { cellWidth: 18 },
