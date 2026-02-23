@@ -269,8 +269,8 @@ export default function MusterRollPage() {
     
     if (viewType === "wage") {
       header.push(
-        "Basic", "DA", "HRA", "Conv.", "Med.", "Spl.", "Bonus", "OT", "Gross",
-        "PF", "ESI", "PT", "TDS", "MLWF", "Loan", "Other", "Total Ded.", "Net"
+        "Basic", "Dearness Allowance", "House Rent Allowance", "Conveyance", "Medical", "Special Allowance", "Bonus/Incentive", "Overtime", "Gross Earnings",
+        "Provident Fund", "Employee State Insurance", "Professional Tax", "Tax Deducted at Source", "MLWF", "Salary Advance / Loan", "Other Deductions", "Total Deductions", "Net Salary"
       );
     }
 
@@ -336,23 +336,23 @@ export default function MusterRollPage() {
         "Designation": emp.position || "Worker",
         "Days Worked": data.totalDaysWorked,
         "Basic Salary": data.basicSalary,
-        "DA": data.da,
-        "HRA": data.hra,
+        "Dearness Allowance": data.da,
+        "House Rent Allowance": data.hra,
         "Conveyance": data.conveyance,
         "Medical": data.medical,
-        "Special": data.special,
-        "Bonus": data.bonusIncentive,
-        "OT": data.overtimePayable,
+        "Special Allowance": data.special,
+        "Bonus/Incentive": data.bonusIncentive,
+        "Overtime": data.overtimePayable,
         "Gross Earnings": data.grossEarnings,
-        "PF": data.pfDeduction,
-        "ESI": data.esiDeduction,
-        "PT": data.ptDeduction,
-        "TDS": data.itTds,
+        "Provident Fund": data.pfDeduction,
+        "Employee State Insurance": data.esiDeduction,
+        "Professional Tax": data.ptDeduction,
+        "Tax Deducted at Source": data.itTds,
         "MLWF": data.mlwf,
-        "Loan Recovery": data.loanRecovery,
+        "Salary Advance / Loan": data.loanRecovery,
         "Other Deductions": data.otherDeductions,
         "Total Deductions": data.totalDeductions,
-        "Net Wages": data.netWages
+        "Net Salary": data.netWages
       };
     });
     const ws = XLSX.utils.json_to_sheet(flatData);
@@ -419,23 +419,23 @@ export default function MusterRollPage() {
                         <th rowspan="2">Days</th>
                         ${isWage ? `
                           <th rowspan="2">Basic</th>
-                          <th rowspan="2">DA</th>
-                          <th rowspan="2">HRA</th>
-                          <th rowspan="2">Conv.</th>
-                          <th rowspan="2">Med.</th>
-                          <th rowspan="2">Spl.</th>
-                          <th rowspan="2">Bonus</th>
-                          <th rowspan="2">OT</th>
-                          <th rowspan="2">Gross</th>
-                          <th rowspan="2">PF</th>
-                          <th rowspan="2">ESI</th>
-                          <th rowspan="2">PT</th>
-                          <th rowspan="2">TDS</th>
+                          <th rowspan="2">Dearness Allowance</th>
+                          <th rowspan="2">House Rent Allowance</th>
+                          <th rowspan="2">Conveyance</th>
+                          <th rowspan="2">Medical</th>
+                          <th rowspan="2">Special Allowance</th>
+                          <th rowspan="2">Bonus/Incentive</th>
+                          <th rowspan="2">Overtime</th>
+                          <th rowspan="2">Gross Earnings</th>
+                          <th rowspan="2">Provident Fund</th>
+                          <th rowspan="2">Employee State Insurance</th>
+                          <th rowspan="2">Professional Tax</th>
+                          <th rowspan="2">Tax Deducted at Source</th>
                           <th rowspan="2">MLWF</th>
-                          <th rowspan="2">Loan</th>
-                          <th rowspan="2">Other Ded.</th>
-                          <th rowspan="2">Total Ded.</th>
-                          <th rowspan="2">Net</th>
+                          <th rowspan="2">Salary Advance / Loan</th>
+                          <th rowspan="2">Other Deductions</th>
+                          <th rowspan="2">Total Deductions</th>
+                          <th rowspan="2">Net Salary</th>
                         ` : ''}
                       </tr>
                       <tr>
@@ -664,23 +664,23 @@ export default function MusterRollPage() {
                                       {viewType === "wage" && (
                                         <>
                                           <TableHead className="text-center w-24 border-l" rowSpan={2}>Basic</TableHead>
-                                          <TableHead className="text-center w-20 border-l" rowSpan={2}>DA</TableHead>
-                                          <TableHead className="text-center w-20 border-l" rowSpan={2}>HRA</TableHead>
-                                          <TableHead className="text-center w-20 border-l" rowSpan={2}>Conv.</TableHead>
-                                          <TableHead className="text-center w-20 border-l" rowSpan={2}>Med.</TableHead>
-                                          <TableHead className="text-center w-20 border-l" rowSpan={2}>Spl.</TableHead>
-                                          <TableHead className="text-center w-20 border-l" rowSpan={2}>Bonus</TableHead>
-                                          <TableHead className="text-center w-20 border-l" rowSpan={2}>OT</TableHead>
-                                          <TableHead className="text-center w-24 border-l" rowSpan={2}>Gross</TableHead>
-                                          <TableHead className="text-center w-20 border-l" rowSpan={2}>PF</TableHead>
-                                          <TableHead className="text-center w-20 border-l" rowSpan={2}>ESI</TableHead>
-                                          <TableHead className="text-center w-20 border-l" rowSpan={2}>PT</TableHead>
-                                          <TableHead className="text-center w-20 border-l" rowSpan={2}>TDS</TableHead>
+                                          <TableHead className="text-center w-28 border-l" rowSpan={2}>Dearness Allowance</TableHead>
+                                          <TableHead className="text-center w-32 border-l" rowSpan={2}>House Rent Allowance</TableHead>
+                                          <TableHead className="text-center w-24 border-l" rowSpan={2}>Conveyance</TableHead>
+                                          <TableHead className="text-center w-20 border-l" rowSpan={2}>Medical</TableHead>
+                                          <TableHead className="text-center w-28 border-l" rowSpan={2}>Special Allowance</TableHead>
+                                          <TableHead className="text-center w-28 border-l" rowSpan={2}>Bonus/Incentive</TableHead>
+                                          <TableHead className="text-center w-24 border-l" rowSpan={2}>Overtime</TableHead>
+                                          <TableHead className="text-center w-28 border-l" rowSpan={2}>Gross Earnings</TableHead>
+                                          <TableHead className="text-center w-28 border-l" rowSpan={2}>Provident Fund</TableHead>
+                                          <TableHead className="text-center w-36 border-l" rowSpan={2}>Employee State Insurance</TableHead>
+                                          <TableHead className="text-center w-28 border-l" rowSpan={2}>Professional Tax</TableHead>
+                                          <TableHead className="text-center w-32 border-l" rowSpan={2}>Tax Deducted at Source</TableHead>
                                           <TableHead className="text-center w-20 border-l" rowSpan={2}>MLWF</TableHead>
-                                          <TableHead className="text-center w-20 border-l" rowSpan={2}>Loan</TableHead>
-                                          <TableHead className="text-center w-20 border-l" rowSpan={2}>Other</TableHead>
-                                          <TableHead className="text-center w-24 border-l" rowSpan={2}>Total Ded.</TableHead>
-                                          <TableHead className="text-center w-28 border-l bg-teal-50 dark:bg-teal-900/20" rowSpan={2}>Net Wages</TableHead>
+                                          <TableHead className="text-center w-32 border-l" rowSpan={2}>Salary Advance / Loan</TableHead>
+                                          <TableHead className="text-center w-28 border-l" rowSpan={2}>Other Deductions</TableHead>
+                                          <TableHead className="text-center w-28 border-l" rowSpan={2}>Total Deductions</TableHead>
+                                          <TableHead className="text-center w-28 border-l bg-teal-50 dark:bg-teal-900/20" rowSpan={2}>Net Salary</TableHead>
                                         </>
                                       )}
                                     </TableRow>

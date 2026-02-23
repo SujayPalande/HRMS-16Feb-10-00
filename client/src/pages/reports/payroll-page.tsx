@@ -224,9 +224,9 @@ export default function PayrollReportPage() {
           deptName,
           getBankDetails(emp),
           `${payroll.presentDays}/${payroll.totalDaysInMonth}`,
-          `₹${Math.round(payroll.grossSalary).toLocaleString()}`,
-          `₹${Math.round(payroll.totalDeductions).toLocaleString()}`,
-          `₹${Math.round(payroll.netSalary).toLocaleString()}`
+          Math.round(payroll.grossSalary).toLocaleString(),
+          Math.round(payroll.totalDeductions).toLocaleString(),
+          Math.round(payroll.netSalary).toLocaleString()
         ];
       });
 
@@ -236,9 +236,9 @@ export default function PayrollReportPage() {
 
       tableData.push([
         '', 'TOTAL', '', '', '',
-        `₹${Math.round(totalGross).toLocaleString()}`,
-        `₹${Math.round(totalDed).toLocaleString()}`,
-        `₹${Math.round(totalNet).toLocaleString()}`
+        Math.round(totalGross).toLocaleString(),
+        Math.round(totalDed).toLocaleString(),
+        Math.round(totalNet).toLocaleString()
       ]);
 
       autoTable(doc, { 
@@ -342,13 +342,13 @@ export default function PayrollReportPage() {
           ['Department', departments.find(d => d.id === emp.departmentId)?.name || '-'],
           ['Bank Details', getBankDetails(emp)],
           ['Present Days', `${payroll.presentDays} / ${payroll.totalDaysInMonth}`],
-          ['Gross Salary', `₹${Math.round(payroll.grossSalary).toLocaleString()}`],
-          ['EPF', `₹${Math.round(payroll.epf).toLocaleString()}`],
-          ['ESIC', `₹${Math.round(payroll.esic).toLocaleString()}`],
-          ['Professional Tax', `₹${Math.round(payroll.professionalTax).toLocaleString()}`],
-          ['MLWF', `₹${Math.round(payroll.mlwf).toLocaleString()}`],
-          ['Total Deductions', `₹${Math.round(payroll.totalDeductions).toLocaleString()}`],
-          ['Net Salary', `₹${Math.round(payroll.netSalary).toLocaleString()}`],
+          ['Gross Salary', Math.round(payroll.grossSalary).toLocaleString()],
+          ['EPF', Math.round(payroll.epf).toLocaleString()],
+          ['ESIC', Math.round(payroll.esic).toLocaleString()],
+          ['Professional Tax', Math.round(payroll.professionalTax).toLocaleString()],
+          ['MLWF', Math.round(payroll.mlwf).toLocaleString()],
+          ['Total Deductions', Math.round(payroll.totalDeductions).toLocaleString()],
+          ['Net Salary', Math.round(payroll.netSalary).toLocaleString()],
           ['Status', payroll.count > 0 ? 'Paid' : 'Pending']
         ],
         headStyles: { fillColor: [0, 128, 128], textColor: [255, 255, 255], fontStyle: 'bold' },

@@ -363,7 +363,7 @@ export default function MusterRollCombinedPage() {
       "Sl No", "Full name of employee", "Age/Sex", "Designation", "DOJ",
       "From", "To", "Int From", "Int To",
       ...dayColumns,
-      "Total Days", "Daily Rate", "OT Hrs", "Normal Wages", "HRA", "OT Pay", "Gross", "Deductions", "Net Wages"
+      "Total Days", "Daily Rate", "OT Hrs", "Normal Wages", "HRA", "OT Pay", "Gross", "Deductions", "Net Salary"
     ];
 
     const tableData = employees.map((emp, index) => {
@@ -1058,7 +1058,7 @@ export default function MusterRollCombinedPage() {
                                   <TableHead className="text-center w-14 border-l" rowSpan={2}>OT Pay</TableHead>
                                   <TableHead className="text-center w-16 border-l" rowSpan={2}>Gross</TableHead>
                                   <TableHead className="text-center w-14 border-l" rowSpan={2}>Deductions</TableHead>
-                                  <TableHead className="text-center w-16 border-l bg-teal-50 dark:bg-teal-900/20" rowSpan={2}>Net Wages</TableHead>
+                                  <TableHead className="text-center w-16 border-l bg-teal-50 dark:bg-teal-900/20" rowSpan={2}>Net Salary</TableHead>
                                 </TableRow>
                                 <TableRow className="bg-slate-50/50 dark:bg-slate-900/50">
                                   {Array.from({ length: daysInMonth }, (_, i) => (
