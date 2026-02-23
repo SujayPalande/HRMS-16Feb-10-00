@@ -85,7 +85,7 @@ export default function ReportsMainPage() {
           </div>
         </motion.div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           <Card className="border-none shadow-sm bg-blue-600 text-white overflow-hidden relative group">
             <div className="absolute top-0 right-0 p-8 opacity-10 transform translate-x-4 -translate-y-4 group-hover:scale-110 transition-transform">
               <Users size={120} />
@@ -125,20 +125,6 @@ export default function ReportsMainPage() {
               <div className="text-4xl font-bold mb-1">₹42.5L</div>
               <p className="text-green-100 text-xs flex items-center gap-1 font-medium">
                 <TrendingUp className="h-3 w-3" /> Within budget
-              </p>
-            </CardContent>
-          </Card>
-          <Card className="border-none shadow-sm bg-purple-600 text-white overflow-hidden relative group">
-             <div className="absolute top-0 right-0 p-8 opacity-10 transform translate-x-4 -translate-y-4 group-hover:scale-110 transition-transform">
-              <ClipboardList size={120} />
-            </div>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-purple-100 text-sm font-medium uppercase tracking-wider">Leave Utilization</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-4xl font-bold mb-1">8.2%</div>
-              <p className="text-purple-100 text-xs flex items-center gap-1 font-medium">
-                Normal range
               </p>
             </CardContent>
           </Card>
