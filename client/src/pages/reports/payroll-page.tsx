@@ -164,25 +164,12 @@ export default function PayrollReportPage() {
   const handleExportExcel = () => {
     const data = filteredEmployees.map(emp => {
       const payroll = getDetailedPayroll(emp.id);
-      return { 'Emp ID': emp.employeeId, 'Name': `${emp.firstName} ${emp.lastName}`, 'Amount': payroll.totalAmount };
+      return { 'Emp ID': emp.employeeId, 'Name': `${emp.firstName} ${emp.lastName}`, 'Department': departments.find(d => d.id === emp.departmentId)?.name || '-', 'Amount': payroll.totalAmount };
     });
     const worksheet = XLSX.utils.json_to_sheet(data);
     const workbook = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(workbook, worksheet, "Payroll");
     XLSX.writeFile(workbook, `payroll_report_${monthsList[selectedMonth]}_${selectedYear}.xlsx`);
-  };
-
-  const handleExportText = () => {
-    const data = filteredEmployees.map(emp => {
-      const payroll = getDetailedPayroll(emp.id);
-      return `${emp.employeeId}\t${emp.firstName} ${emp.lastName}\t${payroll.totalAmount}\n`;
-    });
-    const blob = new Blob([data.join("")], { type: "text/plain" });
-    const url = window.URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = `payroll_report_${monthsList[selectedMonth]}_${selectedYear}.txt`;
-    a.click();
   };
 
   const handleDownloadIndividualPDF = (emp: User) => {
@@ -314,7 +301,6 @@ export default function PayrollReportPage() {
             <div className="flex bg-slate-100 dark:bg-slate-900 rounded-lg p-1 border border-slate-200 dark:border-slate-800 h-9">
               <Button variant="ghost" size="sm" className="h-7 text-xs gap-1 hover-elevate px-2" onClick={handleExportPDF}><FileDown className="h-3 w-3" /> PDF</Button>
               <Button variant="ghost" size="sm" className="h-7 text-xs gap-1 hover-elevate px-2" onClick={handleExportExcel}><FileSpreadsheet className="h-3 w-3" /> Excel</Button>
-              <Button variant="ghost" size="sm" className="h-7 text-xs gap-1 hover-elevate px-2" onClick={handleExportText}><FileText className="h-3 w-3" /> Text</Button>
             </div>
           </div>
         </div>
@@ -403,7 +389,6 @@ export default function PayrollReportPage() {
                                 </div>
                                 <div className="flex justify-end gap-3 flex-wrap">
                                   <Button variant="outline" size="sm" className="h-8 rounded-lg font-bold gap-2 hover-elevate" onClick={() => handleDownloadIndividualPDF(emp)}><FileDown className="h-3.5 w-3.5" /> PDF</Button>
-                                  <Button variant="outline" size="sm" className="h-8 rounded-lg font-bold gap-2 hover-elevate" onClick={() => handleExportIndividualText(emp)}><FileText className="h-3.5 w-3.5" /> Text</Button>
                                   <Button variant="outline" size="sm" className="h-8 rounded-lg font-bold hover-elevate" onClick={() => window.location.href=`/employee/${emp.id}?tab=payroll`}>Full Profile</Button>
                                 </div>
                               </motion.div>

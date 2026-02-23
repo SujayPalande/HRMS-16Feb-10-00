@@ -14233,6 +14233,39 @@
       "createdAt": "2026-02-20T09:35:46.539Z",
       "relatedUserId": null,
       "relatedLeaveId": null
+    },
+    {
+      "userId": 29,
+      "type": "login",
+      "title": "Successful Login",
+      "message": "You have successfully logged in at 2/20/2026",
+      "isRead": false,
+      "id": 816,
+      "createdAt": "2026-02-20T09:41:29.329Z",
+      "relatedUserId": null,
+      "relatedLeaveId": null
+    },
+    {
+      "userId": 29,
+      "type": "login",
+      "title": "Successful Login",
+      "message": "You have successfully logged in at 2/23/2026",
+      "isRead": false,
+      "id": 817,
+      "createdAt": "2026-02-23T03:41:15.368Z",
+      "relatedUserId": null,
+      "relatedLeaveId": null
+    },
+    {
+      "userId": 29,
+      "type": "login",
+      "title": "Successful Login",
+      "message": "You have successfully logged in at 2/23/2026",
+      "isRead": false,
+      "id": 818,
+      "createdAt": "2026-02-23T04:05:54.999Z",
+      "relatedUserId": null,
+      "relatedLeaveId": null
     }
   ],
   "currentUserId": 40,
@@ -14240,7 +14273,7 @@
   "currentAttendanceId": 526,
   "currentLeaveRequestId": 41,
   "currentHolidayId": 67,
-  "currentNotificationId": 816,
+  "currentNotificationId": 819,
   "paymentRecords": [
     {
       "id": 1,

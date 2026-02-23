@@ -362,10 +362,16 @@ export default function PayslipsPage() {
                   <div className="flex justify-between py-1 font-bold border-t mt-1 pt-1"><span>Total Ded.</span> <span>₹{Math.round(selectedPayslip.breakdown.deductions).toLocaleString()}</span></div>
                 </div>
               </div>
-              <div className="flex justify-between items-center p-4 bg-teal-50 rounded-lg">
-                <span className="font-bold text-teal-800">Net Payable Amount</span>
-                <span className="text-xl font-bold text-teal-800">₹{Math.round(selectedPayslip.netPay).toLocaleString()}</span>
-              </div>
+                <div className="grid grid-cols-2 gap-4 text-sm">
+                  <div className="p-3 bg-slate-50 rounded">
+                    <p className="text-slate-500 mb-1">Salary advance/Loan</p>
+                    <p className="text-lg font-bold">₹{(selectedPayslip?.loanDeduction || 0).toLocaleString()}</p>
+                  </div>
+                  <div className="p-3 bg-slate-50 rounded text-right">
+                    <p className="text-slate-500 mb-1">Net Salary</p>
+                    <p className="text-lg font-bold text-teal-600">₹{(selectedPayslip?.netPay || 0).toLocaleString()}</p>
+                  </div>
+                </div>
             </div>
           )}
         </DialogContent>

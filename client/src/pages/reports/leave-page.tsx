@@ -129,11 +129,32 @@ export default function LeaveReportPage() {
       });
       const tableData = filteredEmployees.map(emp => {
         const stats = getDetailedLeaveStats(emp.id);
+        const userLeaves = leaveRequests.filter((r: any) => {
+          const start = new Date(r.startDate);
+          return r.userId === emp.id && start >= startDate && start <= endDate;
+        });
+        
         const empIdFormatted = `EMP${String(emp.id).padStart(3, '0')}`;
-        return [empIdFormatted, `${emp.firstName} ${emp.lastName}`, departments.find(d => d.id === emp.departmentId)?.name || '-', stats.approved.toString(), stats.pending.toString(), stats.remaining.toString()];
-      });
+        
+        // Detailed leave row for each request
+        if (userLeaves.length === 0) {
+          return [[empIdFormatted, `${emp.firstName} ${emp.lastName}`, departments.find(d => d.id === emp.departmentId)?.name || '-', '-', '-', '-', '0', 'No records']];
+        }
+
+        return userLeaves.map((leave: any) => [
+          empIdFormatted,
+          `${emp.firstName} ${emp.lastName}`,
+          departments.find(d => d.id === emp.departmentId)?.name || '-',
+          leave.type || '-',
+          new Date(leave.startDate).toLocaleDateString('en-GB'),
+          new Date(leave.endDate).toLocaleDateString('en-GB'),
+          leave.days?.toString() || '1',
+          leave.status?.toUpperCase() || 'PENDING'
+        ]);
+      }).flat();
+
       autoTable(doc, { 
-        head: [['Emp ID', 'Name', 'Department', 'Approved', 'Pending', 'Remaining']], 
+        head: [['Emp ID', 'Name', 'Department', 'Type', 'Start Date', 'End Date', 'Days', 'Status']], 
         body: tableData, 
         startY: 70,
         headStyles: { fillColor: [255, 255, 255], textColor: [0, 0, 0], fontStyle: 'bold', lineWidth: 0.1 },
@@ -149,17 +170,38 @@ export default function LeaveReportPage() {
   };
 
   const handleExportExcel = () => {
-    const dataToExport = filteredEmployees.map(emp => {
-      const stats = getDetailedLeaveStats(emp.id);
+    const dataToExport = filteredEmployees.flatMap(emp => {
+      const userLeaves = leaveRequests.filter((r: any) => {
+        const start = new Date(r.startDate);
+        return r.userId === emp.id && start >= startDate && start <= endDate;
+      });
+      
       const empIdFormatted = `EMP${String(emp.id).padStart(3, '0')}`;
-      return {
+      const deptName = departments.find(d => d.id === emp.departmentId)?.name || '-';
+
+      if (userLeaves.length === 0) {
+        return [{
+          'Employee ID': empIdFormatted,
+          'Name': `${emp.firstName} ${emp.lastName}`,
+          'Department': deptName,
+          'Leave Type': '-',
+          'Start Date': '-',
+          'End Date': '-',
+          'Days': 0,
+          'Status': 'No records'
+        }];
+      }
+
+      return userLeaves.map((leave: any) => ({
         'Employee ID': empIdFormatted,
         'Name': `${emp.firstName} ${emp.lastName}`,
-        'Department': departments.find(d => d.id === emp.departmentId)?.name || '-',
-        'Approved': stats.approved,
-        'Pending': stats.pending,
-        'Remaining': stats.remaining
-      };
+        'Department': deptName,
+        'Leave Type': leave.type || '-',
+        'Start Date': new Date(leave.startDate).toLocaleDateString('en-GB'),
+        'End Date': new Date(leave.endDate).toLocaleDateString('en-GB'),
+        'Days': leave.days || 1,
+        'Status': leave.status?.toUpperCase() || 'PENDING'
+      }));
     });
     const worksheet = XLSX.utils.json_to_sheet(dataToExport);
     const workbook = XLSX.utils.book_new();

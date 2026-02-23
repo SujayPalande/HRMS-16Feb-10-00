@@ -60,17 +60,6 @@ export default function ReportsMainPage() {
         { label: "Last Cycle", value: "Jan 26" }
       ],
       color: "green"
-    },
-    {
-      title: "Headcount Reports",
-      description: "Monitor workforce growth, departmental distribution, and tenure analytics.",
-      icon: <Users className="h-6 w-6 text-purple-600" />,
-      path: "/reports/headcount",
-      metrics: [
-        { label: "Total Staff", value: "248" },
-        { label: "Growth", value: "+4.2%" }
-      ],
-      color: "purple"
     }
   ];
 
@@ -250,21 +239,6 @@ export default function ReportsMainPage() {
               <CardContent className="flex justify-center pb-8">
                 <Button variant="outline" className="w-full max-w-[160px] gap-2 hover-elevate shadow-sm bg-white dark:bg-slate-950">
                   <Download className="h-4 w-4" /> Download .pdf
-                </Button>
-              </CardContent>
-            </Card>
-
-            <Card className="bg-slate-50 dark:bg-slate-950/50 border-dashed border-2 border-slate-200 dark:border-slate-800 hover:border-slate-400 dark:hover:border-slate-600 transition-colors">
-              <CardHeader className="text-center pb-2">
-                <div className="mx-auto p-4 rounded-full bg-slate-100 dark:bg-slate-900 text-slate-600 mb-4 w-fit">
-                  <FileText size={32} />
-                </div>
-                <CardTitle className="text-lg">Text/CSV Data</CardTitle>
-                <CardDescription>Raw data for custom processing</CardDescription>
-              </CardHeader>
-              <CardContent className="flex justify-center pb-8">
-                <Button variant="outline" className="w-full max-w-[160px] gap-2 hover-elevate shadow-sm bg-white dark:bg-slate-950">
-                  <Download className="h-4 w-4" /> Download .txt
                 </Button>
               </CardContent>
             </Card>

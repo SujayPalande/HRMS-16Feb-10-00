@@ -250,6 +250,7 @@ export default function AttendanceReportPage() {
       return {
         'Employee ID': empIdFormatted,
         'Name': `${emp.firstName} ${emp.lastName}`,
+        'Position': emp.position || '-',
         'Department': departments.find(d => d.id === emp.departmentId)?.name || '-',
         'Check-in Time': latestRecord?.checkInTime ? new Date(latestRecord.checkInTime).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' }) : '-',
         'Check-out Time': latestRecord?.checkOutTime ? new Date(latestRecord.checkOutTime).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' }) : '-',
