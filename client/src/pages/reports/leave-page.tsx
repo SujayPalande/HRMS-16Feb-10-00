@@ -25,7 +25,7 @@ import { useQuery } from "@tanstack/react-query";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 import * as XLSX from "xlsx";
-import { addCompanyHeader, addWatermark, addFooter } from "@/lib/pdf-utils";
+import { addCompanyHeader, addWatermark, addHRSignature, addFooter, addDocumentDate, generateReferenceNumber, addReferenceNumber } from "@/lib/pdf-utils";
 import { User, Department, Unit } from "@shared/schema";
 
 export default function LeaveReportPage() {
@@ -174,6 +174,19 @@ export default function LeaveReportPage() {
     };
   };
 
+  const getMonthlyBreakdown = (userId: number) => {
+    const userLeaves = leaveRequests.filter((r: any) => r.userId === userId && r.status === 'approved');
+    const monthlyData: Record<string, number> = {};
+    userLeaves.forEach((leave: any) => {
+      const leaveStartDate = new Date(leave.startDate);
+      const leaveEndDate = new Date(leave.endDate);
+      const monthKey = `${monthsList[leaveStartDate.getMonth()]} ${leaveStartDate.getFullYear()}`;
+      const days = Math.ceil((leaveEndDate.getTime() - leaveStartDate.getTime()) / (1000 * 3600 * 24)) + 1;
+      monthlyData[monthKey] = (monthlyData[monthKey] || 0) + days;
+    });
+    return monthlyData;
+  };
+
   const periodStats = useMemo(() => {
     let totalApproved = 0, totalPending = 0, totalRejected = 0, totalApprovedDays = 0;
     filteredEmployees.forEach(emp => {
@@ -200,90 +213,94 @@ export default function LeaveReportPage() {
     return `Year ${new Date(selectedDate).getFullYear()}`;
   };
 
-  const handleExportPDF = async () => {
+  const handleExportPDF = () => {
     try {
       const doc = new jsPDF({ orientation: 'landscape' }) as any;
       addWatermark(doc);
-      await addCompanyHeader(doc, { 
-        title: "LEAVE REPORT", 
-        subtitle: `Period: ${getPeriodLabel()}` 
+      addCompanyHeader(doc, { 
+        title: "LEAVE MANAGEMENT REPORT", 
+        subtitle: `Period: ${selectedPeriod.toUpperCase()} (${startDate.toLocaleDateString('en-GB')} - ${endDate.toLocaleDateString('en-GB')})` 
       });
-      addFooter(doc);
 
-      const tableData: any[][] = [];
-      let srNo = 0;
-      filteredEmployees.forEach(emp => {
-        const summary = getEmployeePeriodSummary(emp.id);
+      const tableData = filteredEmployees.map(emp => {
         const balance = getLeaveBalance(emp.id);
         const empIdFormatted = emp.employeeId || `EMP${String(emp.id).padStart(3, '0')}`;
         const deptName = departments.find(d => d.id === emp.departmentId)?.name || '-';
-        srNo++;
-        tableData.push([
-          srNo,
+        return [
           empIdFormatted,
           `${emp.firstName} ${emp.lastName}`,
           deptName,
-          summary.approvedDays,
-          summary.pendingDays,
-          summary.rejectedDays,
-          summary.totalRequests,
-          balance.remainingBalance.toFixed(1)
-        ]);
+          balance.totalAccrued.toFixed(1),
+          balance.totalTaken.toString(),
+          balance.pendingRequests.toString(),
+          balance.remainingBalance.toFixed(1),
+          balance.accruedThisYear.toFixed(1),
+          balance.takenThisYear.toString(),
+          balance.accrualRate,
+          balance.nextAccrualDate
+        ];
       });
 
       autoTable(doc, { 
-        head: [['Sr.', 'Emp ID', 'Name', 'Department', 'Approved Days', 'Pending Days', 'Rejected Days', 'Total Requests', 'Balance']], 
+        head: [['Emp ID', 'Emp Name', 'Department', 'Total Accrued', 'Total Used', 'Pending', 'Remaining Balance', 'Accrued This Year', 'Used This Year', 'Accrual Rate', 'Next Accrual']], 
         body: tableData, 
         startY: 70,
-        theme: 'grid',
-        headStyles: { fillColor: [60, 60, 60], textColor: [255, 255, 255], fontStyle: 'bold', fontSize: 8 },
-        styles: { fontSize: 8, cellPadding: 2 },
+        headStyles: { fillColor: [0, 128, 128], textColor: [255, 255, 255], fontStyle: 'bold', fontSize: 7 },
+        styles: { fontSize: 7, cellPadding: 2 },
         columnStyles: {
-          0: { cellWidth: 12, halign: 'center' },
-          1: { cellWidth: 20 },
-          2: { cellWidth: 40 },
-          3: { cellWidth: 30 },
-          4: { cellWidth: 22, halign: 'center' },
-          5: { cellWidth: 22, halign: 'center' },
-          6: { cellWidth: 22, halign: 'center' },
-          7: { cellWidth: 24, halign: 'center' },
-          8: { cellWidth: 20, halign: 'center' }
+          0: { cellWidth: 18 },
+          1: { cellWidth: 30 },
+          2: { cellWidth: 25 },
+          3: { cellWidth: 20, halign: 'center' },
+          4: { cellWidth: 18, halign: 'center' },
+          5: { cellWidth: 16, halign: 'center' },
+          6: { cellWidth: 25, halign: 'center' },
+          7: { cellWidth: 22, halign: 'center' },
+          8: { cellWidth: 20, halign: 'center' },
+          9: { cellWidth: 22, halign: 'center' },
+          10: { cellWidth: 22, halign: 'center' }
         }
       });
 
       const finalY = (doc as any).lastAutoTable?.finalY || 150;
 
-      const allPeriodLeaves = filteredEmployees.flatMap(emp => {
-        const leaves = getEmployeeLeaveRequests(emp.id);
-        const empIdFormatted = emp.employeeId || `EMP${String(emp.id).padStart(3, '0')}`;
-        return leaves.map((leave: any) => [
-          empIdFormatted,
-          `${emp.firstName} ${emp.lastName}`,
-          leave.leaveType || leave.type || '-',
-          new Date(leave.startDate).toLocaleDateString('en-GB'),
-          new Date(leave.endDate).toLocaleDateString('en-GB'),
-          calculateLeaveDaysInPeriod(leave),
-          (leave.status || 'pending').toUpperCase(),
-          leave.reason || '-'
-        ]);
-      });
-
-      if (allPeriodLeaves.length > 0 && finalY + 40 < doc.internal.pageSize.height) {
-        doc.setFontSize(10);
+      if (finalY + 40 < doc.internal.pageSize.height) {
+        doc.setFontSize(9);
         doc.setFont('helvetica', 'bold');
-        doc.text('Leave Requests Detail:', 14, finalY + 12);
+        doc.text('Leave Requests Detail:', 14, finalY + 15);
 
-        autoTable(doc, {
-          head: [['Emp ID', 'Name', 'Type', 'From', 'To', 'Days', 'Status', 'Reason']],
-          body: allPeriodLeaves,
-          startY: finalY + 16,
-          theme: 'grid',
-          headStyles: { fillColor: [80, 80, 80], textColor: [255, 255, 255], fontStyle: 'bold', fontSize: 7 },
-          styles: { fontSize: 7, cellPadding: 2 }
+        const detailData = filteredEmployees.flatMap(emp => {
+          const userLeaves = getEmployeeLeaveRequests(emp.id);
+          const empIdFormatted = emp.employeeId || `EMP${String(emp.id).padStart(3, '0')}`;
+          if (userLeaves.length === 0) return [];
+          return userLeaves.map((leave: any) => [
+            empIdFormatted,
+            `${emp.firstName} ${emp.lastName}`,
+            leave.type || '-',
+            new Date(leave.startDate).toLocaleDateString('en-GB'),
+            new Date(leave.endDate).toLocaleDateString('en-GB'),
+            leave.days?.toString() || '1',
+            (leave.status || 'pending').toUpperCase(),
+            leave.reason || '-'
+          ]);
         });
+
+        if (detailData.length > 0) {
+          autoTable(doc, {
+            head: [['Emp ID', 'Name', 'Type', 'From', 'To', 'Days', 'Status', 'Reason']],
+            body: detailData,
+            startY: finalY + 20,
+            headStyles: { fillColor: [100, 100, 100], textColor: [255, 255, 255], fontStyle: 'bold', fontSize: 7 },
+            styles: { fontSize: 7, cellPadding: 2 }
+          });
+        }
       }
 
-      doc.save(`leave_report_${getPeriodLabel().replace(/[^a-zA-Z0-9]/g, '_')}.pdf`);
+      addFooter(doc);
+      const refNumber = generateReferenceNumber("LEV");
+      addReferenceNumber(doc, refNumber, 68);
+      addDocumentDate(doc, undefined, 68);
+      doc.save(`leave_report_${monthsList[selectedMonth]}_${selectedYear}.pdf`);
       toast({ title: "PDF Exported Successfully" });
     } catch (error) { 
       console.error(error);
@@ -345,35 +362,32 @@ export default function LeaveReportPage() {
     toast({ title: "Excel Exported Successfully" });
   };
 
-  const handleDownloadIndividualPDF = async (emp: User) => {
+  const handleDownloadIndividualPDF = (emp: User) => {
     try {
       const doc = new jsPDF() as any;
       addWatermark(doc);
-      await addCompanyHeader(doc, { title: "INDIVIDUAL LEAVE REPORT", subtitle: `${emp.firstName} ${emp.lastName}` });
-      addFooter(doc);
+      addCompanyHeader(doc, { title: "INDIVIDUAL LEAVE REPORT", subtitle: `${emp.firstName} ${emp.lastName}` });
       const balance = getLeaveBalance(emp.id);
-      const summary = getEmployeePeriodSummary(emp.id);
       const empIdFormatted = emp.employeeId || `EMP${String(emp.id).padStart(3, '0')}`;
 
       autoTable(doc, {
         startY: 70,
-        head: [['Detail', 'Value']],
+        head: [['Leave Detail', 'Value']],
         body: [
           ['Employee ID', empIdFormatted],
           ['Department', departments.find(d => d.id === emp.departmentId)?.name || '-'],
-          ['Report Period', getPeriodLabel()],
-          ['Approved Days (Period)', `${summary.approvedDays} days`],
-          ['Pending Days (Period)', `${summary.pendingDays} days`],
-          ['Total Requests (Period)', summary.totalRequests.toString()],
           ['Total Accrued', `${balance.totalAccrued.toFixed(1)} days`],
           ['Total Used', `${balance.totalTaken} days`],
+          ['Pending Requests', `${balance.pendingRequests} days`],
           ['Remaining Balance', `${balance.remainingBalance.toFixed(1)} days`],
+          ['Accrued This Year', `${balance.accruedThisYear.toFixed(1)} days`],
+          ['Used This Year', `${balance.takenThisYear} days`],
           ['Accrual Rate', balance.accrualRate],
           ['Next Accrual Date', balance.nextAccrualDate]
         ],
-        headStyles: { fillColor: [60, 60, 60], textColor: [255, 255, 255], fontStyle: 'bold' },
+        headStyles: { fillColor: [0, 128, 128], textColor: [255, 255, 255], fontStyle: 'bold' },
         styles: { fontSize: 9 },
-        theme: 'grid'
+        theme: 'striped'
       });
 
       const userLeaves = getEmployeeLeaveRequests(emp.id);
@@ -381,25 +395,46 @@ export default function LeaveReportPage() {
         const detailY = (doc as any).lastAutoTable?.finalY + 15 || 180;
         doc.setFontSize(10);
         doc.setFont('helvetica', 'bold');
-        doc.text('Leave Requests in Period:', 14, detailY);
+        doc.text('Leave Requests:', 14, detailY);
 
         autoTable(doc, {
           startY: detailY + 5,
           head: [['Type', 'From', 'To', 'Days', 'Status', 'Reason']],
           body: userLeaves.map((leave: any) => [
-            leave.leaveType || leave.type || '-',
+            leave.type || '-',
             new Date(leave.startDate).toLocaleDateString('en-GB'),
             new Date(leave.endDate).toLocaleDateString('en-GB'),
-            calculateLeaveDaysInPeriod(leave),
+            leave.days?.toString() || '1',
             (leave.status || 'pending').toUpperCase(),
             leave.reason || '-'
           ]),
-          headStyles: { fillColor: [80, 80, 80], textColor: [255, 255, 255], fontStyle: 'bold', fontSize: 8 },
-          styles: { fontSize: 8 },
-          theme: 'grid'
+          headStyles: { fillColor: [100, 100, 100], textColor: [255, 255, 255], fontStyle: 'bold', fontSize: 8 },
+          styles: { fontSize: 8 }
         });
       }
 
+      const monthlyBreakdown = getMonthlyBreakdown(emp.id);
+      const monthlyEntries = Object.entries(monthlyBreakdown);
+      if (monthlyEntries.length > 0) {
+        const monthY = (doc as any).lastAutoTable?.finalY + 15 || 220;
+        doc.setFontSize(10);
+        doc.setFont('helvetica', 'bold');
+        doc.text('Monthly Leave Summary:', 14, monthY);
+
+        autoTable(doc, {
+          startY: monthY + 5,
+          head: [['Month', 'Days Used']],
+          body: monthlyEntries.map(([month, days]) => [month, days.toString()]),
+          headStyles: { fillColor: [0, 128, 128], textColor: [255, 255, 255], fontStyle: 'bold', fontSize: 8 },
+          styles: { fontSize: 8 }
+        });
+      }
+
+      addFooter(doc);
+      addHRSignature(doc, (doc as any).lastAutoTable?.finalY || 150);
+      const refNumber = generateReferenceNumber("IND-LEV");
+      addReferenceNumber(doc, refNumber, 68);
+      addDocumentDate(doc, undefined, 68);
       doc.save(`leave_${emp.firstName}_${emp.lastName}.pdf`);
       toast({ title: "PDF Downloaded" });
     } catch (e) { console.error(e); }
