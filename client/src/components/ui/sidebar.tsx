@@ -256,7 +256,6 @@ export function Sidebar({ className }: SidebarProps) {
         { title: "Payroll Reports", href: "/reports/payroll", icon: <DollarSign className="h-4 w-4" />, permissions: ["reports.view"] },
         { title: "Muster Roll - Form II", href: "/reports/muster-roll", icon: <ClipboardList className="h-4 w-4" />, permissions: ["reports.view"] },
         { title: "Leave Register - Form 20", href: "/reports/leave-register", icon: <BookOpen className="h-4 w-4" />, permissions: ["reports.view"] },
-        { title: "Headcount Report", href: "/reports/headcount", icon: <Users className="h-4 w-4" />, permissions: ["reports.view"] },
         { title: "Provident Fund", href: "/compliance/pf", icon: <Shield className="h-4 w-4" />, permissions: ["payroll.view"] },
         { title: "Employees' State Insurance", href: "/compliance/esi", icon: <Building2 className="h-4 w-4" />, permissions: ["payroll.view"] },
         { title: "Professional Tax", href: "/compliance/pt", icon: <Calculator className="h-4 w-4" />, permissions: ["payroll.view"] },
