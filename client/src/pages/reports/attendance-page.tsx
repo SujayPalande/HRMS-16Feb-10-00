@@ -126,7 +126,7 @@ export default function AttendanceReportPage() {
       addWatermark(doc);
       addCompanyHeader(doc, { 
         title: "UNIT-WISE ATTENDANCE REPORT", 
-        subtitle: `Period: MONTH (${startDate.toLocaleDateString('en-GB')} - ${endDate.toLocaleDateString('en-GB')})` 
+        subtitle: `Period: ${selectedPeriod.toUpperCase()} (${startDate.toLocaleDateString('en-GB')} - ${endDate.toLocaleDateString('en-GB')})` 
       });
       const tableData = filteredEmployees.map(emp => {
         const stats = getDetailedAttendance(emp.id);
