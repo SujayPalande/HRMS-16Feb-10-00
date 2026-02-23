@@ -13,6 +13,7 @@ import * as XLSX from "xlsx";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 import { apiRequest, queryClient } from "@/lib/queryClient";
+import { addCompanyHeader, addWatermark, addFooter } from "@/lib/pdf-utils";
 import { Department, Unit } from "@shared/schema";
 
 interface Employee {
@@ -186,21 +187,20 @@ export default function LeaveRegisterPage() {
     };
   };
 
-  const exportToPDF = () => {
+  const exportToPDF = async () => {
     const doc = new jsPDF({ orientation: "landscape", unit: "mm", format: "a4" });
     
-    doc.setFontSize(12);
-    doc.text("The Maharashtra Factories Rules", doc.internal.pageSize.width / 2, 12, { align: "center" });
-    doc.setFontSize(16);
-    doc.text("FORM 20", doc.internal.pageSize.width / 2, 20, { align: "center" });
+    addWatermark(doc);
+    await addCompanyHeader(doc, { title: "LEAVE REGISTER - FORM 20", subtitle: "The Maharashtra Factories Rules (See Rules 105 and 106)" });
+    addFooter(doc);
+
+    const pageWidth = doc.internal.pageSize.getWidth();
     doc.setFontSize(10);
-    doc.text("(See Rules 105 and 106)", doc.internal.pageSize.width / 2, 26, { align: "center" });
-    doc.text("Register of leave with wages", doc.internal.pageSize.width / 2, 32, { align: "center" });
-    
-    doc.setFontSize(10);
-    doc.text(`Factory: ${factoryName}`, 14, 42);
-    doc.text(`Part I - Adults`, doc.internal.pageSize.width - 60, 42);
-    doc.text(`Financial Year: ${selectedYear}-${selectedYear + 1}`, doc.internal.pageSize.width - 60, 48);
+    doc.setTextColor(0, 0, 0);
+    doc.text(`Factory: ${factoryName}`, 14, 70);
+    doc.text("Register of leave with wages", pageWidth / 2, 70, { align: "center" });
+    doc.text(`Part I - Adults`, pageWidth - 60, 70);
+    doc.text(`Financial Year: ${selectedYear}-${selectedYear + 1}`, pageWidth - 60, 76);
 
     const tableData = Object.values(hierarchicalData).flatMap(depts => Object.values(depts).flat()).map((emp, index) => {
       const data = calculateLeaveData(emp);
@@ -223,7 +223,7 @@ export default function LeaveRegisterPage() {
     });
 
     autoTable(doc, {
-      startY: 54,
+      startY: 82,
       head: [[
         "Sr.", "Emp ID", "Name", "DOJ", "Days Worked", "Lay-off", "Maternity", 
         "Leave Enjoyed", "Total", "Prev Bal", "Earned", "Balance", "Daily Rate", "Leave Wages"
